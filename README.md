@@ -13,6 +13,7 @@ When publishing analysis from this software, please cite the preprint:
 
 Boughter CT, Borowska MT, Guthmiller JJ, Bendelac A, Wilson PC, Roux B, Adams EJ. Biochemical Patterns of Antibody Polyreactivity Revealed Through a Bioinformatics-
  Based Analysis of CDR Loops. BioRxiv. 2020.
+
 And be on the lookout for the published version.
 
 # Installation
