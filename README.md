@@ -10,6 +10,7 @@ Example data is provided in AIMS/app/ab_testData and AIMS/app/mhc_testData, and 
 this preprint: https://www.biorxiv.org/content/10.1101/2020.07.30.229013v1
 
 When publishing analysis from this software, please cite the preprint:
+
 Boughter CT, Borowska MT, Guthmiller JJ, Bendelac A, Wilson PC, Roux B, Adams EJ. Biochemical Patterns of Antibody Polyreactivity Revealed Through a Bioinformatics-
  Based Analysis of CDR Loops. BioRxiv. 2020.
 And be on the lookout for the published version.
