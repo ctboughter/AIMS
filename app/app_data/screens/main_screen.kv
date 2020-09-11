@@ -1,0 +1,31 @@
+#:kivy 1.8.0
+intro:
+    ig: ig
+    mhc: mhc
+    Label:
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        text:'Welcome to the AIMS App!'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
+        text:'Which type of molecules will you be analyzing? (Click one)'
+
+    Button:
+        id: ig
+        size_hint: None, None
+        text: 'Immunoglobulins (Ab/TCR)'
+        size: '250dp', '96dp'
+        pos_hint: {'center_x': 0.3, 'center_y': 0.5}
+        on_release: 
+            app.go_Ig()
+
+    Button:
+        id: mhc
+        size_hint: None, None
+        text: 'MHC & MHC-Likes'
+        size: '250dp', '96dp'
+        pos_hint: {'center_x': 0.7, 'center_y': 0.5}
+        on_release: 
+            app.go_mhc()

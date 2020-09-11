@@ -1,0 +1,48 @@
+#:kivy 1.8.0
+Analysis:
+    name: 'mhc_3'
+    img1: screen3_img
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        height: '32dp'
+        text: 'Step3 - Generate Matrix Representation of Sequences'
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
+        height: '32dp'
+        text: 'Horizontal white lines separate data from files loaded in previous step.'
+
+    Image:
+        id: screen3_img
+        size: '750dp','750dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        source: 'app_data/white.png'
+
+    Button:
+        size_hint: None, None
+        size: '150dp', '48dp'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.1}
+        text: 'Get Matrix'
+        on_release:
+            root.get_matrix()
+            screen3_img.reload()
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Previous'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: app.go_prev_screen( num = 2 )
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Next'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        on_release: 
+            app.go_next_screen( num = 4 )

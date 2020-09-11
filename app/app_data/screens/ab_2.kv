@@ -1,0 +1,140 @@
+#:kivy 1.8.0
+aligner_ab:
+    name: 'ab_2'
+    cdr1: cdr1
+    cdr3: cdr3
+    cdr6: cdr6
+
+    #align_button1: align_button1
+    #align_button2: align_button2
+    input1: input1
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        height: '32dp'
+        text:'Step2 - Identify the CDR loops of the Antibody/TCR.'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
+        height: '32dp'
+        text:'Currently, you must have your 6 (or 3) CDR loops predefined in a CSV file.'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.80}
+        height: '32dp'
+        text:'Check tutorial files (ab_testData) for examples of proper formatting.'
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.2, 'center_y': 0.725}
+        height: '32dp'
+        text:'Output Folder Name:'
+
+    CTextInput:
+        id: input1
+        size_hint: 0.5,None
+        write_tab: False
+        pos_hint: {'center_x': 0.6, 'center_y': 0.725}
+        height: '32dp'
+        multiline: False
+        text: 'new_folder'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+        height: '32dp'
+        text:'Below, input labels for the data loaded in on the previous screen:'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.3}
+        height: '32dp'
+        text:'Select number of loops in files:'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.3, 'center_y': 0.25}
+        height: '32dp'
+        text:'6 Loops'
+
+    CheckBox:
+        id: cdr6
+        size_hint: None,None
+        height: '48dp'
+        group: 'g101'
+        state: 'down'
+        pos_hint: {'center_x': 0.3, 'center_y': 0.2}
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.25}
+        height: '32dp'
+        text:'3 Loops'
+
+    CheckBox:
+        id: cdr3
+        size_hint: None,None
+        height: '48dp'
+        group: 'g101'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.2}
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.25}
+        height: '32dp'
+        text:'1 Loop'
+
+    CheckBox:
+        id: cdr1
+        size_hint: None,None
+        height: '48dp'
+        group: 'g101'
+        pos_hint: {'center_x': 0.7, 'center_y': 0.2}
+
+    
+
+    # Button:
+    #     id: align_button1
+    #     size_hint: None, None
+    #     text: 'Use IgBlast'
+    #     size: '150dp', '48dp'
+    #     pos_hint: {'center_x':.4, 'center_y':0.1}
+    #     #on_release:
+    #     #    root.define_labels()
+    # Button:
+    #     id: align_button2
+    #     size_hint: None, None
+    #     text: 'Use Pre-Defined Loops'
+    #     size: '150dp', '48dp'
+    #     pos_hint: {'center_x':.6, 'center_y':0.1}
+        #on_release:
+        #    root.define_labels()
+
+    # Label:
+    #     size_hint: None , None
+    #     pos_hint: {'center_x': 0.5, 'center_y': 0.30}
+    #     height: '32dp'
+    #     text:'NOTE: CURRENTLY THE BELOW BUTTONS DO NOTHING. For now, just define folder files will be saved to.'
+
+
+    ####################### END FASTA DESIGNATIONS ############################
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Previous'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: app.go_prev_screen( num = 1 )
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Next'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        on_release: 
+            root.make_path()
+            root.check_aligns()
+            app.go_next_screen( num = 3 )

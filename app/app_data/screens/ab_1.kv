@@ -1,0 +1,53 @@
+#:kivy 1.8.0
+Root:
+    name: 'ab_1'
+    next1_1: next1_1
+    lessF: lessF
+
+    Label:
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        text:'Step 1 - Loading Files (Ab/TCR Version)'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
+        text:'Two data files required, additional files optional. Ensure all files have same # CDR loops'
+
+    ################## K now to the next page. This is not great, but it is pretty
+    Button:
+        id: next1_1
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Next'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        disabled: True
+        on_release: 
+            app.go_next_screen(num = 2)
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Previous'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: 
+            root.reset_loadScrn()
+            app.go_main_screen(num = 0)
+
+    Button:
+        id: next1.2
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Add More Files'
+        pos_hint: {'center_x': 0.4, 'center_y': 0.1}
+        on_release: root.more_fastas()
+
+    Button:
+        id: lessF
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Remove Files'
+        pos_hint: {'center_x': 0.6, 'center_y': 0.1}
+        disabled: True
+        on_release: root.less_fastas()

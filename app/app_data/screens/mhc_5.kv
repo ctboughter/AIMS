@@ -1,0 +1,37 @@
+#:kivy 1.8.0
+checker:
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        height: '32dp'
+        text:'Step5 - Inclusion of Data for PCA Analysis'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
+        height: '32dp'
+        text:'If certain groups are excluded from the PCA, yet still plotted, a degree of similarity can be assessed.'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.80}
+        height: '32dp'
+        text:'Excluding some data from plots may add clarity. If only analyzing two files, some options excluded.'
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Previous'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: app.go_prev_screen( num = 4 )
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Next'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        on_release: 
+            root.check_checks()
+            app.go_next_screen( num = 6 )

@@ -1,0 +1,53 @@
+#:kivy 1.8.0
+#:import KivyLexer kivy.extras.highlight.KivyLexer
+#:import Factory kivy.factory.Factory
+
+#<ShowcaseScreen>:
+#    RelativeLayout:
+#        id: content
+#        height: root.height if root.fullscreen else max(root.height, content.height)
+#        width: root.width if root.fullscreen else max(root.width, content.width)
+
+<LoadDialog>:
+    path1: filechooser
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+            path: root.get_path()
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Load"
+                on_release: root.load(filechooser.path, filechooser.selection)
+
+<CTextInput@TextInput>:
+    on_focus:
+        screen = self.parent.parent.parent.parent
+        if screen.parent: screen.focused = self
+
+FloatLayout:
+    orientation: 'vertical'
+
+    canvas.before:
+        Color:
+            rgb: .6, .6, .6
+        Rectangle:
+            size: self.size
+            source: 'app_data/background.png'
+
+    ScrollView:
+        id: sv
+        size_hint_y: None
+        height: 0
+
+    ScreenManager:
+        id: sm

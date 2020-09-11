@@ -1,0 +1,116 @@
+#:kivy 1.8.0
+aligner:
+    name: 'mhc_2'
+
+    align_button1: align_button1
+    align_button2: align_button2
+    input1: input1
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        height: '32dp'
+        text:'Step2 - Identify Key Structural Features'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
+        height: '32dp'
+        text:'Enter the start and end points in your alignment for each structural feature of interest.'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.80}
+        height: '32dp'
+        text:'See Documentation and tutorial files for a more detailed explanation of how to generate these values.'
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.2, 'center_y': 0.725}
+        height: '32dp'
+        text:'New Folder Name:'
+
+    CTextInput:
+        id: input1
+        size_hint: 0.5,None
+        write_tab: False
+        pos_hint: {'center_x': 0.6, 'center_y': 0.725}
+        height: '32dp'
+        multiline: False
+        text: 'new_folder'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.1, 'center_y': 0.65}
+        height: '32dp'
+        text:'Name'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.25, 'center_y': 0.65}
+        height: '32dp'
+        text:'S1s'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.4, 'center_y': 0.65}
+        height: '32dp'
+        text:'S1e/H1s'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.55, 'center_y': 0.65}
+        height: '32dp'
+        text:'H1e/S2s'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.65}
+        height: '32dp'
+        text:'S2e/H2s'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.85, 'center_y': 0.65}
+        height: '32dp'
+        text:'H2e'
+
+    Button:
+        id: align_button1
+        size_hint: None, None
+        text: 'Load Preformatted Matrix'
+        size: '250dp', '60dp'
+        pos_hint: {'center_x':.3, 'center_y':0.5}
+        on_release:
+            root.drop_buts()
+            root.load_aligners()
+            root.show_load()
+    Button:
+        id: align_button2
+        size_hint: None, None
+        text: 'Enter Values Manually'
+        size: '250dp', '60dp'
+        pos_hint: {'center_x':.7, 'center_y':0.5}
+        on_release:
+            root.drop_buts()
+            root.load_aligners()
+
+
+    ####################### END FASTA DESIGNATIONS ############################
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Previous'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: app.go_prev_screen( num = 1 )
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Next'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        on_release: 
+            root.check_aligns()
+            root.make_path()
+            app.go_next_screen( num = 3 )

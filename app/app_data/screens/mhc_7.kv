@@ -1,0 +1,43 @@
+#:kivy 1.8.0
+lda_binary:
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        height: '32dp'
+        text:'Step7 - Define Binary Classes'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
+        height: '32dp'
+        text:'So PCA can attempt to separate our data in an unbiased manner. However, this does not always work.'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.80}
+        height: '32dp'
+        text:'Instead, we will explicitly split the data into binary classes, and use this information to rigorously'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.75}
+        height: '32dp'
+        text:'classify the two groups. Future versions will allow for more than binary classes.'
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Previous'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: app.go_prev_screen( num = 6 )
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Next'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        on_release: 
+            root.check_checks()
+            app.go_next_screen( num = 8 )

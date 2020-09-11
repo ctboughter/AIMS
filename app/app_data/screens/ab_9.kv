@@ -1,0 +1,222 @@
+#:kivy 1.8.0
+Analysis:
+    img9: screen9_img
+    aname1: An1
+    aname2: An2
+    aname3: An3
+    aname4: An4
+    aname5: An5
+    aname6: An6
+    aname7: An7
+    aname8: An8
+    aname9: An9
+    aname10: An10
+    aweight1: Aw1   
+    aweight2: Aw2
+    aweight3: Aw3
+    aweight4: Aw4
+    aweight5: Aw5
+    aweight6: Aw6   
+    aweight7: Aw7
+    aweight8: Aw8
+    aweight9: Aw9
+    aweight10: Aw10
+    inputLDA:inputLDA
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.35, 'center_y': 0.95}
+        height: '32dp'
+        text: 'Step9 - Using Linear Discriminant Analysis to Split Classes'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.85}
+        height: '32dp'
+        text:'LD1 Name'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.85}
+        height: '32dp'
+        text:'LD1 Weight'
+    # Now lets have our placeholders for our top 5 props
+    Label:
+        id: An1
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.75}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw1
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.75}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An2
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.70}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw2
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.70}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An3
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.65}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw3
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.65}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An4
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.60}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw4
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.60}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An5
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.55}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw5
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.55}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An6
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.50}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw6
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.50}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An7
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.45}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw7
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.45}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An8
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.40}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw8
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.40}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An9
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.35}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw9
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.35}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An10
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.30}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw10
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.30}
+        height: '32dp'
+        text:''
+    # Then into the last bits of it...
+    Image:
+        id: screen9_img
+        size: '500dp','500dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.30, 'center_y': 0.6}
+        source: 'app_data/white.png'
+
+    Button:
+        size_hint: None, None
+        size: '150dp', '48dp'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.1}
+        text: 'Do LDA'
+        on_release:
+            root.do_lda()
+            screen9_img.reload()
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Previous'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: app.go_prev_screen( num = 8 )
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.85, 'center_y': 0.20}
+        height: '32dp'
+        text:'Number of Input Vectors'
+
+    CTextInput:
+        id: inputLDA
+        size_hint: None,None
+        write_tab: False
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        height: '32dp'
+        width: '42dp'
+        multiline: False
+        text: '5'
