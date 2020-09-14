@@ -7,3 +7,4 @@ conda install pandas
 conda install numpy
 conda install matplotlib
 conda install scikit-learn
+conda install seaborn
