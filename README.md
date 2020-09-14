@@ -59,6 +59,7 @@ It should just work, and you'll be prompted with a bunch of [y]/n questions, for
  conda install numpy
  conda install matplotlib
  conda install scikit-learn
+ conda install seaborn
 ```
 
 6) Everything should now be installed, you should now be able to open up the software! Navigate to the app in terminal by typing: 
