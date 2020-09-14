@@ -73,13 +73,13 @@ It should just work, and you'll be prompted with a bunch of [y]/n questions, for
 ```
  python AIMS.py
 ```
-From there, the GUI should open. A step by step instruction guide for GUI usage will be shortly uploaded.
+From there, the GUI should open. A step by step instruction guide for GUI usage can be found in the included powerpoint.
 
 # Acknowledgements
 This initial stable build has only been possible through a highly collaborative effort focused on creating a functional pipeline with the incorporated features necessary for thorough repertoire analysis. The following people have made major contributions to this project:
 
 #### Anna Borowska - UX/UI Designer
-As the sole graphic designing consultant on the project, Anna helped ensure the initial application was functional, efficient, and as easy to use as possible. Multiple quality control features within the application were added based on suggestions from Anna, and her comprehensive user testing reports ensured critical functionalities were improved. To contact Anna or view her portfolio, see her webiste.
+As the sole graphic designing consultant on the project, Anna helped ensure the initial application was functional, efficient, and as easy to use as possible. Multiple quality control features within the application were added based on suggestions from Anna, and her comprehensive user testing reports ensured critical functionalities were improved. To contact Anna or view her portfolio, see her website: (To be added)
 
 #### Marta Borowska - Scientific Consultant/Beta Tester
 The initial scientific inquiry behind this project was initiated by Marta, looking at the biochemical mechanisms behind antibody polyreactivity. In addition to her scientific insights, Marta was an early tester of the antibody/TCR software module.
