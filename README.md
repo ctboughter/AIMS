@@ -87,6 +87,9 @@ The initial scientific inquiry behind this project was initiated by Marta, looki
 #### Caitlin Castro - Scientific Consultant/Beta Tester
 Caitlin, the resource for all things immunology, helped with the initial design and testing of the MHC-like software module. Caitlin also helped with interpretation of results and had critical insights for the improvement of the user experience.
 
+#### Jay Pittman - Beta Tester
+Jay was responsible for the earliest tests of the GUI, helping to resolve critical bugs in GUI function on Windows OS. Conversations with Jay helped solidify the application of this approach to more diverse molecules beyond those involved in immune recognition.
+
 #### Erin Adams & Lab - Mentorship/Funding
 Erin's expertise and helpful mentoring allowed this project to reach its full potential. Erin was fully supportive of the addition of a new project to the lab, and had great comments for making the analysis pipeline more accessible to experimentalists. Erin's advice has been invaluable throughout. For more information on Erin's lab, see http://ejadamslab.bsd.uchicago.edu/. This project was supported with funding from Erin's National Institutes of Health NIAID grants R01 AI115471 and R01 AI147954.
 
