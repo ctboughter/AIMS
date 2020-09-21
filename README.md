@@ -41,12 +41,12 @@ Again, windows users will have to activate the environment from within Anaconda.
 
 Use terminal to navigate into the newly downloaded folder. If you've never used terminal before, you can type in "cd" and then drag and drop the folder into the terminal. Doing so should automatically populate the "path" to the folder. Then hit enter.
 
- When I do this, my terminal line reads "cd /Users/boughter/Desktop/AIMS" hopefully you see something similar, and when you hit enter you can move to the next step.
+ When I do this, my terminal line reads "cd /Users/boughter/Desktop/AIMS-master" hopefully you see something similar (replacing my user name with your own), and when you hit enter you can move to the next step.
 
 5) In terminal, type:
 
 ```
-./install_packages.sh 
+./app/install_packages.sh 
 ```
 
 It should just work, and you'll be prompted with a bunch of [y]/n questions, for which you should consistently hit "y" then the "enter key" for. If this doesn't work, and you get some kind of an error instead of the prompts, type each of these lines (or copy/paste) one by one, hitting enter after each one:
@@ -79,7 +79,7 @@ From there, the GUI should open. A step by step instruction guide for GUI usage 
 This initial stable build has only been possible through a highly collaborative effort focused on creating a functional pipeline with the incorporated features necessary for thorough repertoire analysis. The following people have made major contributions to this project:
 
 #### Anna Borowska - UX/UI Designer
-As the sole graphic designing consultant on the project, Anna helped ensure the initial application was functional, efficient, and as easy to use as possible. Multiple quality control features within the application were added based on suggestions from Anna, and her comprehensive user testing reports ensured critical functionalities were improved. To contact Anna or view her portfolio, see her website: (To be added)
+As the sole graphic designing consultant on the project, Anna helped ensure the initial application was functional, efficient, and as easy to use as possible. Multiple quality control features within the application were added based on suggestions from Anna, and her comprehensive user testing reports ensured critical functionalities were improved. To contact Anna or view her portfolio, see her website: https://annazofiaborowska.com/
 
 #### Marta Borowska - Scientific Consultant/Beta Tester
 The initial scientific inquiry behind this project was initiated by Marta, looking at the biochemical mechanisms behind antibody polyreactivity. In addition to her scientific insights, Marta was an early tester of the antibody/TCR software module.
