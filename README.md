@@ -47,7 +47,7 @@ Use terminal to navigate into the newly downloaded folder. If you've never used 
 ./app/install_packages.sh 
 ```
 
-It should just work, and you'll be prompted with a bunch of [y]/n questions, for which you should consistently hit "y" then the "enter key" for [Note to more advanced users, you shouldn't need to use these EXACT package versions, save for Biophython and SciKit-Learn. However, using this versions should guarantee everything is functional]. If this doesn't work, and you get some kind of an error instead of the prompts, type each of these lines (or copy/paste) one by one, hitting enter after each one:
+It should just work, and you'll be prompted with a bunch of [y]/n questions, for which you should consistently hit "y" then the "enter key" for [Note to more advanced users, you shouldn't need to use these EXACT package versions, save for Biophython and SciKit-Learn. However, using these versions should guarantee everything is functional]. If this doesn't work, and you get some kind of an error instead of the prompts, type each of these lines (or copy/paste) one by one, hitting enter after each one:
 
 ```
  conda install -c conda-forge kivy=1.11.1
