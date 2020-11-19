@@ -7,14 +7,12 @@ AIMS is a python package distributed in both a notebook and GUI format. Those wi
 just need to download this repository and the necessary packages identified in AIMS/app/install_packages.sh. Those
 wishing to use the GUI, particularly those relatively new to programming, can follow the installation instructions below.
 Example data is provided in AIMS/app/ab_testData and AIMS/app/mhc_testData, and an example of an application of AIMS can be seen in
-this preprint: https://www.biorxiv.org/content/10.1101/2020.07.30.229013v1
+this peer-reviewed article: https://elifesciences.org/articles/61393
 
-When publishing analysis from this software, please cite the preprint:
+When publishing analysis from this software, please cite:
 
 Boughter CT, Borowska MT, Guthmiller JJ, Bendelac A, Wilson PC, Roux B, Adams EJ. Biochemical Patterns of Antibody Polyreactivity Revealed Through a Bioinformatics-
- Based Analysis of CDR Loops. BioRxiv. 2020.
-
-And be on the lookout for the published version.
+ Based Analysis of CDR Loops. eLife. 2020. DOI: 10.7554/eLife.61393
 
 # Installation
 For more advanced users familiar with python modules, skip to step 5 to find a complete list of python dependencies. For beginners, these instructions will help install all necessary packages and programs needed to run the GUI. Mac/Linux OS preferred, these steps outline installation via Anaconda. Other installations should be supported but have not been tested. 
@@ -41,25 +39,25 @@ Again, windows users will have to activate the environment from within Anaconda.
 
 Use terminal to navigate into the newly downloaded folder. If you've never used terminal before, you can type in "cd" and then drag and drop the folder into the terminal. Doing so should automatically populate the "path" to the folder. Then hit enter.
 
- When I do this, my terminal line reads "cd /Users/boughter/Desktop/AIMS" hopefully you see something similar, and when you hit enter you can move to the next step.
+ When I do this, my terminal line reads "cd /Users/boughter/Desktop/AIMS-master" hopefully you see something similar (replacing my user name with your own), and when you hit enter you can move to the next step.
 
 5) In terminal, type:
 
 ```
-./install_packages.sh 
+./app/install_packages.sh 
 ```
 
-It should just work, and you'll be prompted with a bunch of [y]/n questions, for which you should consistently hit "y" then the "enter key" for. If this doesn't work, and you get some kind of an error instead of the prompts, type each of these lines (or copy/paste) one by one, hitting enter after each one:
+It should just work, and you'll be prompted with a bunch of [y]/n questions, for which you should consistently hit "y" then the "enter key" for [Note to more advanced users, you shouldn't need to use these EXACT package versions, save for Biophython and SciKit-Learn. However, using these versions should guarantee everything is functional]. If this doesn't work, and you get some kind of an error instead of the prompts, type each of these lines (or copy/paste) one by one, hitting enter after each one:
 
 ```
- conda install -c conda-forge kivy
+ conda install -c conda-forge kivy=1.11.1
  conda install -c conda-forge biopython=1.76
- conda install -c conda-forge scipy
- conda install pandas
- conda install numpy
- conda install matplotlib
- conda install scikit-learn
- conda install seaborn
+ conda install -c conda-forge scipy=1.4.1
+ conda install pandas=1.0.3
+ conda install numpy=1.18.1
+ conda install matplotlib=3.1.3
+ conda install scikit-learn=0.22.1
+ conda install seaborn=0.10.1
 ```
 
 6) Everything should now be installed, you should now be able to open up the software! Navigate to the app in terminal by typing: 
@@ -73,19 +71,22 @@ It should just work, and you'll be prompted with a bunch of [y]/n questions, for
 ```
  python AIMS.py
 ```
-From there, the GUI should open. A step by step instruction guide for GUI usage will be shortly uploaded.
+From there, the GUI should open. A step by step instruction guide for GUI usage can be found in the included powerpoint.
 
 # Acknowledgements
 This initial stable build has only been possible through a highly collaborative effort focused on creating a functional pipeline with the incorporated features necessary for thorough repertoire analysis. The following people have made major contributions to this project:
 
 #### Anna Borowska - UX/UI Designer
-As the sole graphic designing consultant on the project, Anna helped ensure the initial application was functional, efficient, and as easy to use as possible. Multiple quality control features within the application were added based on suggestions from Anna, and her comprehensive user testing reports ensured critical functionalities were improved. To contact Anna or view her portfolio, see her webiste.
+As the sole graphic designing consultant on the project, Anna helped ensure the initial application was functional, efficient, and as easy to use as possible. Multiple quality control features within the application were added based on suggestions from Anna, and her comprehensive user testing reports ensured critical functionalities were improved. To contact Anna or view her portfolio, see her website: https://annazofiaborowska.com/
 
 #### Marta Borowska - Scientific Consultant/Beta Tester
 The initial scientific inquiry behind this project was initiated by Marta, looking at the biochemical mechanisms behind antibody polyreactivity. In addition to her scientific insights, Marta was an early tester of the antibody/TCR software module.
 
 #### Caitlin Castro - Scientific Consultant/Beta Tester
 Caitlin, the resource for all things immunology, helped with the initial design and testing of the MHC-like software module. Caitlin also helped with interpretation of results and had critical insights for the improvement of the user experience.
+
+#### Jay Pittman - Beta Tester
+Jay was responsible for the earliest tests of the GUI, helping to resolve critical bugs in GUI function on Windows OS. Conversations with Jay helped solidify the application of this approach to more diverse molecules beyond those involved in immune recognition.
 
 #### Erin Adams & Lab - Mentorship/Funding
 Erin's expertise and helpful mentoring allowed this project to reach its full potential. Erin was fully supportive of the addition of a new project to the lab, and had great comments for making the analysis pipeline more accessible to experimentalists. Erin's advice has been invaluable throughout. For more information on Erin's lab, see http://ejadamslab.bsd.uchicago.edu/. This project was supported with funding from Erin's National Institutes of Health NIAID grants R01 AI115471 and R01 AI147954.

@@ -289,7 +289,7 @@ def do_linear_split(test_mono,test_poly,ridCorr = True,giveSize=[],matSize=75,ma
 
         train_mat = X_train[:,indices]
 
-    clf_all = LinearDiscriminantAnalysis(n_components=4,solver='svd')    
+    clf_all = LinearDiscriminantAnalysis(n_components=1,solver='svd')    
     mda_all=clf_all.fit_transform(train_mat,Y_train)
 
     # NOTE, THIS IS LIKE A "BEST CASE-SCENARIO" Accuracy
