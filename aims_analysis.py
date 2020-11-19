@@ -48,7 +48,11 @@ def get_sequence_dimension(re_poly):
         sequence_dim = int(sum(max_len))
     return(max_len,sequence_dim)
 
-def gen_tcr_matrix(pre_poly,key=AA_num_key_new,binary=False,pre_mono=[],giveSize=[],return_Size=False):
+# NOTE, manuscript_arrange=False MUST be selected to run MHC analysis
+# I used to re-arrange the CDR loops for a more position-accurate
+# representation. In the current analysis, this isn't necessary.
+def gen_tcr_matrix(pre_poly,key=AA_num_key_new,binary=False,
+pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False):
     # Do this so that 
     if giveSize == []:
         if binary:
@@ -72,14 +76,15 @@ def gen_tcr_matrix(pre_poly,key=AA_num_key_new,binary=False,pre_mono=[],giveSize
             sequence_dim = int(sum(max_lenp))
     final_poly=[] # initialize a variable
     # RE-ORGANIZE EVERYTHING SO IT LOOKS NICE IN MATRIX
-    #max_len = [max_lenp[0],max_lenp[1],max_lenp[2],max_lenp[5],max_lenp[4],max_lenp[3]]
-    # Above line is a remnant from tcr script. Maybe turn this into yet another option?
+    # But presumably, if you give a size, it's the size you want...
+    if manuscript_arrange and giveSize == []:
+        max_lenp = [max_lenp[0],max_lenp[1],max_lenp[2],max_lenp[5],max_lenp[4],max_lenp[3]]
     max_len = max_lenp
     
     for re_poly in [pre_poly,pre_mono]:
         # RE-ORGANIZE EVERYTHING SO IT LOOKS NICE IN MATRIX
-        #re_poly = [re_poly[0],re_poly[1],re_poly[2],re_poly[5],re_poly[4],re_poly[3]]
-        # Same as above, don't reorganize stuff if you don't have to
+        if manuscript_arrange:
+            re_poly = [re_poly[0],re_poly[1],re_poly[2],re_poly[5],re_poly[4],re_poly[3]]
 
         numLoop,numClone = np.shape(re_poly)
 

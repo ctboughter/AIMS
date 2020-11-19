@@ -83,15 +83,15 @@ def apply_matrix(mono_PCA,max_diffs,mat_size=100,props=properties[1:],ridZero=Fa
     return(new_mat_mono/win_size)
 
 # CAN WE DO IT WITH ONE MATRIX???
-def get_bigass_matrix(ALL_mono, OneChain = False, giveSize=[]):
+def get_bigass_matrix(ALL_mono, OneChain = False, giveSize=[],manuscript_arrange=False):
     # THIS TERM IS ACTUALLY IRRELEVANT. NEED TO DEFINE A "GET MASK" function
     
     if OneChain:
         mono_PCA = aims.gen_1Chain_matrix(ALL_mono,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),binary=False,giveSize=giveSize)
         mono_MI = aims.gen_1Chain_matrix(ALL_mono,key=AA_num_key,binary=False,giveSize=giveSize)
     else:
-        mono_PCA = aims.gen_tcr_matrix(ALL_mono,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),binary=False,giveSize=giveSize)
-        mono_MI = aims.gen_tcr_matrix(ALL_mono,key=AA_num_key,binary=False,giveSize=giveSize)
+        mono_PCA = aims.gen_tcr_matrix(ALL_mono,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),binary=False,giveSize=giveSize,manuscript_arrange = manuscript_arrange)
+        mono_MI = aims.gen_tcr_matrix(ALL_mono,key=AA_num_key,binary=False,giveSize=giveSize,manuscript_arrange=manuscript_arrange)
 
     BIG_mono = aims.getBig(mono_MI)
     amono,bmono,cmono = np.shape(BIG_mono)
@@ -244,12 +244,15 @@ def apply_pretrained_LDA(bigass_mono,did_drop,indices,weights):
 
 # DISTINCT FROM CLASSIFICATION. HERE IS HOW WE FIND THE PROPERTIES WHICH
 # BEST DISCRIMINATE THE DATASET
-def do_linear_split(test_mono,test_poly,ridCorr = True,giveSize=[],matSize=75):
+def do_linear_split(test_mono,test_poly,ridCorr = True,giveSize=[],matSize=75,manuscript_arrange=False,pca_split=False):
     num_mono = np.shape(test_mono)[1]
     num_poly = np.shape(test_poly)[1]
 
     mat = np.hstack((test_mono,test_poly))
-    total_mat = get_bigass_matrix(mat,giveSize = giveSize)
+    if manuscript_arrange:
+        total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True)
+    else:
+        total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False)
     prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
     prop_list_new = ['Hot'+str(b+1) for b in range(46)]
 
@@ -276,11 +279,15 @@ def do_linear_split(test_mono,test_poly,ridCorr = True,giveSize=[],matSize=75):
         X_train = total_mat; cols = np.array(Bigass_names)
 
     Y_train = np.hstack((np.ones(num_mono),2*np.ones(num_poly)))
+    
+    if pca_split:
+        pca = PCA(n_components=matSize, svd_solver='full')
+        train_mat=pca.fit_transform(X_train)
+    else:
+        Class_mat = aims.parse_props(np.transpose(X_train),Y_train,matSize)
+        indices = [int(a) for a in Class_mat[:,1]]
 
-    Class_mat = aims.parse_props(np.transpose(X_train),Y_train,matSize)
-    indices = [int(a) for a in Class_mat[:,1]]
-
-    train_mat = X_train[:,indices]
+        train_mat = X_train[:,indices]
 
     clf_all = LinearDiscriminantAnalysis(n_components=4,solver='svd')    
     mda_all=clf_all.fit_transform(train_mat,Y_train)
@@ -292,8 +299,10 @@ def do_linear_split(test_mono,test_poly,ridCorr = True,giveSize=[],matSize=75):
     # Give me the coefficients
     weights=clf_all.coef_
     
-    if ridCorr:
+    if ridCorr and pca_split == False:
         return(acc_all,weights,cols,indices,mda_all,did_drop)
+    elif pca_split:
+        return(acc_all,mda_all)
     else:
         return(acc_all,weights,cols,indices,mda_all)
 

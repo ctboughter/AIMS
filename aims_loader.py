@@ -108,11 +108,13 @@ def mhc_loader(fastapath,mat_coords,label):
         return(finalDF,title_key)
 # So in the main version of the script, we have a special loader for each data subset
 # Can we make just a generalizable one? Let's give it a try...
-def Ig_loader(fastapath,label,loops=6):
+def Ig_loader(fastapath,label,loops=6,drop_degens = False):
     if loops == 6:
         total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdrL1_aa','cdrL2_aa','cdrL3_aa','cdrH1_aa','cdrH2_aa','cdrH3_aa'])
     elif loops == 3:
         total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdr1_aa','cdr2_aa','cdr3_aa'])
+    elif loops == 2:
+        total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdrH3_aa','cdrL3_aa'])
     elif loops == 1:
         total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdr_aa'])
     # Remove empty entries
@@ -129,6 +131,9 @@ def Ig_loader(fastapath,label,loops=6):
         total_abs5=total_abs1[~total_abs1['cdr1_aa'].str.contains("X")]
         total_abs6=total_abs5[~total_abs5['cdr2_aa'].str.contains("X")]
         totalF=total_abs6[~total_abs6['cdr3_aa'].str.contains("X")].values
+    elif loops == 2:
+        total_abs5=total_abs1[~total_abs1['cdrH3_aa'].str.contains("X")]
+        totalF=total_abs5[~total_abs5['cdrL3_aa'].str.contains("X")].values
     elif loops == 1:
         totalF=total_abs1[~total_abs1['cdr_aa'].str.contains("X")].values
     # Remove incomplete entries
@@ -150,6 +155,14 @@ def Ig_loader(fastapath,label,loops=6):
                 else:
                     del_these=np.vstack((del_these,i))
                 a=a+1
+    elif loops == 2:
+        for i in np.arange(np.shape(totalF)[0]):
+            if totalF[i,1] == '' or totalF[i,0] == '':
+                if a == 0:
+                    del_these=i
+                else:
+                    del_these=np.vstack((del_these,i))
+                a=a+1
     elif loops == 1:
         for i in np.arange(len(totalF[:])):
             if totalF[i] == '':
@@ -160,8 +173,56 @@ def Ig_loader(fastapath,label,loops=6):
                 a=a+1
 
     final_Ig=np.delete(totalF,del_these,axis=0)
-    final_title = [label + '_' + str(a) for a in np.arange(len(final_Ig))]
-    final_Df = pandas.DataFrame(np.transpose(final_Ig),columns = final_title)
+
+    # Remove degeneracies in the dataset (optional)
+    if drop_degens:
+        aa = np.shape(final_Ig)[0]
+        for i in np.arange(aa):
+            degen = False
+            for j in np.arange(i):
+                # ignore diagonal
+                if i == j:
+                    continue
+                # to get around changing number of loops,
+                if loops == 1:
+                    test1 = final_Ig[i,0]
+                    test2 = final_Ig[j,0]
+                elif loops == 2:
+                    test1 = final_Ig[i,0] + final_Ig[i,1]
+                    test2 = final_Ig[j,0] + final_Ig[j,1]
+                elif loops == 3:
+                    test1 = final_Ig[i,0] + final_Ig[i,1] + final_Ig[i,2]
+                    test2 = final_Ig[j,0] + final_Ig[j,1] + final_Ig[j,2]
+                elif loops == 6:
+                    test1 = final_Ig[i,0] + final_Ig[i,1] + final_Ig[i,2] + final_Ig[i,3] + final_Ig[i,4] + final_Ig[i,5]
+                    test2 = final_Ig[j,0] + final_Ig[j,1] + final_Ig[j,2] + final_Ig[j,3] + final_Ig[j,4] + final_Ig[j,5]
+                # if the sequences are of a different length, clearly they aren't identical
+                if len(test1) - len(test2) != 0:
+                    continue
+                # Sum zip here counts the number of matched residues (position senstive)
+                # So by subtracting the length, identical sequences should have count = 0
+                count = sum(1 for a, b in zip(test1, test2) if a == b) - len(test1)
+                # as soon as you find an identical sequence, break out
+                if count == 0:
+                    degen = True
+                    break
+            if i == 0 and not degen:
+                indices = np.array([0])
+            elif not degen:        
+                indices = np.vstack((indices,i))
+        if loops == 1:
+            f_Ig = final_Ig[indices,:].reshape(len(indices),1)
+        elif loops == 2:
+            f_Ig = final_Ig[indices,:].reshape(len(indices),2)
+        elif loops == 3:
+            f_Ig = final_Ig[indices,:].reshape(len(indices),3)
+        elif loops == 6:
+            f_Ig = final_Ig[indices,:].reshape(len(indices),6)
+    else:
+        f_Ig = final_Ig
+
+    final_title = [label + '_' + str(a) for a in np.arange(len(f_Ig))]
+    final_Df = pandas.DataFrame(np.transpose(f_Ig),columns = final_title)
 
     return(final_Df)
 #####################################################################################
