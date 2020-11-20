@@ -5,29 +5,58 @@ aligner:
     align_button1: align_button1
     align_button2: align_button2
     input1: input1
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size: '450dp','25dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+    
+    Image:
+        source: 'app_data/square_background.png'
+        size: '900dp','500dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.505, 'center_y': 0.51}
+        keep_ratio: False
+        allow_stretch: True
+
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
         height: '32dp'
         text:'Step2 - Identify Key Structural Features'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.5, 'center_y': 0.85}
         height: '32dp'
         text:'Enter the start and end points in your alignment for each structural feature of interest.'
+        font_name: 'app_data/Poppins-light.ttf'
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.5, 'center_y': 0.80}
         height: '32dp'
-        text:'See Documentation and tutorial files for a more detailed explanation of how to generate these values.'
+        text:'See tutorial files for a more detailed explanation of how to generate these values.'
+        font_name: 'app_data/Poppins-light.ttf'
     
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.2, 'center_y': 0.725}
         height: '32dp'
         text:'New Folder Name:'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     CTextInput:
         id: input1
@@ -43,40 +72,50 @@ aligner:
         pos_hint: {'center_x': 0.1, 'center_y': 0.65}
         height: '32dp'
         text:'Name'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.25, 'center_y': 0.65}
         height: '32dp'
         text:'S1s'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.4, 'center_y': 0.65}
         height: '32dp'
         text:'S1e/H1s'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.55, 'center_y': 0.65}
         height: '32dp'
         text:'H1e/S2s'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.7, 'center_y': 0.65}
         height: '32dp'
         text:'S2e/H2s'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.85, 'center_y': 0.65}
         height: '32dp'
         text:'H2e'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Button:
         id: align_button1
         size_hint: None, None
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
         text: 'Load Preformatted Matrix'
         size: '250dp', '60dp'
         pos_hint: {'center_x':.3, 'center_y':0.5}
@@ -87,6 +126,10 @@ aligner:
     Button:
         id: align_button2
         size_hint: None, None
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
         text: 'Enter Values Manually'
         size: '250dp', '60dp'
         pos_hint: {'center_x':.7, 'center_y':0.5}
@@ -100,7 +143,11 @@ aligner:
         id: next1.3
         size_hint: None, None
         size: '150dp', '48dp'
-        text: 'Previous'
+        text: '< Go Back'
+        color: (0.341, 0.392, 1, 1)
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        background_color: (0.773, 0.784, 0.796, 1)
         pos_hint: {'center_x': 0.15, 'center_y': 0.1}
         on_release: app.go_prev_screen( num = 1 )
 
@@ -108,8 +155,12 @@ aligner:
         id: next1.3
         size_hint: None, None
         size: '150dp', '48dp'
-        text: 'Next'
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
         pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
         on_release: 
             root.check_aligns()
             root.make_path()

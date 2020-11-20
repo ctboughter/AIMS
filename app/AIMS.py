@@ -69,19 +69,21 @@ class Root(Screen):
                     xname = 'FASTA '
                 button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
                 pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
-                on_release=lambda x = int(j):self.show_load(win = x))
+                on_release=lambda x = int(j):self.show_load(win = x),
+                background_down='app_data/butt_down.png', background_normal='app_data/butt_up.png',
+                color=(0, 0.033, 0.329, 1),border=(0,0,0,0))
                 # What an absolute fucking nightmare solution the line above... works though
                 # Need to make sure we don't overwrite the labels every time we load shit in
                 if j >= len(LFile):
                     label = Label(text=xname +'File ' + str(j+1) + ' Path', size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.65, 'center_y':.75-int(a)*0.6/N})
+                    pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
                 else:
                     if LFile[int(j)] != '':
                         label = Label(text=LFile[int(j)], size_hint=(0.2, 0.075),
-                        pos_hint={'center_x':.65, 'center_y':.75-int(a)*0.6/N})
+                        pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
                     else:
                         label = Label(text=xname+'File ' + str(j+1) + ' Path', size_hint=(0.2, 0.075),
-                        pos_hint={'center_x':.65, 'center_y':.75-int(a)*0.6/N})
+                        pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
 
                 if a == 0:
                     loadButton = [button]
@@ -187,19 +189,20 @@ class Root(Screen):
                 xname = 'FASTA '
             button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
             pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
-            on_release=lambda x = int(j):self.show_load(win = x))
+            on_release=lambda x = int(j):self.show_load(win = x),
+            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             # What an absolute fucking nightmare solution the line above... works though
             # Need to make sure we don't overwrite the labels every time we load shit in
             if j >= len(LFile):
                 label = Label(text=xname +'File ' + str(j+1) + ' Path', size_hint=(0.2, 0.075),
-                pos_hint={'center_x':.65, 'center_y':.75-int(a)*0.6/N})
+                pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
             else:
                 if LFile[int(j)] != '':
                     label = Label(text=LFile[int(j)], size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.65, 'center_y':.75-int(a)*0.6/N})
+                    pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
                 else:
                     label = Label(text=xname+'File ' + str(j+1) + ' Path', size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.65, 'center_y':.75-int(a)*0.6/N})
+                    pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
 
             if a == 0:
                 loadButton = [button]
@@ -242,20 +245,20 @@ class Root(Screen):
                 xname = 'FASTA '
             button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
             pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
-            on_release=lambda x = int(j):self.show_load(win = x))
+            on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
+            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0,0,0,0))
             # What an absolute fucking nightmare solution the line above... works though
             # Need to make sure we don't overwrite the labels every time we load shit in
             if j >= len(LFile):
                 label = Label(text=xname +'File ' + str(j+1) + ' Path', size_hint=(0.2, 0.075),
-                pos_hint={'center_x':.65, 'center_y':.75-int(a)*0.6/N})
+                pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
             else:
                 if LFile[int(j)] != '':
                     label = Label(text=LFile[int(j)], size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.65, 'center_y':.75-int(a)*0.6/N})
+                    pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
                 else:
                     label = Label(text=xname+'File ' + str(j+1) + ' Path', size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.65, 'center_y':.75-int(a)*0.6/N})
-
+                    pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
             if a == 0:
                 loadButton = [button]
                 loadLabel = [label]
@@ -313,9 +316,13 @@ class aligner(Screen):
                     pos_hint={'center_x':.5, 'center_y':.5}, color = (1, 0, 0, 1))
             FloatLayout.add_widget(self, align_label)
             button_moved = Button(text='Load Matrix', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load)
+            size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load,
+            background_down='app_data/butt_down.png',background_normal='app_data/butt_up.png',
+            color=(0, 0.033, 0.329, 1), border=(0, 0, 0, 0))
             button2_moved = Button(text='Resize Entries', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.6, 'center_y':0.1}, on_release=self.load_aligners)
+            size =('150dp','48dp'),pos_hint={'center_x':.6, 'center_y':0.1}, on_release=self.load_aligners,
+            background_down='app_data/butt_down.png',background_normal='app_data/butt_up.png',
+            color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             FloatLayout.add_widget(self, button2_moved)
             FloatLayout.add_widget(self, button_moved)
         # Check that they have the right number of columns, or else the program will crash
@@ -332,8 +339,10 @@ class aligner(Screen):
             # REALIZING NOW I DONT HAVE ANY FUNCTIONS TO REMOVE THESE BUTTONS,
             # PROBABLY DOESN'T MATTER, BUT THEORETICALLY COULD CAUSE A CRASH?
             button_moved = Button(text='Load Matrix', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load)
-            button2_moved = Button(text='Resize Entries', size_hint=(None, None),
+            size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load,
+            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
+            button2_moved = Button(text='Resize Entries', size_hint=(None, None),background_down='app_data/butt_down.png',
+            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
             size =('150dp','48dp'),pos_hint={'center_x':.6, 'center_y':0.1}, on_release=self.load_aligners)
             FloatLayout.add_widget(self, button2_moved)
             FloatLayout.add_widget(self, button_moved)
@@ -386,9 +395,11 @@ class aligner(Screen):
                     pos_hint={'center_x':.5, 'center_y':.5}, color = (1, 0, 0, 1))
             FloatLayout.add_widget(self, align_label)
             button_moved = Button(text='Load Matrix', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load)
+            size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load,
+            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             button2_moved = Button(text='Resize Entries', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.6, 'center_y':0.1}, on_release=self.load_aligners)
+            size =('150dp','48dp'),pos_hint={'center_x':.6, 'center_y':0.1}, on_release=self.load_aligners,
+            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             FloatLayout.add_widget(self, button2_moved)
             FloatLayout.add_widget(self, button_moved)
         else:
@@ -396,9 +407,11 @@ class aligner(Screen):
                 FloatLayout.remove_widget(self,align_label)
                 align_label.text = ''
             button_moved = Button(text='Load Matrix', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load)
+            size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load,
+            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             button2_moved = Button(text='Resize Entries', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.6, 'center_y':0.1}, on_release=self.load_aligners)
+            size =('150dp','48dp'),pos_hint={'center_x':.6, 'center_y':0.1}, on_release=self.load_aligners,
+            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             FloatLayout.add_widget(self, button2_moved)
             FloatLayout.add_widget(self, button_moved)
 
@@ -529,6 +542,7 @@ class Analysis(Screen):
         # Predefined, but poorly formatted... reformat here
         global labels
         global LOOPnum
+        global exp_drop
         if molecule == 'mhc':
             data = mat_coords[:,1:]
 
@@ -546,7 +560,7 @@ class Analysis(Screen):
                 int_dat = [int(x) for x in data[i]]
                 seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i])
             else:
-                seq = aimsLoad.Ig_loader(paths[i],labels[i],loops=LOOPnum)
+                seq = aimsLoad.Ig_loader(paths[i],labels[i],loops=LOOPnum,drop_degens=exp_drop)
             if i == 0:
                 seq_final = seq
                 seq_size = np.shape(seq)[1]
@@ -599,6 +613,8 @@ class Analysis(Screen):
         else:
             if LOOPnum == 6:
                 ax[0,0].set_xticklabels(['CDR1L','CDR2L','CDR3L','CDR1H','CDR2H','CDR3H'])
+            elif LOOPnum == 2:
+                ax[0,0].set_xticklabels(['CDR3H','CDR3L'])
             elif LOOPnum == 3:
                 ax[0,0].set_xticklabels(['CDR1','CDR2','CDR3'])
             elif LOOPnum == 1:
@@ -770,7 +786,7 @@ class Analysis(Screen):
         pos_sens1=aims.gen_dset_props(np.array(np.transpose(pg1)),stdev=False)
         pos_sens2=aims.gen_dset_props(np.array(np.transpose(pg2)),stdev=False)
 
-        fig, ax = pl.subplots(2, 1,squeeze=False,figsize=(14,10))
+        fig, ax = pl.subplots(2, 1,squeeze=False,figsize=(16,8))
         global LOOPnum
         global xtick_loc
 
@@ -794,10 +810,13 @@ class Analysis(Screen):
                 if LOOPnum == 6:
                     ax[x,y].set_xticks(xtick_loc)
                     ax[x,y].set_xticklabels(['CDR1L','CDR2L','CDR3L','CDR1H','CDR2H','CDR3H'])
-                if LOOPnum == 3:
+                elif LOOPnum == 3:
                     ax[x,y].set_xticks(xtick_loc)
                     ax[x,y].set_xticklabels(['CDR1','CDR2','CDR3'])
-                if LOOPnum == 1:
+                elif LOOPnum == 2:
+                    ax[x,y].set_xticks(xtick_loc)
+                    ax[x,y].set_xticklabels(['CDR3H','CDR3L'])
+                elif LOOPnum == 1:
                     ax[x,y].set_xticks(xtick_loc)
                     ax[x,y].set_xticklabels(['CDR Loop'])
         # Since there's only two now, just easier to hard code these...
@@ -895,6 +914,52 @@ class Analysis(Screen):
 
         self.img9.source = this_dir + '/' + dir_name + '/lda.png'
 
+    def get_shannon(self):
+        this_dir = os.getcwd()
+        global lda_checked
+        # The "things" are here to track number of entries in PCA groups
+        thing1 = True
+        thing2 = True
+        for i in np.arange(len(seqNameF)):
+            index = [column for column in pcaF.columns if seqNameF[i][0] in column]
+            # Alright so our new matrix, checked is "i" rows by three
+            # 0 is the "group 1", 1 is the "group 2"
+            if lda_checked[i,0]:
+                if thing1:
+                    pg1 = np.array(seq_MIf[index])
+                    thing1 = False
+                else:
+                    pg1 = np.hstack((pg1,seq_MIf[index]))
+            elif lda_checked[i,1]:
+                if thing2:
+                    pg2 = np.array(seq_MIf[index])
+                    thing2 = False
+                else:
+                    pg2 = np.hstack((pg2,seq_MIf[index]))
+
+        shannon1=aims.calculate_shannon(np.array(np.transpose(pg1)))[0]
+        shannon2=aims.calculate_shannon(np.array(np.transpose(pg2)))[0]
+
+        fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
+        global LOOPnum
+        global xtick_loc
+
+        ax[0,0].plot(shannon1)
+        ax[0,0].plot(shannon2)
+
+        ax[0,0].legend(['Group1', 'Group2'])
+
+        # Since there's only two now, just easier to hard code these...
+        pl.ylabel('Shannon Entropy (Bits)')
+
+        fig.savefig(this_dir + '/' + dir_name + '/shannon.pdf',format='pdf',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/shannon.png',format='png',dpi=500)
+        # And save the raw data
+        np.savetxt(this_dir + '/' + dir_name + '/shannon_mat1.dat',shannon1,fmt='%.3f')
+        np.savetxt(this_dir + '/' + dir_name + '/shannon_mat2.dat',shannon2,fmt='%.3f')
+
+        self.img10.source = this_dir + '/' + dir_name + '/shannon.png'
+
 class checker(Screen):
     # Need to redefine a different type of loading from the wild one above.
 
@@ -902,23 +967,23 @@ class checker(Screen):
         global check_status
         if 'check_run' not in globals():
             check_L1 = Label(text='Include in PCA',size_hint = (None, None), height = '48dp',
-                pos_hint = {'center_x': 0.15, 'center_y': 0.6})
+                pos_hint = {'center_x': 0.15, 'center_y': 0.6},font_name='app_data/Poppins-Medium.ttf')
             FloatLayout.add_widget(self, check_L1)
             # only add in these you have MORE than 2 options
             if len(labels) > 2:
                 check_L2 = Label(text='Exclude from PCA',size_hint = (None, None), height = '48dp',
-                pos_hint = {'center_x': 0.15, 'center_y': 0.45})
+                    pos_hint = {'center_x': 0.15, 'center_y': 0.45},font_name='app_data/Poppins-Medium.ttf')
                 FloatLayout.add_widget(self, check_L2)
                 check_L3 = Label(text='Exclude from Plot',size_hint = (None, None), height = '48dp',
-                    pos_hint = {'center_x': 0.15, 'center_y': 0.3})
+                    pos_hint = {'center_x': 0.15, 'center_y': 0.3},font_name='app_data/Poppins-Medium.ttf')
                 check_L4 = Label(text='(Optional)',size_hint = (None, None), height = '48dp',
-                    pos_hint = {'center_x': 0.15, 'center_y': 0.25})
+                    pos_hint = {'center_x': 0.15, 'center_y': 0.25},font_name='app_data/Poppins-Medium.ttf')
                 FloatLayout.add_widget(self, check_L3)
                 FloatLayout.add_widget(self, check_L4)
             
             for j in np.arange(len(labels)):
                 names = Label(text=labels[j], size_hint = (None, None), height = '48dp',
-                pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.70})
+                pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.70},font_name='app_data/Poppins-Medium.ttf')
                 if len(labels) > 2:
                     box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j),state = 'down',
                     pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6})
@@ -1041,10 +1106,14 @@ class aligner_ab(Screen):
         global LOOPnum
         if self.cdr1.active == True:
             LOOPnum = 1
+        elif self.cdr2.active == True:
+            LOOPnum = 2
         elif self.cdr3.active == True:
             LOOPnum = 3
         elif self.cdr6.active == True:
             LOOPnum = 6
+        global exp_drop
+        exp_drop = self.degen_drop.active
 
 ################## NOW WE MOVE INTO THE LDA/BINARY COMPARISON SECTION ###############
 class lda_binary(Screen):
@@ -1054,23 +1123,23 @@ class lda_binary(Screen):
         global lda_status
         if 'check_lda' not in globals():
             lda_L1 = Label(text='Binary Class 1',size_hint = (None, None), height = '48dp',
-                pos_hint = {'center_x': 0.15, 'center_y': 0.6})
+                pos_hint = {'center_x': 0.15, 'center_y': 0.6},font_name='app_data/Poppins-Medium.ttf')
             lda_L2 = Label(text='Binary Class 2',size_hint = (None, None), height = '48dp',
-                pos_hint = {'center_x': 0.15, 'center_y': 0.45})
+                pos_hint = {'center_x': 0.15, 'center_y': 0.45},font_name='app_data/Poppins-Medium.ttf')
             FloatLayout.add_widget(self, lda_L1)
             FloatLayout.add_widget(self, lda_L2)
 
             if len(labels) > 2:
                 lda_L3 = Label(text='Exclude from',size_hint = (None, None), height = '48dp',
-                    pos_hint = {'center_x': 0.15, 'center_y': 0.3})
+                    pos_hint = {'center_x': 0.15, 'center_y': 0.3},font_name='app_data/Poppins-Medium.ttf')
                 lda_L4 = Label(text='Binary Analysis',size_hint = (None, None), height = '48dp',
-                    pos_hint = {'center_x': 0.15, 'center_y': 0.25})
+                    pos_hint = {'center_x': 0.15, 'center_y': 0.25},font_name='app_data/Poppins-Medium.ttf')
                 FloatLayout.add_widget(self, lda_L3)
                 FloatLayout.add_widget(self, lda_L4)
             
             for j in np.arange(len(labels)):
                 names = Label(text=labels[j], size_hint = (None, None), height = '48dp',
-                pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.70})
+                pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.70},font_name='app_data/Poppins-Medium.ttf')
                 if j == 0:
                     box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),state = 'down',
                     pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6})
@@ -1146,10 +1215,11 @@ class AIMSApp(App):
         self.available_screens = ['app_data/screens/main_screen.kv','app_data/screens/mhc_1.kv',
         'app_data/screens/mhc_2.kv','app_data/screens/mhc_3.kv','app_data/screens/mhc_4.kv',
         'app_data/screens/mhc_5.kv','app_data/screens/mhc_6.kv','app_data/screens/mhc_7.kv',
-        'app_data/screens/mhc_8.kv','app_data/screens/mhc_9.kv',
+        'app_data/screens/mhc_8.kv','app_data/screens/mhc_9.kv','app_data/screens/mhc_10.kv',
         'app_data/screens/ab_1.kv','app_data/screens/ab_2.kv','app_data/screens/ab_3.kv',
         'app_data/screens/ab_4.kv','app_data/screens/ab_5.kv','app_data/screens/ab_6.kv',
-        'app_data/screens/ab_7.kv','app_data/screens/ab_8.kv','app_data/screens/ab_9.kv']
+        'app_data/screens/ab_7.kv','app_data/screens/ab_8.kv','app_data/screens/ab_9.kv',
+        'app_data/screens/ab_10.kv']
         global molecule
         molecule = ''
         self.go_next_screen(num = 0)
@@ -1166,7 +1236,7 @@ class AIMSApp(App):
         if molecule == 'ig':
             # somewhat janky way to do this, but should work.
             # Basically "skip" the mhc screens
-            num = num + 9
+            num = num + 10
         self.index = num
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm
@@ -1221,7 +1291,7 @@ class AIMSApp(App):
          # Needed to delete and define everything BEFORE loading screen
         global molecule
         molecule = 'ig'
-        self.index = 10
+        self.index = 11
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm
         sm.switch_to(screen, direction='left')
@@ -1232,7 +1302,7 @@ class AIMSApp(App):
         if molecule == 'ig':
             # somewhat janky way to do this, but should work.
             # Basically "skip" the mhc screens
-            num = num + 9
+            num = num + 10
         self.index = num
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm

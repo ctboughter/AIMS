@@ -25,23 +25,58 @@ Analysis:
     exp2: exp2
     exp3: exp3
 
+    Image:
+        source: 'app_data/square_background.png'
+        size: '350dp','525dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.81, 'center_y': 0.535}
+        keep_ratio: False
+        allow_stretch: True
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size: '450dp','25dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.30, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Image:
+        source: 'app_data/butt_down.png'
+        size: '350dp','25dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.30, 'center_y': 0.90}
+        keep_ratio: False
+        allow_stretch: True
+
     Label:
-        size_hint_y: None
-        pos_hint: {'center_x': 0.35, 'center_y': 0.95}
-        height: '32dp'
-        text: 'Step6 - Generate 3D Plot of PCA Analysis'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
 
     Label:
         size_hint_y: None
-        pos_hint: {'center_x': 0.35, 'center_y': 0.90}
+        pos_hint: {'center_x': 0.30, 'center_y': 0.95}
+        height: '32dp'
+        text: 'Step6 - Generate 3D Plot of PCA Analysis'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.30, 'center_y': 0.90}
         height: '32dp'
         text: '2D data saved in output directory'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.8, 'center_y': 0.9}
         height: '32dp'
         text:'Explained Variance (PC1-3)'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: exp1
@@ -49,6 +84,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.85}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: exp2
@@ -56,6 +92,7 @@ Analysis:
         pos_hint: {'center_x': 0.8, 'center_y': 0.85}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: exp3
@@ -63,18 +100,21 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.85}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.7, 'center_y': 0.75}
         height: '32dp'
         text:'PC1 Name'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.9, 'center_y': 0.75}
         height: '32dp'
         text:'PC1 Property'
+        font_name: 'app_data/Poppins-Medium.ttf'
     # Now lets have our placeholders for our top 5 props
     Label:
         id: n1
@@ -82,6 +122,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.65}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: w1
@@ -89,6 +130,7 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.65}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: n2
@@ -96,6 +138,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.60}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: w2
@@ -103,6 +146,7 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.60}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: n3
@@ -110,6 +154,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.55}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: w3
@@ -117,6 +162,7 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.55}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: n4
@@ -124,6 +170,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.50}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: w4
@@ -131,6 +178,7 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.50}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: n5
@@ -138,6 +186,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.45}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: w5
@@ -145,6 +194,7 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.45}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: n6
@@ -152,6 +202,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.40}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: w6
@@ -159,6 +210,7 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.40}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: n7
@@ -166,6 +218,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.35}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: w7
@@ -173,6 +226,7 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.35}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: n8
@@ -180,6 +234,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.30}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: w8
@@ -187,6 +242,7 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.30}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: n9
@@ -194,6 +250,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.25}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: w9
@@ -201,6 +258,7 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.25}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: n10
@@ -208,6 +266,7 @@ Analysis:
         pos_hint: {'center_x': 0.7, 'center_y': 0.20}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         id: w10
@@ -215,6 +274,7 @@ Analysis:
         pos_hint: {'center_x': 0.9, 'center_y': 0.20}
         height: '32dp'
         text:''
+        font_name: 'app_data/Poppins-Medium.ttf'
     # Then into the last bits of it...
     Image:
         id: screen6_img
@@ -228,6 +288,10 @@ Analysis:
         size: '150dp', '48dp'
         pos_hint: {'center_x': 0.5, 'center_y': 0.1}
         text: 'Do PCA'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
         on_release:
             root.do_pca()
             screen6_img.reload()
@@ -236,15 +300,23 @@ Analysis:
         id: next1.3
         size_hint: None, None
         size: '150dp', '48dp'
-        text: 'Previous'
+        text: '< Go Back'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
         pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
         on_release: app.go_prev_screen( num = 5 )
 
     Button:
         id: next1.3
         size_hint: None, None
         size: '150dp', '48dp'
-        text: 'Next'
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
         pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
         on_release: 
             app.go_next_screen( num = 7 )

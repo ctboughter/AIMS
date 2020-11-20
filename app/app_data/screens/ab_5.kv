@@ -1,28 +1,60 @@
 #:kivy 1.8.0
 checker:
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size: '450dp','25dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+
+    Image:
+        source: 'app_data/square_background.png'
+        size: '900dp','500dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.55}
+        keep_ratio: False
+        allow_stretch: True
+
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
         height: '32dp'
         text:'Step5 - Inclusion of Data for PCA Analysis'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.5, 'center_y': 0.85}
         height: '32dp'
         text:'If certain groups are excluded from the PCA, yet still plotted, a degree of similarity can be assessed.'
+        font_name: 'app_data/Poppins-Light.ttf'
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.5, 'center_y': 0.80}
         height: '32dp'
         text:'Excluding some data from plots may add clarity. If only analyzing two files, some options excluded.'
+        font_name: 'app_data/Poppins-Light.ttf'
 
     Button:
         id: next1.3
         size_hint: None, None
         size: '150dp', '48dp'
-        text: 'Previous'
+        text: '< Go Back'
+        color: (0.341, 0.392, 1, 1)
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        background_color: (0.773, 0.784, 0.796, 1)
         pos_hint: {'center_x': 0.15, 'center_y': 0.1}
         on_release: app.go_prev_screen( num = 4 )
 
@@ -30,8 +62,12 @@ checker:
         id: next1.3
         size_hint: None, None
         size: '150dp', '48dp'
-        text: 'Next'
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
         pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
         on_release: 
             root.check_checks()
             app.go_next_screen( num = 6 )

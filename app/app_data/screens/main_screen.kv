@@ -2,30 +2,53 @@
 intro:
     ig: ig
     mhc: mhc
+
+    Image:
+        source: 'app_data/butt_down.png'
+        size: '575dp','500dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.7}
+
     Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
         size_hint: .1, .1
-        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
-        text:'Welcome to the AIMS App!'
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
-        text:'Which type of molecules will you be analyzing? (Click one)'
+        color: 1, 1, 1, 1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.7}
+        text:'Please select a molecule type to analyze'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     Button:
         id: ig
         size_hint: None, None
+        border: (0, 0, 0, 0)
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
         text: 'Immunoglobulins (Ab/TCR)'
+        font_name: 'app_data/Poppins-Medium.ttf'
         size: '250dp', '96dp'
-        pos_hint: {'center_x': 0.3, 'center_y': 0.5}
+        pos_hint: {'center_x': 0.3, 'center_y': 0.33}
+        on_press:
+            color: (1.0, 1.0, 1.0, 1)
         on_release: 
             app.go_Ig()
 
     Button:
         id: mhc
         size_hint: None, None
+        border: (0, 0, 0, 0)
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
         text: 'MHC & MHC-Likes'
+        font_name: 'app_data/Poppins-Medium.ttf'
         size: '250dp', '96dp'
-        pos_hint: {'center_x': 0.7, 'center_y': 0.5}
+        pos_hint: {'center_x': 0.7, 'center_y': 0.33}
         on_release: 
             app.go_mhc()

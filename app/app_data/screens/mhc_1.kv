@@ -4,24 +4,54 @@ Root:
     next1_1: next1_1
     lessF: lessF
 
+    Image:
+        source: 'app_data/butt_up.png'
+        size: '350dp','25dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+
+    Image:
+        source: 'app_data/square_background.png'
+        size: '900dp','500dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.55}
+        keep_ratio: False
+        allow_stretch: True
+
     Label:
         size_hint: .1, .1
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
         text:'Step1 - Loading Files (MHC Version)'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
 
     Label:
         size_hint: None , None
         pos_hint: {'center_x': 0.5, 'center_y': 0.85}
         text:'Two FASTA Files Required, Additional Files Optional'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
     ################## K now to the next page. This is not great, but it is pretty
     Button:
         id: next1_1
         size_hint: None, None
         size: '150dp', '48dp'
-        text: 'Next'
+        text: 'Next >'
         pos_hint: {'center_x': 0.85, 'center_y': 0.1}
         disabled: True
+        color: (0.341, 0.392, 1, 1)
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        background_color: (0.773, 0.784, 0.796, 1)
         on_release: 
             app.go_next_screen(num = 2)
 
@@ -29,8 +59,12 @@ Root:
         id: next1.3
         size_hint: None, None
         size: '150dp', '48dp'
-        text: 'Previous'
+        text: '< Go Back'
+        color: (0.341, 0.392, 1, 1)
         pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        background_color: (0.773, 0.784, 0.796, 1)
         on_release: 
             root.reset_loadScrn()
             app.go_main_screen(num = 0)
@@ -41,6 +75,10 @@ Root:
         size: '150dp', '48dp'
         text: 'Add More FASTAs'
         pos_hint: {'center_x': 0.4, 'center_y': 0.1}
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
         on_release: root.more_fastas()
 
     Button:
@@ -49,5 +87,9 @@ Root:
         size: '150dp', '48dp'
         text: 'Remove FASTAs'
         pos_hint: {'center_x': 0.6, 'center_y': 0.1}
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color:  (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
         disabled: True
         on_release: root.less_fastas()
