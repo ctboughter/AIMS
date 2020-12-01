@@ -543,6 +543,7 @@ class Analysis(Screen):
         global labels
         global LOOPnum
         global exp_drop
+        global mat_size
         if molecule == 'mhc':
             data = mat_coords[:,1:]
 
@@ -914,6 +915,32 @@ class Analysis(Screen):
 
         self.img9.source = this_dir + '/' + dir_name + '/lda.png'
 
+    def get_freq(self):
+        this_dir = os.getcwd()
+        global freq1,freq2
+        global mat_size
+        AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
+
+        fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
+        x=ax[0,0].pcolormesh(freq1[:,1:]-freq2[:,1:],cmap=cm.PiYG)
+        pl.colorbar(x)
+        xax=pl.setp(ax,xticks=np.arange(20)+0.5,xticklabels=AA_key)
+
+        place=0
+        for i in mat_size:
+            place += i
+            pl.plot(np.arange(21),place*np.ones(21),'black')
+        
+        ax[0,0].legend(['Group1', 'Group2'])
+        # Since there's only two now, just easier to hard code these...
+        fig.savefig(this_dir + '/' + dir_name + '/frequency.pdf',format='pdf',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/frequency.png',format='png',dpi=500)
+        # And save the raw data
+        np.savetxt(this_dir + '/' + dir_name + '/frequency_mat1.dat',freq1,fmt='%.3f')
+        np.savetxt(this_dir + '/' + dir_name + '/frequency_mat2.dat',freq2,fmt='%.3f')
+
+        self.img11.source = this_dir + '/' + dir_name + '/frequency.png'
+
     def get_shannon(self):
         this_dir = os.getcwd()
         global lda_checked
@@ -937,8 +964,10 @@ class Analysis(Screen):
                 else:
                     pg2 = np.hstack((pg2,seq_MIf[index]))
 
-        shannon1=aims.calculate_shannon(np.array(np.transpose(pg1)))[0]
-        shannon2=aims.calculate_shannon(np.array(np.transpose(pg2)))[0]
+        global freq1
+        global freq2
+        shannon1,freq1=aims.calculate_shannon(np.array(np.transpose(pg1)))
+        shannon2,freq2=aims.calculate_shannon(np.array(np.transpose(pg2)))
 
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
         global LOOPnum
@@ -1216,10 +1245,11 @@ class AIMSApp(App):
         'app_data/screens/mhc_2.kv','app_data/screens/mhc_3.kv','app_data/screens/mhc_4.kv',
         'app_data/screens/mhc_5.kv','app_data/screens/mhc_6.kv','app_data/screens/mhc_7.kv',
         'app_data/screens/mhc_8.kv','app_data/screens/mhc_9.kv','app_data/screens/mhc_10.kv',
+        'app_data/screens/mhc_11.kv',
         'app_data/screens/ab_1.kv','app_data/screens/ab_2.kv','app_data/screens/ab_3.kv',
         'app_data/screens/ab_4.kv','app_data/screens/ab_5.kv','app_data/screens/ab_6.kv',
         'app_data/screens/ab_7.kv','app_data/screens/ab_8.kv','app_data/screens/ab_9.kv',
-        'app_data/screens/ab_10.kv']
+        'app_data/screens/ab_10.kv','app_data/screens/ab_11.kv']
         global molecule
         molecule = ''
         self.go_next_screen(num = 0)
@@ -1236,7 +1266,7 @@ class AIMSApp(App):
         if molecule == 'ig':
             # somewhat janky way to do this, but should work.
             # Basically "skip" the mhc screens
-            num = num + 10
+            num = num + 11
         self.index = num
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm
@@ -1291,7 +1321,7 @@ class AIMSApp(App):
          # Needed to delete and define everything BEFORE loading screen
         global molecule
         molecule = 'ig'
-        self.index = 11
+        self.index = 12
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm
         sm.switch_to(screen, direction='left')
@@ -1302,7 +1332,7 @@ class AIMSApp(App):
         if molecule == 'ig':
             # somewhat janky way to do this, but should work.
             # Basically "skip" the mhc screens
-            num = num + 10
+            num = num + 11
         self.index = num
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm

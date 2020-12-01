@@ -1,7 +1,7 @@
 #:kivy 1.8.0
 Analysis:
-    name: 'ab_10'
-    img10: screen10_img
+    name: 'mhc_11'
+    img11: screen11_img
 
     Image:
         source: 'app_data/butt_up.png'
@@ -13,7 +13,7 @@ Analysis:
 
     Image:
         source: 'app_data/butt_down.png'
-        size: '375dp','25dp'
+        size: '425dp','25dp'
         size_hint: None, None
         pos_hint: {'center_x': 0.5, 'center_y': 0.875}
         keep_ratio: False
@@ -30,7 +30,7 @@ Analysis:
         size_hint_y: None
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
         height: '32dp'
-        text: 'Step10 - Calculate Shannon Entropy'
+        text: 'Step11 - Visualize Amino Acid Frequencies'
         font_name: 'app_data/Poppins-Medium.ttf'
         color: 0, 0.033, 0.329, 1
 
@@ -38,11 +38,11 @@ Analysis:
         size_hint_y: None
         pos_hint: {'center_x': 0.5, 'center_y': 0.875}
         height: '32dp'
-        text: 'Shannon Entropy provides a proxy for diversity'
+        text: 'A simple difference in AA frequency between groups'
         font_name: 'app_data/Poppins-Medium.ttf'
 
     Image:
-        id: screen10_img
+        id: screen11_img
         size: '750dp','750dp'
         size_hint: None, None
         pos_hint: {'center_x': 0.5, 'center_y': 0.5}
@@ -52,14 +52,14 @@ Analysis:
         size_hint: None, None
         size: '150dp', '48dp'
         pos_hint: {'center_x': 0.5, 'center_y': 0.1}
-        text: 'Get Entropy'
+        text: 'Get Frequency'
         background_down: 'app_data/butt_down.png'
         background_normal: 'app_data/butt_up.png'
         color: (0, 0.033, 0.329, 1)
         border: (0, 0, 0, 0)
         on_release:
-            root.get_shannon()
-            screen10_img.reload()
+            root.get_freq()
+            screen11_img.reload()
 
     Button:
         id: next1.3
@@ -72,17 +72,4 @@ Analysis:
         background_color: (0.773, 0.784, 0.796, 1)
         pos_hint: {'center_x': 0.15, 'center_y': 0.1}
         on_release: 
-            app.go_prev_screen(num = 9)
-
-    Button:
-        id: next1.3
-        size_hint: None, None
-        size: '150dp', '48dp'
-        text: 'Next >'
-        background_normal: 'app_data/transparent.png'
-        background_down: 'app_data/transparent.png'
-        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
-        color: (0.341, 0.392, 1, 1)
-        background_color: (0.773, 0.784, 0.796, 1)
-        on_release: 
-            app.go_next_screen( num = 11 )
+            app.go_prev_screen(num = 10)

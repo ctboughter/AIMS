@@ -73,3 +73,16 @@ Analysis:
         pos_hint: {'center_x': 0.15, 'center_y': 0.1}
         on_release: 
             app.go_prev_screen(num = 9)
+
+    Button:
+        id: next1.3
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        on_release: 
+            app.go_next_screen( num = 11 )
