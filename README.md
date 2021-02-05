@@ -11,8 +11,7 @@ this peer-reviewed article: https://elifesciences.org/articles/61393
 
 When publishing analysis from this software, please cite:
 
-Boughter CT, Borowska MT, Guthmiller JJ, Bendelac A, Wilson PC, Roux B, Adams EJ. Biochemical Patterns of Antibody Polyreactivity Revealed Through a Bioinformatics-
- Based Analysis of CDR Loops. eLife. 2020. DOI: 10.7554/eLife.61393
+Boughter CT, Borowska MT, Guthmiller JJ, Bendelac A, Wilson PC, Roux B, Adams EJ. Biochemical Patterns of Antibody Polyreactivity Revealed Through a Bioinformatics-Based Analysis of CDR Loops. eLife. 2020. DOI: 10.7554/eLife.61393
 
 # Installation
 For more advanced users familiar with python modules, skip to step 5 to find a complete list of python dependencies. For beginners, these instructions will help install all necessary packages and programs needed to run the GUI. Mac/Linux OS preferred, these steps outline installation via Anaconda. Other installations should be supported but have not been tested. 
@@ -69,7 +68,7 @@ It should just work, and you'll be prompted with a bunch of [y]/n questions, for
 7) Finally, enter the command
 
 ```
- python AIMS.py
+ python aims.py
 ```
 From there, the GUI should open. A step by step instruction guide for GUI usage can be found in the included powerpoint.
 
