@@ -52,7 +52,8 @@ def get_sequence_dimension(re_poly):
 # I used to re-arrange the CDR loops for a more position-accurate
 # representation. In the current analysis, this isn't necessary.
 def gen_tcr_matrix(pre_poly,key=AA_num_key_new,binary=False,
-pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False):
+pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False,
+alignment = 'center'):
     # Do this so that 
     if giveSize == []:
         if binary:
@@ -91,18 +92,73 @@ pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False):
         poly_PCA=np.zeros([numClone,sequence_dim])
         for i in range(numClone): # For all of our polyreactive sequences...
             loop=0
-            for k in range(numLoop): # Scroll through all of the loops within a clone
+            for k in range(numLoop): # Scroll through all of the loops within a clone                
                 leng=len(re_poly[k][i]) #should be this if re-sampling
                 # the int clause below is how we center align
+
                 if type(max_len) == int:
-                    count = int((max_len-leng)/2.0)
+                    LoopMax = max_len
+                    loopBuff = 0
+                    if alignment.lower() == 'center':
+                        count = int((max_len-leng)/2.0)
+                    elif alignment.lower() == 'left':
+                        count = 0
+                    elif alignment.lower() == 'right':
+                        count = int(max_len - leng)
+                    elif alignment.lower() == 'bulge':
+                        count = 0
+                        b_count = 0 # b_count is bulge count
+                        bulge = leng - 8 # Minus 8 because we are conserving 4 AA on each end
+                        start_end = True # Have a trigger to start the end of the peptide
+                        bulge_cen = int((max_len - bulge)/2.0)
                 else:
-                    count=int((max_len[k]-leng)/2.0)+int(sum(max_len[:k]))
+                    # Can go ahead and replace these below... at some point
+                    # For now define them for the purpose of the bulge alignment below
+                    LoopMax = max_len[k]
+                    loopBuff = int(sum(max_len[:k]))
+                    if alignment.lower() == 'center':
+                        count=int((max_len[k]-leng)/2.0)+int(sum(max_len[:k]))
+                    elif alignment.lower() == 'left':
+                        count = int(0) + int(sum(max_len[:k]))
+                    elif alignment.lower() == 'right':
+                        count = int(max_len[k] - leng) + int(sum(max_len[:k]))
+                    elif alignment.lower() =='bulge':
+                        # If the loop is too short, just do center alignment
+                        if int(LoopMax) < int(10):
+                            count=int((max_len[k]-leng)/2.0)+int(sum(max_len[:k]))
+                        else:
+                            count = int(0) + int(sum(max_len[:k]))
+                            b_count = 0
+                            bulge = leng - 8
+                            start_end = True
+                            bulge_cen = int((max_len[k] - bulge)/2.0) + loopBuff
                 for m in re_poly[k][i]: # SO IS THIS ONE for bootstrapping
                     for j in range(len(key)):
                         if m==AA_key[j]:
-                            poly_PCA[i][count]=key[j]
-                            count=count+1
+                            # Can't be doing this for short sequences
+                            if alignment.lower() == 'bulge' and int(LoopMax) > int(10):
+                                if bulge < 0:
+                                    if count > 3 + loopBuff:
+                                        if start_end:
+                                            start_end = False
+                                            # So here is where we skip to the very end
+                                            count = LoopMax-4 + loopBuff
+                                else:
+                                    # Clearly don't need to do any of this stuff
+                                    # if we DONT have a bulge, so make exception
+                                    if count > 3 + loopBuff and count < LoopMax-4 +loopBuff:
+                                        if b_count == 0:
+                                            count = bulge_cen
+                                        b_count += 1
+                                    # This should then jump us over to the
+                                    # end once we get past the bulk
+                                    # ie, gaps should go around the bulk
+                                    if b_count > bulge:
+                                        if start_end:
+                                            count = LoopMax-4 + loopBuff
+                                            start_end = False
+                            poly_PCA[i][int(count)]=key[j]
+                            count += 1
                 loop=loop+1
         if binary:
             # Unfortunate naming here for the binary case
@@ -122,7 +178,6 @@ pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False):
         return(poly_PCA,max_lenp)
     else:
         return(poly_PCA)
-    
 def calculate_shannon(poly_PCA):
     clones,aas = np.shape(poly_PCA)
     prob_poly_full=np.zeros((clones,aas,21))
@@ -718,3 +773,116 @@ def parse_props(X_train,y_train,mat_size=100):
     #Think I can just delete all of the other shit and return max_diffs
     # Then I can just pull out those locations.
     return(max_diffs)
+
+def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
+    # How many sequences do we have?
+    numClone = len(pre_pep1)
+    final_pep1=[] # initialize a variable
+    # Allow for the possibility that you are doing a binary comparison
+    for re_pep in [pre_pep1, pre_pep2]:
+        numClone = len(re_pep[0])
+        ### FOR NOW, HARD CODE A PEPTIDE SEQUENCE LEN MAX OF 18
+        ### MIGHT NEED TO GET CREATIVE WITH THIS, MIGHT NEED TO
+        ### ADAPT IT AS WE GO, JUST IN CASE.
+        sequence_dim = 18
+        pep_PCA=np.zeros([numClone,sequence_dim])
+
+        for i in range(numClone): # For all of our polyreactive sequences...
+            # this 'count' variable is how we center align... probably 
+            # NOT what we want to do for the peptide analysis... except maybe
+            # for the 'betwixt anchors' section
+            count = int((sequence_dim - len(re_pep[0][i]))/2.0)
+
+            # Check the work of Guillame et al. [PNAS 2018]
+            # for some ideas on how to encode this matrix
+
+            # This loop is where we put these rules for encoding
+            # For now, let's make simple assumptions
+            # (pos 2 and last pos are anchors)
+            # BUT code up a "bulge" region that is centrally aligned
+            for m in re_pep[0][i]:
+                for j in range(len(key)):
+                    if m==AA_key[j]:
+                        pep_PCA[i][count]=key[j]
+                        count=count+1
+        if binary:
+            # Unfortunate naming here for the binary case
+            # but it is what it is...
+            if final_pep1 == []:
+                final_pep1 = pep_PCA
+            else:
+                final_pep2 = pep_PCA
+        else:
+            break
+    
+    if binary:
+        return(final_pep1,final_pep2)
+    else:
+        return(pep_PCA)
+###################################################
+# Peptide stuff:
+def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
+    # How many sequences do we have?
+    numClone = len(pre_pep1)
+    final_pep1=[] # initialize a variable
+    # Allow for the possibility that you are doing a binary comparison
+    for re_pep in [pre_pep1, pre_pep2]:
+        numClone = len(re_pep[0])
+        ### FOR NOW, HARD CODE A PEPTIDE SEQUENCE LEN MAX OF 18
+        ### MIGHT NEED TO GET CREATIVE WITH THIS, MIGHT NEED TO
+        ### ADAPT IT AS WE GO, JUST IN CASE.
+        sequence_dim = 14
+        pep_PCA=np.zeros([numClone,sequence_dim])
+
+        for i in range(numClone): # For all of our polyreactive sequences...
+
+            # Check the work of Guillame et al. [PNAS 2018]
+            # for some ideas on how to encode this matrix
+
+            # This loop is where we put these rules for encoding
+            # For now, let's make simple assumptions
+            # (pos 2 and last pos are anchors)
+            # BUT code up a "bulge" region that is centrally aligned
+            tot_len = len(re_pep[0][i])
+
+            # NOTE BULGE SHOULD ALWAYS BE > 0!!! 
+            # IF PEPTIDES OF LENGTH 8 EXIST, CHANGE TO -7
+            bulge = tot_len - 8
+            bulge_cen = int((sequence_dim - bulge)/2.0)
+
+            count = 0
+            b_count = 0
+            start_end = True
+            for m in re_pep[0][i]:
+                if count > 3 and count < sequence_dim-4:
+                    if b_count == 0:
+                        count = bulge_cen
+                        b_count = b_count + 1
+                    else:
+                        b_count = b_count + 1
+                # This should then jump us over to the
+                # end once we get past the bulk
+                # ie, gaps should go around the bulk
+                if b_count > bulge:
+                    if start_end:
+                        count = sequence_dim-4
+                        start_end = False
+
+                for j in range(len(key)):
+                    if m==AA_key[j]:
+                        pep_PCA[i][count]=key[j]
+                        count=count+1
+        if binary:
+            # Unfortunate naming here for the binary case
+            # but it is what it is...
+            if final_pep1 == []:
+                final_pep1 = pep_PCA
+            else:
+                final_pep2 = pep_PCA
+        else:
+            break
+    
+    if binary:
+        return(final_pep1,final_pep2)
+    else:
+        return(pep_PCA)
