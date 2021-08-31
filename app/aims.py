@@ -861,7 +861,7 @@ class Analysis(Screen):
         num1 = np.shape(pg1)[1]
         num2 = np.shape(pg2)[1]
         #x,y,MatrixSize = aims.gen_tcr_matrix(pg1,pre_mono=pg2,binary=True,return_Size=True)
-        acc_all,weights,cols,indices,mda_all,dropped = classy.do_linear_split(pg1, pg2, matSize = numVects)
+        acc_all,weights,cols,indices,mda_all = classy.do_linear_split(pg1, pg2, matSize = numVects)
         # Seaborn plots look nicer for these LDA figures
         import seaborn as sns
         fig = pl.figure(figsize = (12, 12))

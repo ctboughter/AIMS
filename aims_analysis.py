@@ -4,6 +4,8 @@ import matplotlib.pyplot as pl
 import math
 import matplotlib as mpl
 from matplotlib import cm
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.metrics import accuracy_score
 
 # Define some initial stuff and import analysis functions:
 #AA_key_old=['A','G','L','M','F','W','K','Q','E','S','P','V','I','C','Y','H','R','N','D','T']
@@ -691,7 +693,7 @@ def gen_1Chain_matrix(pre_poly,key=AA_num_key_new,binary=False,pre_mono=[],giveS
         return(poly_PCA)
 
 #### K.I.S.S. just make a new script to get the big matrix:
-def getBig(mono_PCA):
+def getBig(mono_PCA, norm = True):
     # Try to maximize differences across the properties by looking at patterning...
     # Redifine "properties" because I was getting some weird errors...
     properties=np.zeros((62,20))
@@ -702,9 +704,10 @@ def getBig(mono_PCA):
     props = properties[2:]
 
     # Re-normalize the properties for use in the matrix...
-    for i in np.arange(len(props)):
-        props[i] = props[i]-np.average(props[i])
-        props[i] = props[i]/np.linalg.norm(props[i])
+    if norm:
+        for i in np.arange(len(props)):
+            props[i] = props[i]-np.average(props[i])
+            props[i] = props[i]/np.linalg.norm(props[i])
 
     mono_pca_NEW = mono_PCA
 
@@ -886,3 +889,85 @@ def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
         return(final_pep1,final_pep2)
     else:
         return(pep_PCA)
+
+###### NEW PARALLEL PROCESSING SECTION! ##############
+# Not for running parallel processing (that's a pain)
+# Instead, do it for input/output for multiprocessing.
+def gen_splits(splitMat, splitSize = 100):
+    s1 = np.arange(0,np.shape(splitMat)[1],splitSize)
+    s2 = np.arange(splitSize,np.shape(splitMat)[1],splitSize)
+    if len(s1) != len(s2):
+        if len(s1) > len(s2):
+            s2 = np.hstack((s2,np.shape(splitMat)[1]))
+        else:
+            s1 = np.hstack((s1,np.shape(splitMat)[1]))
+    final = np.transpose(np.vstack((s1,s2)))
+    return(final)
+
+def compile_MP(bigass_pre, pg1, pg2, final_size = 10):
+    # Alright this concatenate function should put the final product in the correct form
+    total_mat = np.concatenate(bigass_pre, axis = 0)
+    prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
+    prop_list_new = ['Hot'+str(b+1) for b in range(46)]
+
+    prop_names = prop_list_old + prop_list_new
+    num_locs = int(np.shape(total_mat)[1]/61)
+    Bigass_names = []
+    for i in prop_names:
+        for j in np.arange(num_locs):
+            Bigass_names = Bigass_names + [ i + '-' + str(j) ]
+
+    # FROM HERE DOWN, JUST DO_LINEAR SPLIT SCRIPT
+    full_big = pandas.DataFrame(total_mat,columns = Bigass_names)
+    drop_zeros = [column for column in full_big.columns if all(full_big[column] == 0 )]
+    y = full_big.drop(full_big[drop_zeros], axis=1)
+    #z = y.corr().abs()
+    z_pre = np.abs(np.corrcoef(np.transpose(y)))
+    z = pandas.DataFrame(z_pre,columns=y.columns,index=y.columns)
+    # Select upper triangle of correlation matrix
+    upper = z.where(np.triu(np.ones(z.shape), k=1).astype(bool))
+
+    to_drop = [column for column in upper.columns if ( any(upper[column] > 0.75) ) ]
+
+    parsed_mat = y.drop(y[to_drop], axis=1)
+
+    Y_train = np.hstack((np.ones(np.shape(pg1)[1]),2*np.ones(np.shape(pg2)[1])))
+    ID_big = pandas.concat([full_big,pandas.DataFrame(Y_train,columns=['ID'])],axis=1)
+
+    #####################################################
+    dframe_IDed = pandas.concat([parsed_mat,pandas.DataFrame(Y_train,columns=['ID'])],axis=1)
+    mono_prop_masks = dframe_IDed[dframe_IDed['ID'] == 1.0]
+    poly_prop_masks = dframe_IDed[dframe_IDed['ID'] == 2.0]
+    mono_prop_line = np.average(mono_prop_masks,axis = 0)
+    poly_prop_line = np.average(poly_prop_masks,axis = 0)
+    # remove that one extra ID column here
+    line_diff = (poly_prop_line - mono_prop_line)[:-1]
+    # Take the absolute value of the differences
+    parsed_vect_len = np.shape(parsed_mat)[1]
+    diff_dframe = pandas.DataFrame(np.abs(line_diff).reshape(1,parsed_vect_len),columns = parsed_mat.columns)
+    sort_diff = diff_dframe.sort_values(0,axis = 1)
+    top_diffs = sort_diff.values[:,-final_size:]
+    top_names = sort_diff.columns[-final_size:]
+    ######################################################
+
+    train_mat = np.array(parsed_mat[top_names])
+
+    clf_all = LinearDiscriminantAnalysis(n_components=1,solver='svd')    
+    mda_all=clf_all.fit_transform(train_mat,Y_train)
+
+    # NOTE, THIS IS LIKE A "BEST CASE-SCENARIO" Accuracy
+    # BUT, this does tell you how to best discriminate two classes.
+    p_all = clf_all.predict(train_mat)
+    acc_all = accuracy_score(Y_train.flatten(),p_all)
+    # Give me the coefficients
+    weights=clf_all.coef_
+    return(ID_big, weights, acc_all, mda_all, parsed_mat, top_names)
+
+def split_reshape(ID_big, matShape, total_props = 61):
+    seq1_bigProps = np.array(ID_big[ID_big['ID'] == 1.0])[:,:-1]
+    seq2_bigProps = np.array(ID_big[ID_big['ID'] == 2.0])[:,:-1]
+    cloneNum1 = len(seq1_bigProps)
+    cloneNum2 = len(seq2_bigProps)
+    seq1_bigReshape = seq1_bigProps.reshape(cloneNum1,total_props,matShape)
+    seq2_bigReshape = seq2_bigProps.reshape(cloneNum2,total_props,matShape)
+    return(seq1_bigReshape,seq2_bigReshape)
