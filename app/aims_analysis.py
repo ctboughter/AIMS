@@ -4,6 +4,8 @@ import matplotlib.pyplot as pl
 import math
 import matplotlib as mpl
 from matplotlib import cm
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.metrics import accuracy_score
 
 # Define some initial stuff and import analysis functions:
 #AA_key_old=['A','G','L','M','F','W','K','Q','E','S','P','V','I','C','Y','H','R','N','D','T']
@@ -52,7 +54,8 @@ def get_sequence_dimension(re_poly):
 # I used to re-arrange the CDR loops for a more position-accurate
 # representation. In the current analysis, this isn't necessary.
 def gen_tcr_matrix(pre_poly,key=AA_num_key_new,binary=False,
-pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False):
+pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False,
+alignment = 'center'):
     # Do this so that 
     if giveSize == []:
         if binary:
@@ -91,18 +94,73 @@ pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False):
         poly_PCA=np.zeros([numClone,sequence_dim])
         for i in range(numClone): # For all of our polyreactive sequences...
             loop=0
-            for k in range(numLoop): # Scroll through all of the loops within a clone
+            for k in range(numLoop): # Scroll through all of the loops within a clone                
                 leng=len(re_poly[k][i]) #should be this if re-sampling
                 # the int clause below is how we center align
+
                 if type(max_len) == int:
-                    count = int((max_len-leng)/2.0)
+                    LoopMax = max_len
+                    loopBuff = 0
+                    if alignment.lower() == 'center':
+                        count = int((max_len-leng)/2.0)
+                    elif alignment.lower() == 'left':
+                        count = 0
+                    elif alignment.lower() == 'right':
+                        count = int(max_len - leng)
+                    elif alignment.lower() == 'bulge':
+                        count = 0
+                        b_count = 0 # b_count is bulge count
+                        bulge = leng - 8 # Minus 8 because we are conserving 4 AA on each end
+                        start_end = True # Have a trigger to start the end of the peptide
+                        bulge_cen = int((max_len - bulge)/2.0)
                 else:
-                    count=int((max_len[k]-leng)/2.0)+int(sum(max_len[:k]))
+                    # Can go ahead and replace these below... at some point
+                    # For now define them for the purpose of the bulge alignment below
+                    LoopMax = max_len[k]
+                    loopBuff = int(sum(max_len[:k]))
+                    if alignment.lower() == 'center':
+                        count=int((max_len[k]-leng)/2.0)+int(sum(max_len[:k]))
+                    elif alignment.lower() == 'left':
+                        count = int(0) + int(sum(max_len[:k]))
+                    elif alignment.lower() == 'right':
+                        count = int(max_len[k] - leng) + int(sum(max_len[:k]))
+                    elif alignment.lower() =='bulge':
+                        # If the loop is too short, just do center alignment
+                        if int(LoopMax) < int(10):
+                            count=int((max_len[k]-leng)/2.0)+int(sum(max_len[:k]))
+                        else:
+                            count = int(0) + int(sum(max_len[:k]))
+                            b_count = 0
+                            bulge = leng - 8
+                            start_end = True
+                            bulge_cen = int((max_len[k] - bulge)/2.0) + loopBuff
                 for m in re_poly[k][i]: # SO IS THIS ONE for bootstrapping
                     for j in range(len(key)):
                         if m==AA_key[j]:
-                            poly_PCA[i][count]=key[j]
-                            count=count+1
+                            # Can't be doing this for short sequences
+                            if alignment.lower() == 'bulge' and int(LoopMax) > int(10):
+                                if bulge < 0:
+                                    if count > 3 + loopBuff:
+                                        if start_end:
+                                            start_end = False
+                                            # So here is where we skip to the very end
+                                            count = LoopMax-4 + loopBuff
+                                else:
+                                    # Clearly don't need to do any of this stuff
+                                    # if we DONT have a bulge, so make exception
+                                    if count > 3 + loopBuff and count < LoopMax-4 +loopBuff:
+                                        if b_count == 0:
+                                            count = bulge_cen
+                                        b_count += 1
+                                    # This should then jump us over to the
+                                    # end once we get past the bulk
+                                    # ie, gaps should go around the bulk
+                                    if b_count > bulge:
+                                        if start_end:
+                                            count = LoopMax-4 + loopBuff
+                                            start_end = False
+                            poly_PCA[i][int(count)]=key[j]
+                            count += 1
                 loop=loop+1
         if binary:
             # Unfortunate naming here for the binary case
@@ -122,7 +180,6 @@ pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False):
         return(poly_PCA,max_lenp)
     else:
         return(poly_PCA)
-    
 def calculate_shannon(poly_PCA):
     clones,aas = np.shape(poly_PCA)
     prob_poly_full=np.zeros((clones,aas,21))
@@ -636,7 +693,7 @@ def gen_1Chain_matrix(pre_poly,key=AA_num_key_new,binary=False,pre_mono=[],giveS
         return(poly_PCA)
 
 #### K.I.S.S. just make a new script to get the big matrix:
-def getBig(mono_PCA):
+def getBig(mono_PCA, norm = True):
     # Try to maximize differences across the properties by looking at patterning...
     # Redifine "properties" because I was getting some weird errors...
     properties=np.zeros((62,20))
@@ -647,9 +704,10 @@ def getBig(mono_PCA):
     props = properties[2:]
 
     # Re-normalize the properties for use in the matrix...
-    for i in np.arange(len(props)):
-        props[i] = props[i]-np.average(props[i])
-        props[i] = props[i]/np.linalg.norm(props[i])
+    if norm:
+        for i in np.arange(len(props)):
+            props[i] = props[i]-np.average(props[i])
+            props[i] = props[i]/np.linalg.norm(props[i])
 
     mono_pca_NEW = mono_PCA
 
@@ -718,3 +776,198 @@ def parse_props(X_train,y_train,mat_size=100):
     #Think I can just delete all of the other shit and return max_diffs
     # Then I can just pull out those locations.
     return(max_diffs)
+
+def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
+    # How many sequences do we have?
+    numClone = len(pre_pep1)
+    final_pep1=[] # initialize a variable
+    # Allow for the possibility that you are doing a binary comparison
+    for re_pep in [pre_pep1, pre_pep2]:
+        numClone = len(re_pep[0])
+        ### FOR NOW, HARD CODE A PEPTIDE SEQUENCE LEN MAX OF 18
+        ### MIGHT NEED TO GET CREATIVE WITH THIS, MIGHT NEED TO
+        ### ADAPT IT AS WE GO, JUST IN CASE.
+        sequence_dim = 18
+        pep_PCA=np.zeros([numClone,sequence_dim])
+
+        for i in range(numClone): # For all of our polyreactive sequences...
+            # this 'count' variable is how we center align... probably 
+            # NOT what we want to do for the peptide analysis... except maybe
+            # for the 'betwixt anchors' section
+            count = int((sequence_dim - len(re_pep[0][i]))/2.0)
+
+            # Check the work of Guillame et al. [PNAS 2018]
+            # for some ideas on how to encode this matrix
+
+            # This loop is where we put these rules for encoding
+            # For now, let's make simple assumptions
+            # (pos 2 and last pos are anchors)
+            # BUT code up a "bulge" region that is centrally aligned
+            for m in re_pep[0][i]:
+                for j in range(len(key)):
+                    if m==AA_key[j]:
+                        pep_PCA[i][count]=key[j]
+                        count=count+1
+        if binary:
+            # Unfortunate naming here for the binary case
+            # but it is what it is...
+            if final_pep1 == []:
+                final_pep1 = pep_PCA
+            else:
+                final_pep2 = pep_PCA
+        else:
+            break
+    
+    if binary:
+        return(final_pep1,final_pep2)
+    else:
+        return(pep_PCA)
+###################################################
+# Peptide stuff:
+def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
+    # How many sequences do we have?
+    numClone = len(pre_pep1)
+    final_pep1=[] # initialize a variable
+    # Allow for the possibility that you are doing a binary comparison
+    for re_pep in [pre_pep1, pre_pep2]:
+        numClone = len(re_pep[0])
+        ### FOR NOW, HARD CODE A PEPTIDE SEQUENCE LEN MAX OF 18
+        ### MIGHT NEED TO GET CREATIVE WITH THIS, MIGHT NEED TO
+        ### ADAPT IT AS WE GO, JUST IN CASE.
+        sequence_dim = 14
+        pep_PCA=np.zeros([numClone,sequence_dim])
+
+        for i in range(numClone): # For all of our polyreactive sequences...
+
+            # Check the work of Guillame et al. [PNAS 2018]
+            # for some ideas on how to encode this matrix
+
+            # This loop is where we put these rules for encoding
+            # For now, let's make simple assumptions
+            # (pos 2 and last pos are anchors)
+            # BUT code up a "bulge" region that is centrally aligned
+            tot_len = len(re_pep[0][i])
+
+            # NOTE BULGE SHOULD ALWAYS BE > 0!!! 
+            # IF PEPTIDES OF LENGTH 8 EXIST, CHANGE TO -7
+            bulge = tot_len - 8
+            bulge_cen = int((sequence_dim - bulge)/2.0)
+
+            count = 0
+            b_count = 0
+            start_end = True
+            for m in re_pep[0][i]:
+                if count > 3 and count < sequence_dim-4:
+                    if b_count == 0:
+                        count = bulge_cen
+                        b_count = b_count + 1
+                    else:
+                        b_count = b_count + 1
+                # This should then jump us over to the
+                # end once we get past the bulk
+                # ie, gaps should go around the bulk
+                if b_count > bulge:
+                    if start_end:
+                        count = sequence_dim-4
+                        start_end = False
+
+                for j in range(len(key)):
+                    if m==AA_key[j]:
+                        pep_PCA[i][count]=key[j]
+                        count=count+1
+        if binary:
+            # Unfortunate naming here for the binary case
+            # but it is what it is...
+            if final_pep1 == []:
+                final_pep1 = pep_PCA
+            else:
+                final_pep2 = pep_PCA
+        else:
+            break
+    
+    if binary:
+        return(final_pep1,final_pep2)
+    else:
+        return(pep_PCA)
+
+###### NEW PARALLEL PROCESSING SECTION! ##############
+# Not for running parallel processing (that's a pain)
+# Instead, do it for input/output for multiprocessing.
+def gen_splits(splitMat, splitSize = 100):
+    s1 = np.arange(0,np.shape(splitMat)[1],splitSize)
+    s2 = np.arange(splitSize,np.shape(splitMat)[1],splitSize)
+    if len(s1) != len(s2):
+        if len(s1) > len(s2):
+            s2 = np.hstack((s2,np.shape(splitMat)[1]))
+        else:
+            s1 = np.hstack((s1,np.shape(splitMat)[1]))
+    final = np.transpose(np.vstack((s1,s2)))
+    return(final)
+
+def compile_MP(bigass_pre, pg1, pg2, final_size = 10):
+    # Alright this concatenate function should put the final product in the correct form
+    total_mat = np.concatenate(bigass_pre, axis = 0)
+    prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
+    prop_list_new = ['Hot'+str(b+1) for b in range(46)]
+
+    prop_names = prop_list_old + prop_list_new
+    num_locs = int(np.shape(total_mat)[1]/61)
+    Bigass_names = []
+    for i in prop_names:
+        for j in np.arange(num_locs):
+            Bigass_names = Bigass_names + [ i + '-' + str(j) ]
+
+    # FROM HERE DOWN, JUST DO_LINEAR SPLIT SCRIPT
+    full_big = pandas.DataFrame(total_mat,columns = Bigass_names)
+    drop_zeros = [column for column in full_big.columns if all(full_big[column] == 0 )]
+    y = full_big.drop(full_big[drop_zeros], axis=1)
+    #z = y.corr().abs()
+    z_pre = np.abs(np.corrcoef(np.transpose(y)))
+    z = pandas.DataFrame(z_pre,columns=y.columns,index=y.columns)
+    # Select upper triangle of correlation matrix
+    upper = z.where(np.triu(np.ones(z.shape), k=1).astype(bool))
+
+    to_drop = [column for column in upper.columns if ( any(upper[column] > 0.75) ) ]
+
+    parsed_mat = y.drop(y[to_drop], axis=1)
+
+    Y_train = np.hstack((np.ones(np.shape(pg1)[1]),2*np.ones(np.shape(pg2)[1])))
+    ID_big = pandas.concat([full_big,pandas.DataFrame(Y_train,columns=['ID'])],axis=1)
+
+    #####################################################
+    dframe_IDed = pandas.concat([parsed_mat,pandas.DataFrame(Y_train,columns=['ID'])],axis=1)
+    mono_prop_masks = dframe_IDed[dframe_IDed['ID'] == 1.0]
+    poly_prop_masks = dframe_IDed[dframe_IDed['ID'] == 2.0]
+    mono_prop_line = np.average(mono_prop_masks,axis = 0)
+    poly_prop_line = np.average(poly_prop_masks,axis = 0)
+    # remove that one extra ID column here
+    line_diff = (poly_prop_line - mono_prop_line)[:-1]
+    # Take the absolute value of the differences
+    parsed_vect_len = np.shape(parsed_mat)[1]
+    diff_dframe = pandas.DataFrame(np.abs(line_diff).reshape(1,parsed_vect_len),columns = parsed_mat.columns)
+    sort_diff = diff_dframe.sort_values(0,axis = 1)
+    top_diffs = sort_diff.values[:,-final_size:]
+    top_names = sort_diff.columns[-final_size:]
+    ######################################################
+
+    train_mat = np.array(parsed_mat[top_names])
+
+    clf_all = LinearDiscriminantAnalysis(n_components=1,solver='svd')    
+    mda_all=clf_all.fit_transform(train_mat,Y_train)
+
+    # NOTE, THIS IS LIKE A "BEST CASE-SCENARIO" Accuracy
+    # BUT, this does tell you how to best discriminate two classes.
+    p_all = clf_all.predict(train_mat)
+    acc_all = accuracy_score(Y_train.flatten(),p_all)
+    # Give me the coefficients
+    weights=clf_all.coef_
+    return(ID_big, weights, acc_all, mda_all, parsed_mat, top_names)
+
+def split_reshape(ID_big, matShape, total_props = 61):
+    seq1_bigProps = np.array(ID_big[ID_big['ID'] == 1.0])[:,:-1]
+    seq2_bigProps = np.array(ID_big[ID_big['ID'] == 2.0])[:,:-1]
+    cloneNum1 = len(seq1_bigProps)
+    cloneNum2 = len(seq2_bigProps)
+    seq1_bigReshape = seq1_bigProps.reshape(cloneNum1,total_props,matShape)
+    seq2_bigReshape = seq2_bigProps.reshape(cloneNum2,total_props,matShape)
+    return(seq1_bigReshape,seq2_bigReshape)

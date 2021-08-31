@@ -1,7 +1,6 @@
 from Bio import AlignIO
 from Bio.Seq import Seq
 from Bio import SeqIO
-from Bio.Alphabet import IUPAC
 from Bio import pairwise2
 from Bio.pairwise2 import format_alignment
 import numpy as np
@@ -226,3 +225,42 @@ def Ig_loader(fastapath,label,loops=6,drop_degens = False):
 
     return(final_Df)
 #####################################################################################
+def pep_loader(fastapath,label, scrape=False, start_label=0):
+
+    thing = True
+    xxx1 = fastapath.rfind('/')
+    xxx2 = fastapath.rfind('.csv')
+    yyy = fastapath[xxx1+1:xxx2]
+    a = 0
+    # Alright so for now there are abolsutely no standards here
+    if scrape:
+        csv_file = pandas.read_csv(fastapath,sep=',',header=0)
+        # Need to do this because not every file calls their "MHC class"
+        # the same thing. Some must predict, some must control for it...
+        headers = csv_file.columns
+        data = csv_file['search_hit']
+        # I believe the MHC allele is ALWAYS the last column,
+        # but I should probably make sure of that at some point
+        allele = csv_file[headers[-1]]
+    else:
+        data = pandas.read_csv(fastapath,sep=',',header=1)['sequence']
+    for i in np.arange(len(data)):
+        # Replace 
+        titleV = label + '_' + str(a+start_label)
+        
+        if thing:
+            final_title = [titleV]
+            thing = False
+        else:
+            final_title = final_title + [titleV]
+        a = a+1
+
+    finalDF = np.transpose(pandas.DataFrame(np.array(data)))
+    finalDF.columns=final_title
+
+    if scrape:
+        finalAllele = np.transpose(pandas.DataFrame(np.array(allele)))
+        finalAllele.columns=final_title
+        return(finalDF,finalAllele)
+    else:
+        return(finalDF)

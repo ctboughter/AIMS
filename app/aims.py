@@ -861,7 +861,7 @@ class Analysis(Screen):
         num1 = np.shape(pg1)[1]
         num2 = np.shape(pg2)[1]
         #x,y,MatrixSize = aims.gen_tcr_matrix(pg1,pre_mono=pg2,binary=True,return_Size=True)
-        acc_all,weights,cols,indices,mda_all,dropped = classy.do_linear_split(pg1, pg2, matSize = numVects)
+        bigF,weights,acc_all,mda_all,final,top_names = classy.do_linear_split(pg1, pg2, matSize = numVects)
         # Seaborn plots look nicer for these LDA figures
         import seaborn as sns
         fig = pl.figure(figsize = (12, 12))
@@ -881,7 +881,7 @@ class Analysis(Screen):
 
         # Need to put acc_all somewhere on the screen
         indices_topProps = np.argsort(abs(weights))
-        compile_Props = np.vstack((cols[indices],weights))
+        compile_Props = np.vstack((top_names,weights))
         final_pc1 = compile_Props[:,indices_topProps[0][-10:]]
         np.savetxt(this_dir + '/' + dir_name + '/lda_weights.dat',compile_Props,fmt='%s')
 
@@ -922,7 +922,9 @@ class Analysis(Screen):
         AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
 
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
-        x=ax[0,0].pcolormesh(freq1[:,1:]-freq2[:,1:],cmap=cm.PiYG)
+        freqMax = np.max(freq1[:,1:]-freq2[:,1:]); freqMin = np.min(freq1[:,1:]-freq2[:,1:])
+        freqBound = max(abs(freqMax),abs(freqMin))
+        x=ax[0,0].pcolormesh(freq1[:,1:]-freq2[:,1:],cmap=cm.PiYG,vmin = -freqBound, vmax = freqBound)
         pl.colorbar(x)
         xax=pl.setp(ax,xticks=np.arange(20)+0.5,xticklabels=AA_key)
 
