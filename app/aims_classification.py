@@ -121,7 +121,7 @@ manuscript_arrange=False,special='', alignment = 'center', norm = True):
     mono_pca_stack = np.hstack([mono_PCA,BIG_mono_final])
     return(mono_pca_stack)
 
-def do_classy_mda(ALL_mono, ALL_poly, matsize = 100, OneChain = False, special= 'peptide',
+def do_classy_mda(ALL_mono, ALL_poly, matsize = 100, OneChain = False, special= '',
                   xVal = 'kfold',ridCorr = False, feat_sel = 'none', classif = 'mda'):
         
     mono_dim=np.shape(ALL_mono)[1]
@@ -232,7 +232,7 @@ def do_classy_mda(ALL_mono, ALL_poly, matsize = 100, OneChain = False, special= 
         #print(acc_all)
     return(acc_fin)
 
-def apply_pretrained_LDA(bigass_mono,did_drop,indices,weights):
+def apply_pretrained_LDA(bigass_mono,top_names,weights):
     # Take already bigass matrices and drop entries to look indentical to 
     # Need to have all these pre-defined variables in there
     prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4',
@@ -248,11 +248,7 @@ def apply_pretrained_LDA(bigass_mono,did_drop,indices,weights):
 
     x = pandas.DataFrame(bigass_mono,columns = Bigass_names)
 
-    dropped = x.drop(x[did_drop], axis=1)
-    uncorr_mat = np.array(dropped)
-
-    # The original indices were 
-    pre_final = uncorr_mat[:,indices]
+    pre_final = x[top_names]
     final_apply=np.matmul(pre_final,np.transpose(weights))
 
     return(final_apply)
@@ -261,7 +257,7 @@ def apply_pretrained_LDA(bigass_mono,did_drop,indices,weights):
 # BEST DISCRIMINATE THE DATASET
 # Add in a new module for "if it's a peptide"
 def do_linear_split(test_mono,test_poly,ridCorr = True,giveSize=[],matSize=75,
-manuscript_arrange=False,pca_split=False,special = '', return_big = False):
+manuscript_arrange=False,pca_split=False,special = ''):
     num_mono = np.shape(test_mono)[1]
     num_poly = np.shape(test_poly)[1]
 
@@ -290,21 +286,20 @@ manuscript_arrange=False,pca_split=False,special = '', return_big = False):
         full_big = pandas.DataFrame(total_mat,columns = Bigass_names)
         drop_zeros = [column for column in full_big.columns if all(full_big[column] == 0 )]
         y = full_big.drop(full_big[drop_zeros], axis=1)
-        # SEEMS LIKE THIS pandas.corr is EXCEPTIONALLY slow
         #z = y.corr().abs()
-        # Instead, use numpy corrcoef:
-        # Might be even faster for it to not be in pandas, but don't want to fight much
         z_pre = np.abs(np.corrcoef(np.transpose(y)))
         z = pandas.DataFrame(z_pre,columns=y.columns,index=y.columns)
         # Select upper triangle of correlation matrix
-        upper = z.where(np.triu(np.ones(z.shape), k=1).astype(np.bool))
+        upper = z.where(np.triu(np.ones(z.shape), k=1).astype(bool))
+
         to_drop = [column for column in upper.columns if ( any(upper[column] > 0.75) ) ]
+
         final = y.drop(y[to_drop], axis=1)
         X_train = np.array(final); cols = final.columns
 
-        did_drop = to_drop + drop_zeros
     else:
         X_train = total_mat; cols = np.array(Bigass_names)
+        final = pandas.DataFrame(total_mat,columns = Bigass_names)
 
     Y_train = np.hstack((np.ones(num_mono),2*np.ones(num_poly)))
     
@@ -312,11 +307,27 @@ manuscript_arrange=False,pca_split=False,special = '', return_big = False):
         pca = PCA(n_components=matSize, svd_solver='full')
         train_mat=pca.fit_transform(X_train)
     else:
-        # TURNS OUT PARSE PROPS IS SLOW... MIGHT WANT A NEW OPTION IN HERE
-        Class_mat = aims.parse_props(np.transpose(X_train),Y_train,matSize)
-        indices = [int(a) for a in Class_mat[:,1]]
+        dframe_IDed = pandas.concat([final,pandas.DataFrame(Y_train,columns=['ID'])],axis=1)
+        mono_prop_masks = dframe_IDed[dframe_IDed['ID'] == 1.0]
+        poly_prop_masks = dframe_IDed[dframe_IDed['ID'] == 2.0]
+        mono_prop_line = np.average(mono_prop_masks,axis = 0)
+        poly_prop_line = np.average(poly_prop_masks,axis = 0)
+        # remove that one extra ID column here
+        line_diff = (poly_prop_line - mono_prop_line)[:-1]
+        # Take the absolute value of the differences
+        parsed_vect_len = np.shape(X_train)[1]
+        diff_dframe = pandas.DataFrame(np.abs(line_diff).reshape(1,parsed_vect_len),columns = final.columns)
+        sort_diff = diff_dframe.sort_values(0,axis = 1)
+        top_diffs = sort_diff.values[:,-matSize:]
+        top_names = sort_diff.columns[-matSize:]
+    ######################################################
 
-        train_mat = X_train[:,indices]
+        train_mat = np.array(final[top_names])
+        # TURNS OUT PARSE PROPS IS SLOW... MIGHT WANT A NEW OPTION IN HERE
+        #Class_mat = aims.parse_props(np.transpose(X_train),Y_train,matSize)
+        #indices = [int(a) for a in Class_mat[:,1]]
+
+        #train_mat = X_train[:,indices]
 
     clf_all = LinearDiscriminantAnalysis(n_components=1,solver='svd')    
     mda_all=clf_all.fit_transform(train_mat,Y_train)
@@ -328,14 +339,13 @@ manuscript_arrange=False,pca_split=False,special = '', return_big = False):
     # Give me the coefficients
     weights=clf_all.coef_
     
-    if ridCorr and pca_split == False and return_big == False:
-        return(acc_all,weights,cols,indices,mda_all)
-    elif ridCorr and pca_split ==False and return_big:
-        return(acc_all,weights,cols,indices,mda_all, full_big)
+    if ridCorr and pca_split == False:
+        bigF = pandas.concat([full_big,pandas.DataFrame(Y_train,columns=['ID'])],axis=1)
+        return(bigF,weights,acc_all,mda_all,final,top_names)
     elif pca_split:
-        return(acc_all,mda_all)
+        return(train_mat,acc_all,mda_all)
     else:
-        return(acc_all,weights,cols,indices,mda_all)
+        return(dframe_IDed,weights,acc_all,mda_all,final)
 
 ######### SAME AS DO_CLASSY_MDA, BUT NOW SPECIFY TEST-TRAIN ##########################
 # Inputs should be complete matrices, not split into poly vs non-poly

@@ -935,8 +935,6 @@ def compile_MP(bigass_pre, pg1, pg2, final_size = 10):
     ID_big = pandas.concat([full_big,pandas.DataFrame(Y_train,columns=['ID'])],axis=1)
 
     #####################################################
-    # THIS IS INDEED THE INCREDIBLY SLOW BIT. EVERYTHING ELSE TAKES ONLY ~100s COMBINED
-    #Class_mat = aims.parse_props(np.transpose(np.array(final)),Y_train,10)
     dframe_IDed = pandas.concat([parsed_mat,pandas.DataFrame(Y_train,columns=['ID'])],axis=1)
     mono_prop_masks = dframe_IDed[dframe_IDed['ID'] == 1.0]
     poly_prop_masks = dframe_IDed[dframe_IDed['ID'] == 2.0]
@@ -963,4 +961,13 @@ def compile_MP(bigass_pre, pg1, pg2, final_size = 10):
     acc_all = accuracy_score(Y_train.flatten(),p_all)
     # Give me the coefficients
     weights=clf_all.coef_
-    return(ID_big, weights, acc_all, mda_all)
+    return(ID_big, weights, acc_all, mda_all, parsed_mat, top_names)
+
+def split_reshape(ID_big, matShape, total_props = 61):
+    seq1_bigProps = np.array(ID_big[ID_big['ID'] == 1.0])[:,:-1]
+    seq2_bigProps = np.array(ID_big[ID_big['ID'] == 2.0])[:,:-1]
+    cloneNum1 = len(seq1_bigProps)
+    cloneNum2 = len(seq2_bigProps)
+    seq1_bigReshape = seq1_bigProps.reshape(cloneNum1,total_props,matShape)
+    seq2_bigReshape = seq2_bigProps.reshape(cloneNum2,total_props,matShape)
+    return(seq1_bigReshape,seq2_bigReshape)
