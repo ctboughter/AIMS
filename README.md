@@ -4,9 +4,7 @@
 The primary goal of AIMS is to identify discriminating factors between two distinct sets of immune molecules. Currently the software can be applied to
 immunoglobulin (Ig) molecules such as T cell receptors and antibodies, and major histocompatibility complex (MHC) and MHC-like molecules. 
 AIMS is a python package distributed in both a notebook and GUI format. Those wishing to use the notebooks
-just need to download this repository and the necessary packages identified in AIMS/app/install_packages.sh. Those
-wishing to use the GUI, particularly those relatively new to programming, can follow the installation instructions below.
-Example data is provided in AIMS/app/ab_testData and AIMS/app/mhc_testData, and an example of an application of AIMS can be seen in
+just need to download this repository and the necessary packages identified in AIMS/app/install_packages.sh. There is further information regarding these notebooks in the "Jupyter Notebooks" section below. Those wishing to use the GUI, particularly those relatively new to programming, can follow the installation instructions below. Example data is provided in AIMS/app/ab_testData and AIMS/app/mhc_testData, and an example of an application of AIMS can be seen in
 this peer-reviewed article: https://elifesciences.org/articles/61393
 
 When publishing analysis from this software, please cite:
@@ -45,11 +43,11 @@ Use terminal to navigate into the newly downloaded folder. If you've never used 
 ```
 ./app/install_packages.sh 
 ```
+NOTE: if you want to use Python 3.9, do not run this command or install packages in code block below. Instead, see closed issue #1 for proper package versions
 
 It should just work, and you'll be prompted with a bunch of [y]/n questions, for which you should consistently hit "y" then the "enter key" for [Note to more advanced users, you shouldn't need to use these EXACT package versions, save for Biophython and SciKit-Learn. However, using these versions should guarantee everything is functional]. If this doesn't work, and you get some kind of an error instead of the prompts, type each of these lines (or copy/paste) one by one, hitting enter after each one:
 
 ```
- conda install -c conda-forge kivy=1.11.1
  conda install -c conda-forge biopython=1.76
  conda install -c conda-forge scipy=1.4.1
  conda install pandas=1.0.3
@@ -57,6 +55,10 @@ It should just work, and you'll be prompted with a bunch of [y]/n questions, for
  conda install matplotlib=3.1.3
  conda install scikit-learn=0.22.1
  conda install seaborn=0.10.1
+ #conda install -c conda-forge kivy=1.11.1
+ # Note, it seems that kivy 1.11.1 is buggy on newer macOS
+ # If you install kivy last, you can use kivy 2.0.0 instead
+ conda install -c conda-forge kivy=2.0.0
 ```
 
 6) Everything should now be installed, you should now be able to open up the software! Navigate to the app in terminal by typing: 
@@ -71,6 +73,19 @@ It should just work, and you'll be prompted with a bunch of [y]/n questions, for
  python aims.py
 ```
 From there, the GUI should open. A step by step instruction guide for GUI usage can be found in the included powerpoint.
+
+# Jupyter Notebooks (found in notebooks/AIMS_\*.ipynb)
+While the GUI is useful for those with little to no experience using python, unfortunately given the time commitment required to create a functional GUI the available features incorporated lag behind significantly. For the most up-to-date analysis pipelines, fastest code, and maximal flexibility, it is recommended that the Jupyter Notebooks are used. I have tried to explain step by step within the notebooks how to run them. It may take a while, but reading through the markdowns and comments should give the user a good feel for what each code block is doing. If using Anaconda-Navigator, you should just be able to launch Jupyter Lab from the main application. If using terminal, you can install Jupyter lab using 
+
+```
+conda install -c conda-forge jupyterlab
+```
+
+and start using the notebooks by navigating to the notebooks directory in terminal and typing in
+
+```
+jupyter lab
+```
 
 # Acknowledgements
 This initial stable build has only been possible through a highly collaborative effort focused on creating a functional pipeline with the incorporated features necessary for thorough repertoire analysis. The following people have made major contributions to this project:
