@@ -55,6 +55,7 @@ It should just work, and you'll be prompted with a bunch of [y]/n questions, for
  conda install matplotlib=3.1.3
  conda install scikit-learn=0.22.1
  conda install seaborn=0.10.1
+ # NOTE to new users, don't copy and paste lines with "#" in front of them
  #conda install -c conda-forge kivy=1.11.1
  # Note, it seems that kivy 1.11.1 is buggy on newer macOS
  # If you install kivy last, you can use kivy 2.0.0 instead
@@ -72,10 +73,10 @@ It should just work, and you'll be prompted with a bunch of [y]/n questions, for
 ```
  python aims.py
 ```
-From there, the GUI should open. A step by step instruction guide for GUI usage can be found in the included powerpoint.
+From there, the GUI should open. A step by step instruction guide for GUI usage can be found in the included powerpoint. If you don't want to be bothered reading instructions, the app *should* prevent most major errors. If a "next" button is grayed out, make sure you've pressed all of the analysis buttons on the bottom of the current AIMS app screen.
 
 # Jupyter Notebooks (found in notebooks/AIMS_\*.ipynb)
-While the GUI is useful for those with little to no experience using python, unfortunately given the time commitment required to create a functional GUI the available features incorporated lag behind significantly. For the most up-to-date analysis pipelines, fastest code, and maximal flexibility, it is recommended that the Jupyter Notebooks are used. I have tried to explain step by step within the notebooks how to run them. It may take a while, but reading through the markdowns and comments should give the user a good feel for what each code block is doing. If using Anaconda-Navigator, you should just be able to launch Jupyter Lab from the main application. If using terminal, you can install Jupyter lab using 
+While the GUI is useful for those with little to no experience using python, unfortunately given the time commitment required to create a functional GUI the available features incorporated can lag behind significantly. For the most up-to-date analysis pipelines, fastest code, and maximal flexibility, it is recommended that the Jupyter Notebooks are used. I have tried to explain step by step within the notebooks how to run them. It may take a while, but reading through the markdowns and comments should give the user a good feel for what each code block is doing. If using Anaconda-Navigator, you should just be able to launch Jupyter Lab from the main application. If using terminal, you can install Jupyter lab using 
 
 ```
 conda install -c conda-forge jupyterlab

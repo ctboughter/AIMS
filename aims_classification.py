@@ -105,10 +105,10 @@ manuscript_arrange=False,special='', alignment = 'center', norm = True):
         mono_PCAF = mono_PCA[:,4:-4]
         mono_MIF = mono_MI[:,4:-4]
     else:
-        mono_PCAf = mono_PCA
+        mono_PCAF = mono_PCA
         mono_MIF = mono_MI
 
-    BIG_mono = aims.getBig(mono_MI, norm = norm)
+    BIG_mono = aims.getBig(mono_MIF, norm = norm)
     amono,bmono,cmono = np.shape(BIG_mono)
 
     #SO WE CANT JUST USE NP.RESHAPE
@@ -118,7 +118,7 @@ manuscript_arrange=False,special='', alignment = 'center', norm = True):
     for i in np.arange(bmono):
         BIG_mono_final[i] = BIG_mono[:,i,:].reshape(amono*cmono)
 
-    mono_pca_stack = np.hstack([mono_PCA,BIG_mono_final])
+    mono_pca_stack = np.hstack([mono_PCAF,BIG_mono_final])
     return(mono_pca_stack)
 
 def do_classy_mda(ALL_mono, ALL_poly, matsize = 100, OneChain = False, special= '',

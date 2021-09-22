@@ -1,3 +1,4 @@
+from numpy.core.numeric import ones
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.factory import Factory
@@ -67,11 +68,32 @@ class Root(Screen):
                 else:
                     xxname = 'FASTA '
                     xname = 'FASTA '
-                button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
-                on_release=lambda x = int(j):self.show_load(win = x),
-                background_down='app_data/butt_down.png', background_normal='app_data/butt_up.png',
-                color=(0, 0.033, 0.329, 1),border=(0,0,0,0))
+                
+                if LFile == ['']:
+                    if j > 0:
+                        button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                        pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                        on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
+                        background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
+                        disabled = True)
+                    else:
+                        button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                        pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                        on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
+                        background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
+                else:
+                    if j > len(LFile):
+                        button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                        pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                        on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
+                        background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
+                        disabled = True)
+                    else:
+                        button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                        pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                        on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
+                        background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
+                
                 # What an absolute fucking nightmare solution the line above... works though
                 # Need to make sure we don't overwrite the labels every time we load shit in
                 if j >= len(LFile):
@@ -114,8 +136,34 @@ class Root(Screen):
         else:
             FASTA_L = win2
 
+    # Basically just recreate the entire screen every time we want to 
+    # add more fastas. Kind of a pain, but it works.
+    def check_one(self):
+        global onlyONE
+        global LFile
+        if self.tbutt1.state == 'down':
+            for i in loadButton[1:]:
+                i.disabled = True
+            onlyONE = True
+            if LFile[0] == '':
+                return
+            else:
+                if len(LFile) > 1:
+                    LFile = [LFile[0]]
+                self.next1_1.disabled = False
+        elif self.tbutt2.state == 'down':
+            onlyONE = False
+            if LFile != ['']:
+                loadButton[1].disabled = False
+            if len(LFile) >= 2:
+                return
+            else:
+                self.next1_1.disabled = True
+            return
+
     # win is how we will try to keep track of using the right button...
     def show_load(self, win = 2):
+        
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup, fas1 = self.do_thing(win2 = win))
         self._popup = Popup(title="Load file", content=content,
                             size_hint=(0.9, 0.9))
@@ -132,6 +180,9 @@ class Root(Screen):
         # Need to have two separate options because we move from Kivy defined buttons to
         # python defined buttons. I handle those slightly differently.
         loadLabel[FASTA_L].text = path1
+        if len(loadButton) > FASTA_L+1: 
+            loadButton[FASTA_L+1].disabled = False
+        self.check_one()
 
         if len(LFile) >= 2:
             self.next1_1.disabled = False 
@@ -142,9 +193,6 @@ class Root(Screen):
         global dir_name
         self.text1 = self.v_input1.text
         dir_name = self.text1
-
-    # Basically just recreate the entire screen every time we want to 
-    # add more fastas. Kind of a pain, but it works.
 
     def reset_loadScrn(self):
         # need to do something to let people know they need to re-enter everything...
@@ -187,10 +235,31 @@ class Root(Screen):
             else:
                 xxname = 'FASTA '
                 xname = 'FASTA '
-            button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-            pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
-            on_release=lambda x = int(j):self.show_load(win = x),
-            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
+
+            if LFile == ['']:
+                if j > 0:
+                    button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    on_release=lambda x = int(j):self.show_load(win = x),
+                    background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
+                    disabled = True)
+                else:
+                    button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    on_release=lambda x = int(j):self.show_load(win = x),
+                    background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
+            else:
+                if j > len(LFile):
+                    button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    on_release=lambda x = int(j):self.show_load(win = x),
+                    background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
+                    disabled = True)
+                else:
+                    button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    on_release=lambda x = int(j):self.show_load(win = x),
+                    background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             # What an absolute fucking nightmare solution the line above... works though
             # Need to make sure we don't overwrite the labels every time we load shit in
             if j >= len(LFile):
@@ -243,10 +312,32 @@ class Root(Screen):
             else:
                 xxname = 'FASTA '
                 xname = 'FASTA '
-            button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-            pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
-            on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
-            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0,0,0,0))
+
+            if LFile == ['']:
+                if j > 0:
+                    button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
+                    background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
+                    disabled = True)
+                else:
+                    button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
+                    background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
+            else:
+                if j > len(LFile):
+                    button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
+                    background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
+                    disabled = True)
+                else:
+                    button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
+                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
+                    background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
+            
             # What an absolute fucking nightmare solution the line above... works though
             # Need to make sure we don't overwrite the labels every time we load shit in
             if j >= len(LFile):
@@ -387,71 +478,58 @@ class aligner(Screen):
         global align_label
         global alignEnt
         global thing_loaded
+        self.next1_2.disabled = False
         # Literally just here so we can have these messages or not
-        if len(LFile) < 2:
-            if align_label.text == 'ERROR: MUST LOAD AT LEAST TWO FILES':
-                FloatLayout.remove_widget(self,align_label) 
-            align_label = Label(text='ERROR: MUST LOAD AT LEAST TWO FILES', size_hint=(0.4, 0.2),
-                    pos_hint={'center_x':.5, 'center_y':.5}, color = (1, 0, 0, 1))
-            FloatLayout.add_widget(self, align_label)
-            button_moved = Button(text='Load Matrix', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load,
-            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
-            button2_moved = Button(text='Resize Entries', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.6, 'center_y':0.1}, on_release=self.load_aligners,
-            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
-            FloatLayout.add_widget(self, button2_moved)
-            FloatLayout.add_widget(self, button_moved)
-        else:
-            if align_label.text == 'ERROR: MUST LOAD AT LEAST TWO FILES':
-                FloatLayout.remove_widget(self,align_label)
-                align_label.text = ''
-            button_moved = Button(text='Load Matrix', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load,
-            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
-            button2_moved = Button(text='Resize Entries', size_hint=(None, None),
-            size =('150dp','48dp'),pos_hint={'center_x':.6, 'center_y':0.1}, on_release=self.load_aligners,
-            background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
-            FloatLayout.add_widget(self, button2_moved)
-            FloatLayout.add_widget(self, button_moved)
 
-            # If we're running this script again, we've almost certainly gotta remove it...
-            if alignEnt != '':
-                for entry in alignEnt:
-                    for j in entry:
-                        FloatLayout.remove_widget(self, j)
+        if align_label.text == 'ERROR: MUST LOAD AT LEAST TWO FILES':
+            FloatLayout.remove_widget(self,align_label)
+            align_label.text = ''
+        button_moved = Button(text='Load Matrix', size_hint=(None, None),
+        size =('150dp','48dp'),pos_hint={'center_x':.4, 'center_y':0.1}, on_release=self.show_load,
+        background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
+        button2_moved = Button(text='Resize Entries', size_hint=(None, None),
+        size =('150dp','48dp'),pos_hint={'center_x':.6, 'center_y':0.1}, on_release=self.load_aligners,
+        background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
+        FloatLayout.add_widget(self, button2_moved)
+        FloatLayout.add_widget(self, button_moved)
 
-            for j in np.arange(len(LFile)):
-                if LFile[j] != '':
-                    startname = [y.end() for y in re.finditer('/',LFile[j])]
-                    endname = [y.start() for y in re.finditer('.fasta',LFile[j])]
-                    if len(endname) == 0:
-                        endname = [int(len(LFile[j])-1)]
-                    name = LFile[j][int(startname[len(startname)-1]):int(endname[0])]
-                else:
-                    name = 'File ' + str(j+1)
-                textinput0 = TextInput(text=name, multiline=False, size_hint = (None, None),write_tab =False,
-                pos_hint = {'center_x': 0.1, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='125dp')
-                textinput1 = TextInput(text='', multiline=False, size_hint = (None, None),write_tab = False,
-                pos_hint = {'center_x': 0.25, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='42dp')
-                textinput2 = TextInput(text='', multiline=False, size_hint = (None, None),write_tab = False,
-                pos_hint = {'center_x': 0.4, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='42dp')
-                textinput3 = TextInput(text='', multiline=False, size_hint = (None, None),write_tab = False,
-                pos_hint = {'center_x': 0.55, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='42dp')
-                textinput4 = TextInput(text='', multiline=False, size_hint = (None, None),write_tab = False,
-                pos_hint = {'center_x': 0.7, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='42dp')
-                textinput5 = TextInput(text='', multiline=False, size_hint = (None, None),write_tab = False,
-                pos_hint = {'center_x': 0.85, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='42dp')
-                
-                if int(j) == 0:
-                    alignEnt = [[textinput0,textinput1,textinput2,textinput3,textinput4,textinput5]]
-                else:
-                    alignEnt = alignEnt + [[textinput0,textinput1,textinput2,textinput3,textinput4,textinput5]]
-            # Before adding in all of the new ones
+        # If we're running this script again, we've almost certainly gotta remove it...
+        if alignEnt != '':
             for entry in alignEnt:
                 for j in entry:
-                    FloatLayout.add_widget(self, j)
-            thing_loaded = True
+                    FloatLayout.remove_widget(self, j)
+
+        for j in np.arange(len(LFile)):
+            if LFile[j] != '':
+                startname = [y.end() for y in re.finditer('/',LFile[j])]
+                endname = [y.start() for y in re.finditer('.fasta',LFile[j])]
+                if len(endname) == 0:
+                    endname = [int(len(LFile[j])-1)]
+                name = LFile[j][int(startname[len(startname)-1]):int(endname[0])]
+            else:
+                name = 'File ' + str(j+1)
+            textinput0 = TextInput(text=name, multiline=False, size_hint = (None, None),write_tab =False,
+            pos_hint = {'center_x': 0.1, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='125dp')
+            textinput1 = TextInput(text='', multiline=False, size_hint = (None, None),write_tab = False,
+            pos_hint = {'center_x': 0.25, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='42dp')
+            textinput2 = TextInput(text='', multiline=False, size_hint = (None, None),write_tab = False,
+            pos_hint = {'center_x': 0.4, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='42dp')
+            textinput3 = TextInput(text='', multiline=False, size_hint = (None, None),write_tab = False,
+            pos_hint = {'center_x': 0.55, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='42dp')
+            textinput4 = TextInput(text='', multiline=False, size_hint = (None, None),write_tab = False,
+            pos_hint = {'center_x': 0.7, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='42dp')
+            textinput5 = TextInput(text='', multiline=False, size_hint = (None, None),write_tab = False,
+            pos_hint = {'center_x': 0.85, 'center_y': 0.60-int(j)*0.5/N}, height = '32dp',width='42dp')
+            
+            if int(j) == 0:
+                alignEnt = [[textinput0,textinput1,textinput2,textinput3,textinput4,textinput5]]
+            else:
+                alignEnt = alignEnt + [[textinput0,textinput1,textinput2,textinput3,textinput4,textinput5]]
+        # Before adding in all of the new ones
+        for entry in alignEnt:
+            for j in entry:
+                FloatLayout.add_widget(self, j)
+        thing_loaded = True
 
     # So now we're done with our loading stuff, let's wrap things up and get ready to move on...
     def make_path(self):
@@ -478,8 +556,10 @@ class aligner(Screen):
                         mat_coords = mat_pre
                     else:
                         mat_coords = np.vstack((mat_coords,mat_pre))
-
-        labels = mat_coords[:,0]
+        if molecule == 'mhc' and onlyONE:
+            labels = mat_coords[0]
+        else:
+            labels = mat_coords[:,0]
         # When you go back this far, make sure we recreate the checkbox screen
         if 'check_run' in globals():
             # So intelligently, if you define something as a global variable
@@ -500,7 +580,6 @@ class Analysis(Screen):
     def get_matrix(self):
         # Ok so here is where I will actually call my python code
         # For now, print all the shit
-
         #########################################
         # DEFINE PLOT PARAMETERS:
         font = {'family' : 'Arial',
@@ -513,6 +592,17 @@ class Analysis(Screen):
         rcParams['ytick.color'] = COLOR
 
         rc('font', **font)
+
+        # Custom colormap code from: https://stackoverflow.com/questions/49367144/modify-matplotlib-colormap
+        import matplotlib as mpl
+        upper = mpl.cm.jet(np.arange(256))
+        lower = np.ones((int(256/4),4))
+        for i in range(3):
+            lower[:,i] = np.linspace(1, upper[0,i], lower.shape[0])
+
+        global cmap
+        cmap = np.vstack(( lower, upper ))
+        cmap = mpl.colors.ListedColormap(cmap, name='myColorMap', N=cmap.shape[0])
         ##########################################
         global seq_MIf
         global seqNameF
@@ -534,23 +624,20 @@ class Analysis(Screen):
         # '/Users/boughter/Desktop/AIMS/gui/AIMS/mhc_testData/UDA_seqs.fasta']
         #################### DEBUG VERSION ONLY #########################
 
-        if len(paths) < 2:
-            self.img1.source = this_dir + '/app_data/error_load.png'
-            return()
         AA_num_key = aims.get_props()[1]
         # Labels will always be predefined for Abs
         # Predefined, but poorly formatted... reformat here
+        global align
         global labels
         global LOOPnum
         global exp_drop
         global mat_size
+        global ID
         if molecule == 'mhc':
-            data = mat_coords[:,1:]
-
-        if len(labels) != len(paths):
-            # need to make a new error message for this.
-            self.img1.source = this_dir + '/app_data/error_load.png'
-            return()
+            if onlyONE:
+                data = mat_coords[1:]
+            else:
+                data = mat_coords[:,1:]
 
         for i in np.arange(len(paths)):
             if molecule == 'mhc':
@@ -558,14 +645,30 @@ class Analysis(Screen):
                 #    self.img1.source = this_dir + '/app_data/error_pos.png'
                 #    return()
                 # turn data into an integer.
-                int_dat = [int(x) for x in data[i]]
-                seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i])
+                if onlyONE:
+                    int_dat = [int(x) for x in data]
+                    seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i])
+                else:
+                    int_dat = [int(x) for x in data[i]]
+                    seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i])
             else:
-                seq = aimsLoad.Ig_loader(paths[i],labels[i],loops=LOOPnum,drop_degens=exp_drop)
+                # My first ever error handling! Works pretty well (for now)
+                # Probably need more "exceptions" here for formatting errors
+                try:
+                    seq = aimsLoad.Ig_loader(paths[i],labels[i],loops=LOOPnum,drop_degens=exp_drop)
+                except pandas.errors.ParserError:
+                    # Alrighty we want a popup here on this screen
+                    popup = Popup(title='ERROR (Click Anywhere to Dismiss)',
+                    content=Label(text='Wrong # loops, go back and redefine'),
+                    size_hint=(None, None), size=(600, 600))
+                    popup.open()
+                    return
+            ID_pre = np.ones(np.shape(seq)[1])
             if i == 0:
                 seq_final = seq
                 seq_size = np.shape(seq)[1]
                 seqNameF = labels[i]
+                ID = i*ID_pre
                 if molecule == 'mhc':
                     seq_keyF = seq_key
                 mat_size = aims.get_sequence_dimension(np.array(seq))[0]
@@ -573,6 +676,7 @@ class Analysis(Screen):
                 seq_final = pandas.concat([seq_final,seq],axis = 1)
                 seqNameF = np.vstack((seqNameF,labels[i]))
                 seq_size = np.vstack((seq_size,np.shape(seq)[1]))
+                ID = np.hstack((ID, i*ID_pre))
                 if molecule == 'mhc':
                     seq_keyF = np.hstack((seq_keyF,seq_key))
                 mat_size2 = aims.get_sequence_dimension(np.array(seq))[0]
@@ -583,17 +687,35 @@ class Analysis(Screen):
                 else:
                     max_lenp = int(max(mat_size,mat_size2))
                 mat_size = max_lenp       
-        seq_MI = aims.gen_tcr_matrix(np.array(seq_final),key = AA_num_key, giveSize = mat_size)
+        # Alright if we have gotten this far, bring the "next" button back online
+        self.next1_3.disabled = False
+        # Obviously need to define this somewhere in the software
+        if molecule == 'ig':
+            if self.alnc.active:
+                align = 'center'
+            elif self.alnb.active:
+                align = 'bulge'
+            elif self.alnl.active:
+                align = 'left'
+            elif self.alnr.active:
+                align = 'right'
+        else:
+            align = 'center'
+        seq_MI = aims.gen_tcr_matrix(np.array(seq_final),key = AA_num_key, giveSize = mat_size, alignment = align)
         # Convert our MI matrix to a pandas dataframe
         seq_MIf = pandas.DataFrame(np.transpose(seq_MI),columns = seq_final.columns)
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
         ax[0,0].imshow(seq_MI, interpolation='nearest', aspect='auto',cmap=cm.jet)
+        pl.close()
 
         # Need to try to draw lines separating the distinct groups...
         seq_locs = 0
-        for i in np.arange(len(seq_size)-1):
-            seq_locs = seq_locs + seq_size[i]
-            ax[0,0].plot(np.arange(len(np.transpose(seq_MI))),np.ones(len(np.transpose(seq_MI)))*seq_locs,'white',linewidth = 3)
+        if onlyONE:
+            pass
+        else:
+            for i in np.arange(len(seq_size)-1):
+                seq_locs = seq_locs + seq_size[i]
+                ax[0,0].plot(np.arange(len(np.transpose(seq_MI))),np.ones(len(np.transpose(seq_MI)))*seq_locs,'white',linewidth = 3)
 
         # Alright now we want to change xlabel to actually talk about the features...
         ax[0,0].set_ylabel('Sequence Number')
@@ -620,6 +742,11 @@ class Analysis(Screen):
                 ax[0,0].set_xticklabels(['CDR1','CDR2','CDR3'])
             elif LOOPnum == 1:
                 ax[0,0].set_xticklabels(['CDR Loop'])
+            
+            Numclones = np.shape(seq_MIf)[1]
+            if type(mat_size) != int:
+                for i in np.arange(len(mat_size)-1):
+                    ax[0,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(Numclones),np.arange(Numclones),'white',linewidth = 3)
 
         # NOTE need to make sure that I do something so that files are not overwritten...
         if os.path.exists(this_dir +'/' + dir_name):
@@ -635,191 +762,367 @@ class Analysis(Screen):
 
         self.img1.source = this_dir + '/' + dir_name + '/matrix.png'
 
-    def get_props(self):
-        global pcaF
-        pca_props = aims.gen_clone_props(np.array(np.transpose(seq_MIf)))
-        pcaF = pandas.DataFrame(pca_props,columns = seq_MIf.columns)
-        fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
-        x_axis = x_axis = np.array([-0.2,0.9,2,3.1])
-        # Need to have some kind of color wheel to replace this...
-        #colors = ['purple','green','black','orange']
-        for i in np.arange(len(seqNameF)):
-            index = [column for column in pcaF.columns if seqNameF[i][0] in column]
-            plotThis = np.array(pcaF[index])
-            # Specifically plot the first 5 properties here... Make sure that I 
-            # have some way soon to actually select these...
-            ax[0,0].bar(x_axis+i*1/len(seqNameF), np.average(plotThis[1:5,:],axis = 1),
-                        yerr = np.std(plotThis[1:5,:],axis = 1),alpha = 0.5, width = 1/len(seqNameF))
-        ax[0,0].legend(labels)
-        ax[0,0].set_xticks([0.2,1.3,2.4,3.5])
-        ax[0,0].set_xticklabels(['Charge','Hydrophobicity','Flexibility','Bulkiness'])
-        ax[0,0].set_xlabel('Biophysical Property')
-        ax[0,0].set_ylabel('Normalized Property Value')
-        this_dir = os.getcwd()
-        fig.savefig(this_dir + '/' + dir_name + '/physical_props.pdf',format='pdf',dpi=500)
-        fig.savefig(this_dir + '/' + dir_name + '/physical_props.png',format='png',dpi=500)
-        np.savetxt(this_dir + '/' + dir_name + '/property_masks.dat',pcaF,fmt='%.3f')
-        #NOTE DELETE THIS BELOW LINE ASAP
-        self.img4.source = this_dir + '/' + dir_name + '/physical_props.png'
-    
-    def do_pca(self):
-        from sklearn.decomposition import PCA
-        global checked
-        this_dir = os.getcwd()
-        # The "things" are here to track number of entries in PCA groups
-        thing1 = True
-        for i in np.arange(len(seqNameF)):
-            index = [column for column in pcaF.columns if seqNameF[i][0] in column]
-            # Alright so our new matrix, checked is "i" rows by three
-            if checked[i,0]:
-                if thing1:
-                    pg1 = np.array(pcaF[index])
-                    thing1 = False
-                else:
-                    pg1 = np.hstack((pg1,pcaF[index]))
+    def reduce_dim(self):
+        self.clust_butt.disabled = False
+        # Need to add a button for this bad boy.
+        # But for now, odds are you want to cluster on the parsed dataset
+        global chosen_dset
+        dChoice = 'parsed'
+        if dChoice == 'full':
+            chosen_dset = full_big
+        elif dChoice == 'parsed':
+            chosen_dset = parsed_mat
+        chosen_dset.index = seq_MIf.columns
+        final_chosen = np.transpose(chosen_dset)
+        #### For datasets with > 2 entries need to allow those to pick and choose:
+        if onlyONE:
+            ID_new = ID
+            pass
+        elif len(labels) > 2:
+            aaa = 0; bbb = 0
+            for i in range(len(checked)):
+                # Don't love this solution but it works... so...
+                index = [column for column in seq_MIf.columns if seqNameF[i][0] in column]
+                # Alright so our new matrix, checked is "i" rows by three
+                # 0 is the "group 1", 1 is the "group 2"
+                if checked[i,0]:
+                    if aaa == 0:
+                        for_clust = final_chosen[index]
+                        ID_new = aaa * np.ones(np.shape(for_clust)[1])
+                        aaa = 1
+                    else:
+                        for_clust = pandas.concat([for_clust,final_chosen[index]],axis=1)
+                        ID_new = np.hstack((ID_new, aaa * np.ones(np.shape(final_chosen[index])[1])))
+                        aaa = aaa + 1
+                elif checked[i,1]:
+                    if bbb == 0:
+                        no_clust = final_chosen[index]
+                        bbb = 1
+                    else:
+                        no_clust = pandas.concat([no_clust,final_chosen[index]],axis=1)
+                        bbb = bbb + 1
+            # Then just redefine "for_clust" as "chosen_dset" for consistency with labels <=2
+            chosen_dset = np.transpose(for_clust)
+        else:
+            ID_new = ID
 
-        pca_Doit = np.transpose(pg1)
-        pca = PCA(n_components=3, svd_solver='full')
-        pca.fit(pca_Doit)
-
-        explain_var = pca.explained_variance_ratio_
-        comps1=pca.components_[0]
-        comps2=pca.components_[1]
-        comps3=pca.components_[2]
-        prop_names = pandas.read_csv('app_data/property_names.txt',header=None).values
+        global dim
+        if self.pca2.active:
+            reduce = 'pca'; dim = '2d'
+        elif self.pca3.active:
+            reduce = 'pca'; dim = '3d'
+        elif self.umap2.active:
+            reduce = 'umap'; dim = '2d'
+        elif self.umap3.active:
+            reduce = 'umap'; dim = '3d'
+        else:
+            return
+        if reduce == 'pca':
+            from sklearn.decomposition import PCA
+            pca = PCA(n_components=3, svd_solver='full')
+            final=pca.fit_transform(chosen_dset)
+            transform = pandas.DataFrame(np.transpose(final),columns = chosen_dset.index)
+            #print(pca.explained_variance_ratio_)
+        elif reduce == 'umap':
+            import umap
+            reducer = umap.UMAP(n_components=3, n_neighbors = 25, n_jobs=1, random_state = 47)
+            final = reducer.fit_transform(chosen_dset)
+            transform = pandas.DataFrame(np.transpose(final),columns = chosen_dset.index)
+        elif reduce == 'tsne':
+            from sklearn.manifold import TSNE
+            tsne = TSNE(n_components = 3, random_state = 47, n_jobs = 1)
+            final=tsne.fit_transform(chosen_dset)
+            transform = pandas.DataFrame(np.transpose(final),columns = chosen_dset.index)
         
-        all_comps = np.vstack((prop_names.reshape(len(prop_names)),comps1,comps2,comps3))
-        # Alrightn now we need to sort on the pca components
-        indices_topProps = np.argsort(abs(comps1))
-        compile_Props = np.vstack((prop_names.reshape(len(prop_names)),comps1))
-        final_pc1 = compile_Props[:,indices_topProps[-10:]]
+        global clust_input
+        clust_input = np.array(np.transpose(transform))
 
-        self.exp1.text = str(round(explain_var[0],3))
-        self.exp2.text = str(round(explain_var[1],3))
-        self.exp3.text = str(round(explain_var[2],3))
+        if dim == '2d':
+            fig = pl.figure(figsize = (14, 10))
+            pl.scatter(clust_input[:,0],clust_input[:,1],c = ID_new, cmap = 'tab20b')
+            pl.xlabel('AX1'); pl.ylabel('AX2')
+        elif dim == '3d':
+            from mpl_toolkits import mplot3d
+            fig = pl.figure(figsize = (14, 10))
+            ax3d = fig.add_subplot(111, projection='3d')
+            ax3d.scatter(clust_input[:,0],clust_input[:,1],clust_input[:,2],c = ID_new, cmap ='tab20b')
+            ax3d.set_xlabel('AX1',labelpad=20)
+            ax3d.set_ylabel('AX2',labelpad=20)
+            ax3d.set_zlabel('AX3',labelpad=10)
+        this_dir = os.getcwd()
+        fig.savefig(this_dir + '/' + dir_name + '/'+reduce+'_'+dim+'_fig.pdf',format='pdf',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/'+reduce+'_'+dim+'_fig.png',format='png',dpi=500)
+        np.savetxt(this_dir + '/' + dir_name + '/'+reduce+'_'+dim+'.dat',clust_input,fmt='%.3f')
+        #NOTE DELETE THIS BELOW LINE ASAP
+        self.img6.source = this_dir + '/' + dir_name + '/'+reduce+'_'+dim+'_fig.png'
+        pl.close()
 
-        # We square the weights so that they then sum to 1.
-        self.name10.text = str(final_pc1[0,0]); self.weight10.text = str(round(final_pc1[1,0]**2,4))
-        self.name9.text = str(final_pc1[0,1]); self.weight9.text = str(round(final_pc1[1,1]**2,4))
-        self.name8.text = str(final_pc1[0,2]); self.weight8.text = str(round(final_pc1[1,2]**2,4))
-        self.name7.text = str(final_pc1[0,3]); self.weight7.text = str(round(final_pc1[1,3]**2,4))
-        self.name6.text = str(final_pc1[0,4]); self.weight6.text = str(round(final_pc1[1,4]**2,4))
-        self.name5.text = str(final_pc1[0,5]); self.weight5.text = str(round(final_pc1[1,5]**2,4))
-        self.name4.text = str(final_pc1[0,6]); self.weight4.text = str(round(final_pc1[1,6]**2,4))
-        self.name3.text = str(final_pc1[0,7]); self.weight3.text = str(round(final_pc1[1,7]**2,4))
-        self.name2.text = str(final_pc1[0,8]); self.weight2.text = str(round(final_pc1[1,8]**2,4))
-        self.name1.text = str(final_pc1[0,9]); self.weight1.text = str(round(final_pc1[1,9]**2,4))
-        # Alright so let me try to have labels encoded in to the MHC_6 kivy file
-        # and then just populate them with things every time we run this function
+    def cluster_seqs(self):
+        global cluster_dset
+        import sklearn.cluster as cluster
+        global clust
+        global NClust
+        self.next1_5.disabled = False
+        if self.kmean.active:
+            clust = 'kmean'
+            NClust = int(self.kclust.text)
+            clusts = cluster.KMeans(n_clusters=NClust).fit_predict(clust_input)
+        elif self.optics.active:
+            clust = 'optics'
+            OPsamp = int(self.opticnum.text)
+            clusts = cluster.OPTICS(min_samples=OPsamp).fit_predict(clust_input)
+        elif self.dbscan.active:
+            clust = 'dbscan'
+            DBrad = float(self.dbrad.text)
+            clusts = cluster.DBSCAN(eps=DBrad).fit_predict(clust_input)
+        else:
+            return
 
-        # THIS SECTION IS WHERE YOU WOULD PUT PLOTS THAT YOU WANNA SEE
-        from mpl_toolkits import mplot3d
-        fig3d = pl.figure(figsize = (10, 10))
-        ax3d = fig3d.add_subplot(111, projection='3d')
-        legName = []
-        for i in np.arange(len(seqNameF)):
-            # What a dumb way to do this but I'm unsure how else to reverse this...
-            if len(seqNameF) > 2:
-                if checked[i,2] == False:
-                    index = [column for column in pcaF.columns if seqNameF[i][0] in column]
-                    group_transform = pca.transform(np.transpose(pcaF[index]))
-                    legName = legName + [labels[i]]
-                    ax3d.scatter(group_transform[:,0],group_transform[:,1],group_transform[:,2],marker='o',alpha=0.5,s=50)
+        cluster_dset = pandas.DataFrame(clusts,columns=['cluster'])
+        # Want the min cluster to be white for non kmean cluster, as these are unclustered
+        if dim == '2d':
+            fig = pl.figure(figsize = (14, 10))
+            if clust == 'kmean':
+                pl.scatter(clust_input[:,0],clust_input[:,1],c = clusts, cmap = 'rainbow')
             else:
-                index = [column for column in pcaF.columns if seqNameF[i][0] in column]
-                group_transform = pca.transform(np.transpose(pcaF[index]))
-                legName = legName + [labels[i]]
-                ax3d.scatter(group_transform[:,0],group_transform[:,1],group_transform[:,2],marker='o',alpha=0.5,s=50)
-
-        #pl.legend(['seq1','seq2','seq3'])
-        ax3d.set_xlabel('PC1',labelpad=20)
-        ax3d.set_ylabel('PC2',labelpad=20)
-        ax3d.set_zlabel('PC3',labelpad=10)
-        ax3d.legend(legName)
-        fig3d.savefig(this_dir + '/' + dir_name + '/pca_3D.pdf',format='pdf',dpi=500)
-        fig3d.savefig(this_dir + '/' + dir_name + '/pca_3D.png',format='png',dpi=500)
-
-        fig, ax2 = pl.subplots(1, 1,squeeze=False,figsize=(10,10))
-        for i in np.arange(len(seqNameF)):
-            if len(seqNameF) > 2:
-                if checked[i,2] == False:
-                    index = [column for column in pcaF.columns if seqNameF[i][0] in column]
-                    group_transform = pca.transform(np.transpose(pcaF[index]))
-                    pl.scatter(group_transform[:,0],group_transform[:,1])
+                pl.scatter(clust_input[:,0],clust_input[:,1],c = clusts, cmap = cmap)
+            pl.xlabel('AX1'); pl.ylabel('AX2')
+        elif dim == '3d':
+            from mpl_toolkits import mplot3d
+            fig = pl.figure(figsize = (14, 10))
+            ax3d = fig.add_subplot(111, projection='3d')
+            if clust == 'kmean':
+                ax3d.scatter(clust_input[:,0],clust_input[:,1],clust_input[:,2],c = clusts, cmap='rainbow')
             else:
-                index = [column for column in pcaF.columns if seqNameF[i][0] in column]
-                group_transform = pca.transform(np.transpose(pcaF[index]))
-                pl.scatter(group_transform[:,0],group_transform[:,1])
-        ax2[0,0].set_xlabel('PC1')
-        ax2[0,0].set_ylabel('PC2')
-        fig.legend(legName)
-        fig.savefig(this_dir + '/' + dir_name + '/pca_2D.pdf',format='pdf',dpi=500)
-        # And save the raw data
-        np.savetxt(this_dir + '/' + dir_name + '/pca_transformed_data.dat',group_transform,fmt='%.3f')
-        np.savetxt(this_dir + '/' + dir_name + '/pca_component_weights.dat',all_comps,fmt='%s')
-        np.savetxt(this_dir + '/' + dir_name + '/pca_explained_variance.dat',explain_var,fmt='%.3f')
+                ax3d.scatter(clust_input[:,0],clust_input[:,1],clust_input[:,2],c = clusts, cmap=cmap)
+            ax3d.set_xlabel('AX1',labelpad=20)
+            ax3d.set_ylabel('AX2',labelpad=20)
+            ax3d.set_zlabel('AX3',labelpad=10)
 
-        self.img6.source = this_dir + '/' + dir_name + '/pca_3D.png'
+        this_dir = os.getcwd()
+        fig.savefig(this_dir + '/' + dir_name + '/'+clust+'_'+dim+'_fig.pdf',format='pdf',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/'+clust+'_'+dim+'_fig.png',format='png',dpi=500)
+        np.savetxt(this_dir + '/' + dir_name + '/'+clust+'_'+dim+'.dat',clusts,fmt='%.3f')
+        pl.close()
+        self.img6.source = this_dir + '/' + dir_name + '/'+clust+'_'+dim+'_fig.png'
+
+    def analyze_clusts(self):
+        self.next1_6.disabled = False
+        fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,10))
+        global fin_clustL
+        fin_clustL = len(cluster_dset['cluster'].drop_duplicates())
+        cluster_bins = np.zeros((fin_clustL,len(seqNameF)))
+        kmean = True
+        for i in np.sort(cluster_dset['cluster'].drop_duplicates()):
+            pre_clust = seq_MIf[chosen_dset.index[cluster_dset[cluster_dset['cluster'] == i].index]]
+            clustID = np.transpose(pandas.DataFrame(i*np.ones(np.shape(pre_clust)[1])))
+            clustID.columns = pre_clust.columns
+            pre_clustF = pandas.concat([pre_clust,clustID],axis=0)
+            for j in np.arange(len(seqNameF)):
+                index = [column for column in clustID.columns if seqNameF[j][0] in column]
+                cluster_bins[i,j] = np.shape(clustID[index])[1]
+            # Do not plot the unclustered data
+            if i == -1:
+                kmean = False
+                continue
+            if i == 0:
+                clustered = pre_clustF
+            else:
+                clustered = pandas.concat([clustered, pre_clustF],axis = 1)
+            ax[0,0].plot(np.arange(len(seq_MIf)),np.ones(len(seq_MIf))*(np.shape(clustered)[1]),'white',linewidth = 3)
+
+        ax[0,0].imshow(np.transpose(np.array(clustered))[:,:-1], interpolation='nearest', aspect='auto',cmap=cm.jet)
+        ax[0,0].set_ylabel('Sequence Number')
+        this_dir = os.getcwd()
+        fig.savefig(this_dir + '/' + dir_name + '/'+clust+'_mat_fig.pdf',format='pdf',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/'+clust+'_mat_fig.png',format='png',dpi=500)
+        self.img7.source = this_dir + '/' + dir_name + '/'+clust+'_mat_fig.png'
+        pl.close()
+        
+        # Skip all of this stuff if only looking at ONE file... can't get cluster membership then
+        if onlyONE:
+            return
+        else:
+            fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,10))
+            # Same deal, need to ignore the unclustered (last entry)
+            clustmax = 0
+            if kmean:
+                for i in np.arange(len(labels)):
+                    newmax = max(cluster_bins[:,i])
+                    if newmax > clustmax:
+                        clustmax = newmax
+                    pad = i*0.8/len(labels)
+                    pl.bar(np.arange(fin_clustL)+pad,cluster_bins[:,i],width=0.8/len(labels),alpha = 0.5)
+            else:
+                for i in np.arange(len(labels)):
+                    newmax = max(cluster_bins[:-1,i])
+                    if newmax > clustmax:
+                        clustmax = newmax
+                    pad = i*0.8/len(labels)
+                    pl.bar(np.arange(fin_clustL-1)+pad,cluster_bins[:-1,i],width=0.8/len(labels),alpha = 0.5)
+            pl.xlabel('Cluster #')
+            pl.ylabel('Count')
+            pl.legend(labels)
+            if clust == 'kmean':
+                subt_clust = 1
+            else:
+                subt_clust = 2
+            for i in np.arange(fin_clustL-subt_clust):
+                place = int(i) + 0.9 - 0.4/len(labels)
+                pl.plot(place*np.ones(int(clustmax)),np.arange(int(clustmax)),'black')
+            unclust_str = ('Number Unclustered: '+str(sum(cluster_bins[-1,:])))
+            fig.savefig(this_dir + '/' + dir_name + '/'+clust+'_bars_fig.pdf',format='pdf',dpi=500)
+            fig.savefig(this_dir + '/' + dir_name + '/'+clust+'_bars_fig.png',format='png',dpi=500)
+            self.img7_5.source = this_dir + '/' + dir_name + '/'+clust+'_bars_fig.png'
+            pl.close()
+
+    def prep7(self):
+        this_dir = os.getcwd()
+        # Select out our clusters of interest for downstream analysis
+        global sub1_MI; global sub2_MI
+        global sub1_seqs; global sub2_seqs
+        global sel1; global sel2
+        global skip7
+        # This is defined to be sure that 
+        if clust == 'kmean':
+            subt_clust = 1
+        else:
+            subt_clust = 2
+        if self.ori_binary.active:
+            if onlyONE:
+                self.ori_binary.active = False
+                sel1 = int(self.clust1.text)
+                sel2 = int(self.clust2.text)
+                if sel1 > fin_clustL-subt_clust or sel2 > fin_clustL-subt_clust:
+                    sel1 = 0; sel2 = 1
+                sub1_MI = seq_MIf[seq_MIf.columns[cluster_dset[cluster_dset['cluster'] == sel1].index]]
+                sub2_MI = seq_MIf[seq_MIf.columns[cluster_dset[cluster_dset['cluster'] == sel2].index]]
+
+                # Alright now get the sequences
+                sub1_seqs = np.transpose(seq_final[sub1_MI.columns])
+                sub2_seqs = np.transpose(seq_final[sub2_MI.columns])
+
+                sub1_seqs.to_csv(this_dir + '/' + dir_name +'/clust2seq_'+str(sel1)+'.txt',header=None,index=None)
+                sub2_seqs.to_csv(this_dir + '/' + dir_name +'/clust2seq_'+str(sel2)+'.txt',header=None,index=None)
+                # AVOID the binary clusters screen
+                skip7 = True
+                popup = Popup(title='ERROR (Click Anywhere to Dismiss)',
+                    content=Label(text='Why would you click that button? Revert to cluster#'),
+                    size_hint=(None, None), size=(800, 800))
+                popup.open()
+                return
+
+            # Bring back our "binary clusters" screen
+            skip7 = False
+            return
+        else:
+            sel1 = int(self.clust1.text)
+            sel2 = int(self.clust2.text)
+            if sel1 > fin_clustL-subt_clust or sel2 > fin_clustL-subt_clust:
+                sel1 = 0; sel2 = 1
+                popup = Popup(title='ERROR (Click Anywhere to Dismiss)',
+                content=Label(text='Selected cluster out of range, default to clust0, clust1'),
+                size_hint=(None, None), size=(800, 800))
+                popup.open()
+            # AVOID the binary clusters screen
+            skip7 = True
+        
+        sub1_MI = seq_MIf[seq_MIf.columns[cluster_dset[cluster_dset['cluster'] == sel1].index]]
+        sub2_MI = seq_MIf[seq_MIf.columns[cluster_dset[cluster_dset['cluster'] == sel2].index]]
+
+        # Alright now get the sequences
+        sub1_seqs = np.transpose(seq_final[sub1_MI.columns])
+        sub2_seqs = np.transpose(seq_final[sub2_MI.columns])
+
+        sub1_seqs.to_csv(this_dir + '/' + dir_name +'/clust2seq_'+str(sel1)+'.txt',header=None,index=None)
+        sub2_seqs.to_csv(this_dir + '/' + dir_name +'/clust2seq_'+str(sel2)+'.txt',header=None,index=None)
 
     def get_pos_props(self):
+        self.next1_8.disabled = False
         this_dir = os.getcwd()
-        global lda_checked
-        # The "things" are here to track number of entries in PCA groups
-        thing1 = True
-        thing2 = True
-        for i in np.arange(len(seqNameF)):
-            index = [column for column in pcaF.columns if seqNameF[i][0] in column]
-            # Alright so our new matrix, checked is "i" rows by three
-            # 0 is the "group 1", 1 is the "group 2"
-            if lda_checked[i,0]:
-                if thing1:
-                    pg1 = np.array(seq_MIf[index])
-                    thing1 = False
-                else:
-                    pg1 = np.hstack((pg1,seq_MIf[index]))
-            elif lda_checked[i,1]:
-                if thing2:
-                    pg2 = np.array(seq_MIf[index])
-                    thing2 = False
-                else:
-                    pg2 = np.hstack((pg2,seq_MIf[index]))
+        full_big.index = seq_MIf.columns
+        global seq1_bigF; global seq2_bigF
+        global sel1_pre; global sel2_pre
+        global labels_new
+        # Skip7 is our sign of "use the original labels"
+        if skip7:
+            # define the IDs by the datasets already subsected
+            sel1_pre = np.array(full_big.loc[seq_MIf.columns[cluster_dset[cluster_dset['cluster'] == sel1].index]])
+            sel2_pre = np.array(full_big.loc[seq_MIf.columns[cluster_dset[cluster_dset['cluster'] == sel2].index]])
+            cloneNum1 = len(sel1_pre)
+            cloneNum2 = len(sel2_pre)
+            seq1_bigF = sel1_pre.reshape(cloneNum1,61,len(seq_MIf))
+            seq2_bigF = sel2_pre.reshape(cloneNum2,61,len(seq_MIf))
+            labels_new =['Cluster '+str(sel1), 'Cluster '+str(sel2)]
+        else:
+            aaa = 0; bbb = 0
+            global sub1_MI; global sub2_MI
+            for i in range(len(lda_checked)):
+                # Don't love this solution but it works... so...
+                index = [column for column in seq_MIf.columns if seqNameF[i][0] in column]
+                # Alright so our new matrix, checked is "i" rows by three
+                # 0 is the "group 1", 1 is the "group 2"
+                if lda_checked[i,0]:
+                    if aaa == 0:
+                        sub1_MI = seq_MIf[index]
+                        aaa = 1
+                    else:
+                        sub1_MI = pandas.concat([sub1_MI,seq_MIf[index]],axis=1)
+                        aaa = aaa + 1
+                elif lda_checked[i,1]:
+                    if bbb == 0:
+                        sub2_MI = seq_MIf[index]
+                        bbb = 1
+                    else:
+                        sub2_MI = pandas.concat([sub2_MI,seq_MIf[index]],axis=1)
+                        bbb = bbb + 1
+            if aaa == 1 and bbb == 1 and len(labels) < 3:
+                labels_new = [seqNameF[0][0],seqNameF[1][0]]
+            else:
+                labels_new =['Group 1', 'Group 2']
 
-        pos_sens1=aims.gen_dset_props(np.array(np.transpose(pg1)),stdev=False)
-        pos_sens2=aims.gen_dset_props(np.array(np.transpose(pg2)),stdev=False)
+            sel1_pre = np.array(full_big.loc[sub1_MI.columns])
+            sel2_pre = np.array(full_big.loc[sub2_MI.columns])
+            cloneNum1 = len(sel1_pre)
+            cloneNum2 = len(sel2_pre)
+            seq1_bigF = sel1_pre.reshape(cloneNum1,61,len(seq_MIf))
+            seq2_bigF = sel2_pre.reshape(cloneNum2,61,len(seq_MIf))
+            global sub1_seqs; global sub2_seqs
+            sub1_seqs = np.transpose(seq_final[sub1_MI.columns])
+            sub2_seqs = np.transpose(seq_final[sub2_MI.columns])
+            
 
-        fig, ax = pl.subplots(2, 1,squeeze=False,figsize=(16,8))
         global LOOPnum
         global xtick_loc
 
-        for prop in np.arange(2):
-            if prop == 0:
-                x = 0; y = 0
-            elif prop == 1:
-                x = 1; y = 0
-            plotThis1 = pos_sens1[prop+2]
-            plotThis2 = pos_sens2[prop+2]
-            # Specifically plot the first 5 properties here... Make sure that I 
-            # have some way soon to actually select these...
-            ax[x,y].plot(np.arange(len(plotThis1)), plotThis1)
-            ax[x,y].plot(np.arange(len(plotThis2)), plotThis2)
-            ax[x,y].legend(['Group1', 'Group2'])
+        fig, ax = pl.subplots(2, 1,squeeze=False,figsize=(16,8))
+        prop1 = 1
+        plotProp11 = np.average(seq1_bigF[:,prop1,:],axis = 0); plotProp21 = np.average(seq2_bigF[:,prop1,:],axis = 0)
+        ax[0,0].set_ylabel('Charge')
+        ax[0,0].plot(plotProp11); ax[0,0].plot(plotProp21)
 
-            if molecule == 'mhc':
-                ax[x,y].set_xticks(xtick_loc)
-                ax[0,0].set_xticklabels(['Strand 1','Helix 1','Strand 2','Helix 2'])
-            else:
-                if LOOPnum == 6:
-                    ax[x,y].set_xticks(xtick_loc)
-                    ax[x,y].set_xticklabels(['CDR1L','CDR2L','CDR3L','CDR1H','CDR2H','CDR3H'])
-                elif LOOPnum == 3:
-                    ax[x,y].set_xticks(xtick_loc)
-                    ax[x,y].set_xticklabels(['CDR1','CDR2','CDR3'])
-                elif LOOPnum == 2:
-                    ax[x,y].set_xticks(xtick_loc)
-                    ax[x,y].set_xticklabels(['CDR3H','CDR3L'])
-                elif LOOPnum == 1:
-                    ax[x,y].set_xticks(xtick_loc)
-                    ax[x,y].set_xticklabels(['CDR Loop'])
+        prop2 = 2
+        plotProp12 = np.average(seq1_bigF[:,prop2,:],axis = 0); plotProp22 = np.average(seq2_bigF[:,prop2,:],axis = 0)
+        ax[1,0].set_ylabel('Hydrophobicity'); ax[1,0].plot(plotProp12)
+        ax[1,0].plot(plotProp22); ax[1,0].set_xlabel('Sequence Position')
+        pl.legend(labels_new)
+
+        if molecule == 'mhc':
+            ax[0,0].set_xticks(xtick_loc)
+            ax[0,0].set_xticklabels(['Strand 1','Helix 1','Strand 2','Helix 2'])
+        else:
+            if LOOPnum == 6:
+                ax[0,0].set_xticks(xtick_loc)
+                ax[0,0].set_xticklabels(['CDR1L','CDR2L','CDR3L','CDR1H','CDR2H','CDR3H'])
+            elif LOOPnum == 3:
+                ax[0,0].set_xticks(xtick_loc)
+                ax[0,0].set_xticklabels(['CDR1','CDR2','CDR3'])
+            elif LOOPnum == 2:
+                ax[0,0].set_xticks(xtick_loc)
+                ax[0,0].set_xticklabels(['CDR3H','CDR3L'])
+            elif LOOPnum == 1:
+                ax[0,0].set_xticks(xtick_loc)
+                ax[0,0].set_xticklabels(['CDR Loop'])
         # Since there's only two now, just easier to hard code these...
         ax[0,0].set_ylabel('Normalized Charge')
         ax[1,0].set_ylabel('Normalized Hydrophobicity')
@@ -827,55 +1130,89 @@ class Analysis(Screen):
         fig.savefig(this_dir + '/' + dir_name + '/pos_prop.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/pos_prop.png',format='png',dpi=500)
         # And save the raw data
-        np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat1.dat',pos_sens1,fmt='%.3f')
-        np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat2.dat',pos_sens2,fmt='%.3f')
+        np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat1.dat',sel1_pre,fmt='%.3f')
+        np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat2.dat',sel2_pre,fmt='%.3f')
 
         self.img8.source = this_dir + '/' + dir_name + '/pos_prop.png'
+        pl.close()
+
+    def get_clone_pos_props(self):
+        self.next1_9.disabled = False
+        this_dir = os.getcwd()
+        # Generate the position sensitive charge across all clones in the dataset
+        fig, axs = pl.subplots(1, 2,squeeze=False,figsize=(20,8))
+        ax1 = axs[0, 0]; ax2 = axs[0, 1]
+        # The "1" here is "charge". 2 would be hydrophobicity
+        x = ax1.imshow(seq1_bigF[:,1,:],interpolation='nearest', aspect='auto',cmap=cm.PiYG)
+        y = ax2.imshow(seq2_bigF[:,1,:],interpolation='nearest', aspect='auto',cmap=cm.PiYG)
+        ax1.set_xlabel('Sequence Position'); ax2.set_xlabel('Sequence Position')
+        ax1.set_ylabel('Sequence Number'); ax2.set_ylabel('Sequence Number')
+        ax1.set_title(labels_new[0] + ' - Charge'); ax2.set_title(labels_new[1] + ' - Charge')
+        fig.colorbar(x, ax=axs[0,0]); fig.colorbar(y, ax=axs[0,1])
+
+        fig.savefig(this_dir + '/' + dir_name + '/clone_pos_prop.pdf',format='pdf',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/clone_pos_prop.png',format='png',dpi=500)
+        self.img9.source = this_dir + '/' + dir_name + '/clone_pos_prop.png'
+        pl.close()
+
+    def get_props(self):
+        self.next1_10.disabled = False
+        this_dir = os.getcwd()
+        # Generate the position sensitive charge across all clones in the dataset
+        fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
+        x_axis = np.array([-0.2,0.9,2,3.1])
+        # Need to have some kind of color wheel to replace this...
+        # We want to exclude prop0 (the simple 1-21 AA representation entries)
+        for prop in np.arange(4):
+            propF = prop+1
+            plotProp1 = np.average(np.average(seq1_bigF[:,propF,:],axis = 1))
+            plotProp2 = np.average(np.average(seq2_bigF[:,propF,:],axis = 1))
+            plotstd1 = np.std(np.average(seq1_bigF[:,propF,:],axis = 1))
+            plotstd2 = np.std(np.average(seq2_bigF[:,propF,:],axis = 1))
+            if prop == 0:
+                plot1 = plotProp1; std1 = plotstd1
+                plot2 = plotProp2; std2 = plotstd2
+            else:
+                plot1 = np.hstack((plot1,plotProp1)); std1 = np.hstack((std1,plotstd1))
+                plot2 = np.hstack((plot2,plotProp2)); std2 = np.hstack((std2,plotstd2))
+        ax[0,0].bar(x_axis, plot1,
+                    yerr = std1,alpha = 0.5, width = 1/len(labels_new))
+        ax[0,0].bar(x_axis+1/len(labels_new), plot2,
+                    yerr = std2,alpha = 0.5, width = 1/len(labels_new))
+        ax[0,0].legend(labels_new)
+        ax[0,0].set_xticks([0.2,1.3,2.4,3.5])
+        ax[0,0].set_xticklabels(['Charge','Hydrophobicity','Flexibility','Bulkiness'])
+        ax[0,0].set_xlabel('Biophysical Property')
+        ax[0,0].set_ylabel('Normalized Property Value')
+
+        fig.savefig(this_dir + '/' + dir_name + '/avg_props.pdf',format='pdf',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/avg_props.png',format='png',dpi=500)
+        self.img10.source = this_dir + '/' + dir_name + '/avg_props.png'
+        pl.close()
 
     def do_lda(self):
         this_dir = os.getcwd()
-        # The "things" are here to track number of entries in PCA groups
-        thing1 = True
-        thing2 = True
-        for i in np.arange(len(seqNameF)):
-            index = [column for column in pcaF.columns if seqNameF[i][0] in column]
-            # Alright so our new matrix, checked is "i" rows by three
-            # 0 is the "group 1", 1 is the "group 2"
-            if lda_checked[i,0]:
-                if thing1:
-                    pg1 = np.array(seq_final[index])
-                    thing1 = False
-                else:
-                    pg1 = np.hstack((pg1,seq_final[index]))
-            elif lda_checked[i,1]:
-                if thing2:
-                    pg2 = np.array(seq_final[index])
-                    thing2 = False
-                else:
-                    pg2 = np.hstack((pg2,seq_final[index]))
-
-        # Should probably make NumVects an option you can change...
         numVects = int(self.inputLDA.text)
-        # Here we also need to get a pre-defined matrix size...
+        pg1 = np.transpose(sub1_seqs.values); num1 = np.shape(pg1)[1]
+        pg2 = np.transpose(sub2_seqs.values); num2 = np.shape(pg2)[1]
+        total_mat = np.vstack((sel1_pre,sel2_pre))
+        full_big, weights, acc_all, mda_all, parsed_mat, top_names = aims.compile_MP(total_mat, pg1, pg2, final_size = numVects, cat = False)
 
-        num1 = np.shape(pg1)[1]
-        num2 = np.shape(pg2)[1]
-        #x,y,MatrixSize = aims.gen_tcr_matrix(pg1,pre_mono=pg2,binary=True,return_Size=True)
-        bigF,weights,acc_all,mda_all,final,top_names = classy.do_linear_split(pg1, pg2, matSize = numVects)
         # Seaborn plots look nicer for these LDA figures
         import seaborn as sns
         fig = pl.figure(figsize = (12, 12))
         dset = ["Linear Discriminant Analysis" for x in range(num1+num2)]
-        reacts = ["Group 1" for x in range(num1)] + ["Group 2" for x in range(num2)]
+        reacts = [labels_new[0] for x in range(num1)] + [labels_new[1] for x in range(num2)]
 
         d1 = {'Dataset': dset, 'Linear Discriminant 1': mda_all.reshape(len(mda_all)),
-            'Reactivity' : reacts}
+            'Class' : reacts}
         df1 = pandas.DataFrame(data=d1)
         sns.set(style="white", color_codes=True,font_scale=1.5)
-        sns.swarmplot(x="Dataset", y="Linear Discriminant 1", data=df1, hue = 'Reactivity', palette = "Dark2")
+        sns.swarmplot(x="Dataset", y="Linear Discriminant 1", data=df1, hue = 'Class', palette = "Dark2")
 
         fig.savefig(this_dir + '/' + dir_name + '/lda.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/lda.png',format='png',dpi=500)
+        pl.close()
         # And save the raw data
         np.savetxt(this_dir + '/' + dir_name + '/lda_data.dat',mda_all,fmt='%.3f')
 
@@ -883,15 +1220,16 @@ class Analysis(Screen):
         indices_topProps = np.argsort(abs(weights))
         compile_Props = np.vstack((top_names,weights))
         final_pc1 = compile_Props[:,indices_topProps[0][-10:]]
+        print(acc_all)
         np.savetxt(this_dir + '/' + dir_name + '/lda_weights.dat',compile_Props,fmt='%s')
 
         # For running multiple times with vectors less than 10, need to reset screen...
         self.aname10.text = ''; self.aname9.text = ''; self.aname8.text = ''; self.aname7.text = ''
         self.aname6.text = ''; self.aname5.text = ''; self.aname4.text = ''; self.aname3.text = ''
-        self.aname2.text = ''; self.aname1.text = '';
+        self.aname2.text = ''; self.aname1.text = ''
         self.aweight10.text = ''; self.aweight9.text = ''; self.aweight8.text = ''; self.aweight7.text = ''
         self.aweight6.text = ''; self.aweight5.text = ''; self.aweight4.text = ''; self.aweight3.text = ''
-        self.aweight2.text = ''; self.aweight1.text = '';
+        self.aweight2.text = ''; self.aweight1.text = ''
         # Update the weights and labels onto the screen:
         self.aname10.text =str(final_pc1[0,0]); self.aweight10.text= str(round(final_pc1[1,0],4))
         if numVects > 1:
@@ -913,9 +1251,10 @@ class Analysis(Screen):
         if numVects > 9:
             self.aname1.text = str(final_pc1[0,9]); self.aweight1.text = str(round(final_pc1[1,9],4))
 
-        self.img9.source = this_dir + '/' + dir_name + '/lda.png'
+        self.img14.source = this_dir + '/' + dir_name + '/lda.png'
 
     def get_freq(self):
+        self.next1_13.disabled = False
         this_dir = os.getcwd()
         global freq1,freq2
         global mat_size
@@ -926,14 +1265,15 @@ class Analysis(Screen):
         freqBound = max(abs(freqMax),abs(freqMin))
         x=ax[0,0].pcolormesh(freq1[:,1:]-freq2[:,1:],cmap=cm.PiYG,vmin = -freqBound, vmax = freqBound)
         pl.colorbar(x)
+        pl.ylabel('Sequence Position')
         xax=pl.setp(ax,xticks=np.arange(20)+0.5,xticklabels=AA_key)
+        pl.title(labels_new[0]+ ' AA Freq - ' + labels_new[1] + ' AA Freq')
 
         place=0
         for i in mat_size:
             place += i
             pl.plot(np.arange(21),place*np.ones(21),'black')
         
-        ax[0,0].legend(['Group1', 'Group2'])
         # Since there's only two now, just easier to hard code these...
         fig.savefig(this_dir + '/' + dir_name + '/frequency.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/frequency.png',format='png',dpi=500)
@@ -941,101 +1281,121 @@ class Analysis(Screen):
         np.savetxt(this_dir + '/' + dir_name + '/frequency_mat1.dat',freq1,fmt='%.3f')
         np.savetxt(this_dir + '/' + dir_name + '/frequency_mat2.dat',freq2,fmt='%.3f')
 
-        self.img11.source = this_dir + '/' + dir_name + '/frequency.png'
+        self.img13.source = this_dir + '/' + dir_name + '/frequency.png'
+        pl.close()
 
     def get_shannon(self):
+        self.next1_11.disabled = False
         this_dir = os.getcwd()
-        global lda_checked
-        # The "things" are here to track number of entries in PCA groups
-        thing1 = True
-        thing2 = True
-        for i in np.arange(len(seqNameF)):
-            index = [column for column in pcaF.columns if seqNameF[i][0] in column]
-            # Alright so our new matrix, checked is "i" rows by three
-            # 0 is the "group 1", 1 is the "group 2"
-            if lda_checked[i,0]:
-                if thing1:
-                    pg1 = np.array(seq_MIf[index])
-                    thing1 = False
-                else:
-                    pg1 = np.hstack((pg1,seq_MIf[index]))
-            elif lda_checked[i,1]:
-                if thing2:
-                    pg2 = np.array(seq_MIf[index])
-                    thing2 = False
-                else:
-                    pg2 = np.hstack((pg2,seq_MIf[index]))
-
-        global freq1
-        global freq2
-        shannon1,freq1=aims.calculate_shannon(np.array(np.transpose(pg1)))
-        shannon2,freq2=aims.calculate_shannon(np.array(np.transpose(pg2)))
-
+        global freq1, freq2
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
+        entropy1,freq1=aims.calculate_shannon(np.transpose(np.array(sub1_MI)))
+        entropy2,freq2=aims.calculate_shannon(np.transpose(np.array(sub2_MI)))
+        pl.plot(entropy1); pl.plot(entropy2)
+
+        pl.legend(labels_new); pl.xlabel('Position'); pl.ylabel('Shannon Entropy (Bits)')
+        # Entropy is a rare case where we know the exact bounds of the values...
+        # Comment this out if your max entropy is substantially lower
+        pl.ylim([0,4.12])
+        # Guide the eyes with these lines
+        if type(mat_size) != int:
+            for i in np.arange(len(mat_size)-1):
+                ax[0,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100),np.linspace(0,4.2,100),'black',linewidth = 3)
+        
         global LOOPnum
         global xtick_loc
-
-        ax[0,0].plot(shannon1)
-        ax[0,0].plot(shannon2)
-
-        ax[0,0].legend(['Group1', 'Group2'])
-
+        ax[0,0].legend(labels_new)
         # Since there's only two now, just easier to hard code these...
         pl.ylabel('Shannon Entropy (Bits)')
-
         fig.savefig(this_dir + '/' + dir_name + '/shannon.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/shannon.png',format='png',dpi=500)
         # And save the raw data
-        np.savetxt(this_dir + '/' + dir_name + '/shannon_mat1.dat',shannon1,fmt='%.3f')
-        np.savetxt(this_dir + '/' + dir_name + '/shannon_mat2.dat',shannon2,fmt='%.3f')
+        np.savetxt(this_dir + '/' + dir_name + '/shannon_mat1.dat',entropy1,fmt='%.3f')
+        np.savetxt(this_dir + '/' + dir_name + '/shannon_mat2.dat',entropy2,fmt='%.3f')
 
-        self.img10.source = this_dir + '/' + dir_name + '/shannon.png'
+        self.img11.source = this_dir + '/' + dir_name + '/shannon.png'
+        pl.close()
+
+    def get_MI(self):
+        self.next1_12.disabled = False
+        this_dir = os.getcwd()
+        fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(10,8))
+        poses = len(seq_MIf)
+        MI1,entropy_cond1,counted1=aims.calculate_MI(np.transpose(np.array(sub1_MI)))
+        MI2,entropy_cond2,counted2=aims.calculate_MI(np.transpose(np.array(sub2_MI)))
+        x = pl.imshow(MI1 - MI2, cmap=cm.PiYG, vmin = -0.2, vmax = 0.2)
+        pl.colorbar(x); pl.title(labels_new[0]+ ' MI - ' + labels_new[1] + ' MI')
+
+        # Help Guide the eyes a bit
+        if type(mat_size) != int:
+            for i in np.arange(len(mat_size)-1):
+                ax[0,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100),np.linspace(0,poses,100),'black',linewidth = 3)
+                ax[0,0].plot( np.linspace(0,poses,100), (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100) ,'black',linewidth = 3)
+        
+        pl.xlabel('Sequence Position'); pl.ylabel('Sequence Position')
+        fig.savefig(this_dir + '/' + dir_name + '/MI.pdf',format='pdf',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/MI.png',format='png',dpi=500)
+        # And save the raw data
+        np.savetxt(this_dir + '/' + dir_name + '/MI_mat1.dat',MI1,fmt='%.3f')
+        np.savetxt(this_dir + '/' + dir_name + '/MI_mat2.dat',MI2,fmt='%.3f')
+        self.img12.source = this_dir + '/' + dir_name + '/MI.png'
+        pl.close()
 
 class checker(Screen):
     # Need to redefine a different type of loading from the wild one above.
 
     def on_pre_enter(self, *args):
         global check_status
+        #### NOTE, BOX 3 has been removed... no longer can exclude points from the plot.
         if 'check_run' not in globals():
-            check_L1 = Label(text='Include in PCA',size_hint = (None, None), height = '48dp',
+            check_L1 = Label(text='Include in Clustering',size_hint = (None, None), height = '48dp',
                 pos_hint = {'center_x': 0.15, 'center_y': 0.6},font_name='app_data/Poppins-Medium.ttf')
             FloatLayout.add_widget(self, check_L1)
             # only add in these you have MORE than 2 options
-            if len(labels) > 2:
-                check_L2 = Label(text='Exclude from PCA',size_hint = (None, None), height = '48dp',
+            if onlyONE:
+                pass
+            elif len(labels) > 2:
+                check_L2 = Label(text='Exclude from Clustering',size_hint = (None, None), height = '48dp',
                     pos_hint = {'center_x': 0.15, 'center_y': 0.45},font_name='app_data/Poppins-Medium.ttf')
                 FloatLayout.add_widget(self, check_L2)
-                check_L3 = Label(text='Exclude from Plot',size_hint = (None, None), height = '48dp',
-                    pos_hint = {'center_x': 0.15, 'center_y': 0.3},font_name='app_data/Poppins-Medium.ttf')
-                check_L4 = Label(text='(Optional)',size_hint = (None, None), height = '48dp',
-                    pos_hint = {'center_x': 0.15, 'center_y': 0.25},font_name='app_data/Poppins-Medium.ttf')
-                FloatLayout.add_widget(self, check_L3)
-                FloatLayout.add_widget(self, check_L4)
-            
-            for j in np.arange(len(labels)):
-                names = Label(text=labels[j], size_hint = (None, None), height = '48dp',
-                pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.70},font_name='app_data/Poppins-Medium.ttf')
-                if len(labels) > 2:
-                    box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j),state = 'down',
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6})
-                    box2 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j),
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.45})
-                    box3 = CheckBox(size_hint = (None,None), height = '48dp',
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.3})
-                else:
-                    box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j),state = 'down',
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6})
-                if int(j) == 0:
-                    if len(labels) > 2:
-                        check_status = [[names,box1,box2,box3]]
-                    else:
-                        check_status = [[names,box1]]
-                else:
-                    if len(labels) > 2:
-                        check_status = check_status + [[names,box1,box2,box3]]
-                    else:
-                        check_status = check_status + [[names,box1]]
+                #check_L3 = Label(text='Exclude from Plot',size_hint = (None, None), height = '48dp',
+                #    pos_hint = {'center_x': 0.15, 'center_y': 0.3},font_name='app_data/Poppins-Medium.ttf')
+                #check_L4 = Label(text='(Optional)',size_hint = (None, None), height = '48dp',
+                #    pos_hint = {'center_x': 0.15, 'center_y': 0.25},font_name='app_data/Poppins-Medium.ttf')
+                #FloatLayout.add_widget(self, check_L3)
+                #FloatLayout.add_widget(self, check_L4)
+            if onlyONE:
+                names = Label(text=labels, size_hint = (None, None), height = '48dp',
+                pos_hint = {'center_x': 0.3+int(0)*0.6/N, 'center_y': 0.70},font_name='app_data/Poppins-Medium.ttf')
+                box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(0),state = 'down',
+                pos_hint = {'center_x': 0.3+int(0)*0.6/N, 'center_y': 0.6}, allow_no_selection = False)
+                check_status = [[names,box1]]
                 # Before adding in all of the new ones
+            else:
+                for j in np.arange(len(labels)):
+                    names = Label(text=labels[j], size_hint = (None, None), height = '48dp',
+                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.70},font_name='app_data/Poppins-Medium.ttf')
+                    if len(labels) > 2:
+                        box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j),state = 'down',
+                        pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6},allow_no_selection = False)
+                        box2 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j),
+                        pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.45},allow_no_selection = False)
+                        #box3 = CheckBox(size_hint = (None,None), height = '48dp',
+                        #pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.3},allow_no_selection = False)
+                    else:
+                        box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j),state = 'down',
+                        pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6},allow_no_selection = False)
+                    if int(j) == 0:
+                        if len(labels) > 2:
+                            check_status = [[names,box1,box2]]#,box3]]
+                        else:
+                            check_status = [[names,box1]]
+                    else:
+                        if len(labels) > 2:
+                            check_status = check_status + [[names,box1,box2]]#,box3]]
+                        else:
+                            check_status = check_status + [[names,box1]]
+                    # Before adding in all of the new ones
             for entry in check_status:
                 for j in entry:
                     FloatLayout.add_widget(self, j)
@@ -1061,6 +1421,36 @@ class checker(Screen):
                 checked = check_pre
             else:
                 checked = np.vstack((checked,check_pre))
+
+    def get_bigMat(self):
+        self.next1_4.disabled = False
+        dsetF = seq_final.values
+        global parsed_mat
+        global full_big
+        bigass = classy.get_bigass_matrix(dsetF, giveSize = mat_size, alignment = align, norm = True )
+        # This definition will be important if I get parallel processing into the app... see notebook for EX
+        total_mat = bigass
+        prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
+        prop_list_new = ['Hot'+str(b+1) for b in range(46)]
+
+        prop_names = prop_list_old + prop_list_new
+        num_locs = int(np.shape(total_mat)[1]/61)
+        Bigass_names = []
+        for i in prop_names:
+            for j in np.arange(num_locs):
+                Bigass_names = Bigass_names + [ i + '-' + str(j) ]
+
+        # AND THEN GO ON WITH THE REST OF THE dropping of correlated vectors
+        full_big = pandas.DataFrame(total_mat,columns = Bigass_names)
+        drop_zeros = [column for column in full_big.columns if all(full_big[column] == 0 )]
+        y = full_big.drop(full_big[drop_zeros], axis=1)
+        z_pre = np.abs(np.corrcoef(np.transpose(y)))
+        z = pandas.DataFrame(z_pre,columns=y.columns,index=y.columns)
+        # Select upper triangle of correlation matrix
+        upper = z.where(np.triu(np.ones(z.shape), k=1).astype(bool))
+        to_drop = [column for column in upper.columns if ( any(upper[column] > 0.75) ) ]
+
+        parsed_mat = y.drop(y[to_drop], axis=1)
 
 class aligner_ab(Screen):
     
@@ -1131,7 +1521,10 @@ class aligner_ab(Screen):
             else:
                 labels = np.vstack((labels,alignAb[row].text))
         # Get labels out of the GD weird format.
-        labels = [i[0] for i in labels]
+        if onlyONE:
+            pass
+        else:
+            labels = [i[0] for i in labels]
         
         # Figure out what number of loops we are doing
         global LOOPnum
@@ -1173,17 +1566,17 @@ class lda_binary(Screen):
                 pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.70},font_name='app_data/Poppins-Medium.ttf')
                 if j == 0:
                     box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),state = 'down',
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6})
+                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6},allow_no_selection = False)
                     box2 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.45})
+                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.45},allow_no_selection = False)
                 else:
                     box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6})
+                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6},allow_no_selection = False)
                     box2 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),state = 'down',
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.45})
+                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.45},allow_no_selection = False)
                 if len(labels) > 2:
                     box3 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.3})
+                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.3},allow_no_selection = False)
                 if int(j) == 0:
                     if len(labels) > 2:
                         lda_status = [[names,box1,box2,box3]]
@@ -1221,6 +1614,8 @@ class lda_binary(Screen):
                 lda_checked = np.vstack((lda_checked,check_pre_l))
 
 class intro(Screen):
+    global skip7
+    skip7 = False
     def junk(self):
         x=1
 #################### THEN THE APP, CLOSE OUT ANY ANALYSIS #######################
@@ -1247,11 +1642,13 @@ class AIMSApp(App):
         'app_data/screens/mhc_2.kv','app_data/screens/mhc_3.kv','app_data/screens/mhc_4.kv',
         'app_data/screens/mhc_5.kv','app_data/screens/mhc_6.kv','app_data/screens/mhc_7.kv',
         'app_data/screens/mhc_8.kv','app_data/screens/mhc_9.kv','app_data/screens/mhc_10.kv',
-        'app_data/screens/mhc_11.kv',
+        'app_data/screens/mhc_11.kv','app_data/screens/mhc_12.kv','app_data/screens/mhc_13.kv',
+        'app_data/screens/mhc_14.kv',
         'app_data/screens/ab_1.kv','app_data/screens/ab_2.kv','app_data/screens/ab_3.kv',
         'app_data/screens/ab_4.kv','app_data/screens/ab_5.kv','app_data/screens/ab_6.kv',
         'app_data/screens/ab_7.kv','app_data/screens/ab_8.kv','app_data/screens/ab_9.kv',
-        'app_data/screens/ab_10.kv','app_data/screens/ab_11.kv']
+        'app_data/screens/ab_10.kv','app_data/screens/ab_11.kv','app_data/screens/ab_12.kv',
+        'app_data/screens/ab_13.kv','app_data/screens/ab_14.kv']
         global molecule
         molecule = ''
         self.go_next_screen(num = 0)
@@ -1265,10 +1662,12 @@ class AIMSApp(App):
 
     def go_next_screen(self,num = 0):
         global molecule
+        if skip7 and num == 7:
+            num = 8        
         if molecule == 'ig':
             # somewhat janky way to do this, but should work.
             # Basically "skip" the mhc screens
-            num = num + 11
+            num = num + 14
         self.index = num
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm
@@ -1323,7 +1722,7 @@ class AIMSApp(App):
          # Needed to delete and define everything BEFORE loading screen
         global molecule
         molecule = 'ig'
-        self.index = 12
+        self.index = 15
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm
         sm.switch_to(screen, direction='left')
@@ -1331,10 +1730,12 @@ class AIMSApp(App):
 
     def go_prev_screen(self,num = 0):
         global molecule
+        if skip7 and num == 7:
+            num = 6
         if molecule == 'ig':
             # somewhat janky way to do this, but should work.
             # Basically "skip" the mhc screens
-            num = num + 11
+            num = num + 14
         self.index = num
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm

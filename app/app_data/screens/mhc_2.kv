@@ -5,6 +5,7 @@ aligner:
     align_button1: align_button1
     align_button2: align_button2
     input1: input1
+    next1_2: next1_2
 
     Image:
         source: 'app_data/butt_up.png'
@@ -140,7 +141,7 @@ aligner:
 
     ####################### END FASTA DESIGNATIONS ############################
     Button:
-        id: next1.3
+        id: prev1_2
         size_hint: None, None
         size: '150dp', '48dp'
         text: '< Go Back'
@@ -152,7 +153,7 @@ aligner:
         on_release: app.go_prev_screen( num = 1 )
 
     Button:
-        id: next1.3
+        id: next1_2
         size_hint: None, None
         size: '150dp', '48dp'
         text: 'Next >'
@@ -161,6 +162,7 @@ aligner:
         pos_hint: {'center_x': 0.85, 'center_y': 0.1}
         color: (0.341, 0.392, 1, 1)
         background_color: (0.773, 0.784, 0.796, 1)
+        disabled: True
         on_release: 
             root.check_aligns()
             root.make_path()

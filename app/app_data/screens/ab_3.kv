@@ -2,6 +2,11 @@
 Analysis:
     name: 'ab_3'
     img1: screen3_img
+    alnb: alnb
+    alnc: alnc
+    alnl: alnl
+    alnr: alnr
+    next1_3: next1_3
 
     Image:
         source: 'app_data/butt_up.png'
@@ -36,7 +41,7 @@ Analysis:
 
     Label:
         size_hint_y: None
-        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
+        pos_hint: {'center_x': 0.5, 'center_y': 0.9}
         height: '32dp'
         text: 'Horizontal white lines separate data from files loaded in previous step.'
         font_name: 'app_data/Poppins-Medium.ttf'
@@ -45,9 +50,74 @@ Analysis:
         id: screen3_img
         size: '750dp','750dp'
         size_hint: None, None
-        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        pos_hint: {'center_x': 0.5, 'center_y': 0.6}
         source: 'app_data/white.png'
+    #########################################################
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.2, 'center_y': 0.25}
+        height: '32dp'
+        text:'Bulge Align'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
 
+    CheckBox:
+        id: alnb
+        size_hint: None,None
+        height: '48dp'
+        group: 'g111'
+        pos_hint: {'center_x': 0.2, 'center_y': 0.2}
+        allow_no_selection: False
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.4, 'center_y': 0.25}
+        height: '32dp'
+        text:'Center Align'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+
+    CheckBox:
+        id: alnc
+        size_hint: None,None
+        height: '48dp'
+        state: 'down'
+        group: 'g111'
+        pos_hint: {'center_x': 0.4, 'center_y': 0.2}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.6, 'center_y': 0.25}
+        height: '32dp'
+        text:'Right Align'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+
+    CheckBox:
+        id: alnr
+        size_hint: None,None
+        height: '48dp'
+        group: 'g111'
+        pos_hint: {'center_x': 0.6, 'center_y': 0.2}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.8, 'center_y': 0.25}
+        height: '32dp'
+        text:'Left Align'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+
+    CheckBox:
+        id: alnl
+        size_hint: None,None
+        height: '48dp'
+        group: 'g111'
+        pos_hint: {'center_x': 0.8, 'center_y': 0.2}
+        allow_no_selection: False
+    ###################################################
     Button:
         size_hint: None, None
         size: '150dp', '48dp'
@@ -62,7 +132,7 @@ Analysis:
             screen3_img.reload()
 
     Button:
-        id: next1.3
+        id: next1_3
         size_hint: None, None
         size: '150dp', '48dp'
         text: 'Next >'
@@ -71,11 +141,12 @@ Analysis:
         pos_hint: {'center_x': 0.85, 'center_y': 0.1}
         color: (0.341, 0.392, 1, 1)
         background_color: (0.773, 0.784, 0.796, 1)
+        disabled: True
         on_release: 
             app.go_next_screen(num = 4)
 
     Button:
-        id: next1.3
+        id: prev1_3
         size_hint: None, None
         size: '150dp', '48dp'
         text: '< Go Back'

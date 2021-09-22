@@ -1,6 +1,7 @@
 #:kivy 1.8.0
 Analysis:
     img8: screen8_img
+    next1_8: next1_8
 
     Image:
         source: 'app_data/butt_up.png'
@@ -46,7 +47,7 @@ Analysis:
             screen8_img.reload()
 
     Button:
-        id: next1.3
+        id: prev1_8
         size_hint: None, None
         size: '150dp', '48dp'
         text: '< Go Back'
@@ -58,7 +59,7 @@ Analysis:
         on_release: app.go_prev_screen( num = 7 )
 
     Button:
-        id: next1.3
+        id: next1_8
         size_hint: None, None
         size: '150dp', '48dp'
         text: 'Next >'
@@ -67,6 +68,6 @@ Analysis:
         pos_hint: {'center_x': 0.85, 'center_y': 0.1}
         color: (0.341, 0.392, 1, 1)
         background_color: (0.773, 0.784, 0.796, 1)
+        disabled: True
         on_release: 
-            #root.check_checks()
             app.go_next_screen( num = 9 )

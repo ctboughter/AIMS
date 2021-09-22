@@ -3,6 +3,8 @@ Root:
     name: 'mhc_1'
     next1_1: next1_1
     lessF: lessF
+    tbutt1: tbutt1
+    tbutt2: tbutt2
 
     Image:
         source: 'app_data/butt_up.png'
@@ -36,9 +38,42 @@ Root:
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
-        text:'Two FASTA Files Required, Additional Files Optional'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.875}
+        text:'Standard analysis is to compare two data files'
         font_name: 'app_data/Poppins-Medium.ttf'
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.45, 'center_y': 0.825}
+        text:'If you want to analyze only one data file, set this switch to "on":'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    ToggleButton:
+        group: 't1'
+        id: tbutt1
+        pos_hint: {'center_x': 0.80, 'center_y': 0.825}
+        size_hint: None, None
+        size: '60dp', '20dp'
+        text: 'ON'
+        active: True
+        color: (1, 1, 1, 1)
+        allow_no_selection: False
+        on_release:
+            root.check_one()
+    
+    ToggleButton:
+        group: 't1'
+        id: tbutt2
+        pos_hint: {'center_x': 0.875, 'center_y': 0.825}
+        size_hint: None, None
+        size: '60dp', '20dp'
+        text: 'OFF'
+        active: False
+        color: (1, 1, 1, 1)
+        state: 'down'
+        allow_no_selection: False
+        on_release:
+            root.check_one()
 
     ################## K now to the next page. This is not great, but it is pretty
     Button:
@@ -56,7 +91,7 @@ Root:
             app.go_next_screen(num = 2)
 
     Button:
-        id: next1.3
+        id: prev_1
         size_hint: None, None
         size: '150dp', '48dp'
         text: '< Go Back'
@@ -70,7 +105,7 @@ Root:
             app.go_main_screen(num = 0)
 
     Button:
-        id: next1.2
+        id: moreF
         size_hint: None, None
         size: '150dp', '48dp'
         text: 'Add More FASTAs'

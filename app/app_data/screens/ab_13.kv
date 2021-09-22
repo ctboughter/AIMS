@@ -1,13 +1,22 @@
 #:kivy 1.8.0
 Analysis:
-    img8: screen8_img
-    next1_8: next1_8
+    name: 'ab_13'
+    img13: screen13_img
+    next1_13: next1_13
 
     Image:
         source: 'app_data/butt_up.png'
         size: '450dp','25dp'
         size_hint: None, None
-        pos_hint: {'center_x': 0.50, 'center_y': 0.95}
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Image:
+        source: 'app_data/butt_down.png'
+        size: '425dp','25dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.875}
         keep_ratio: False
         allow_stretch: True
 
@@ -22,44 +31,52 @@ Analysis:
         size_hint_y: None
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
         height: '32dp'
-        text: 'Step8 - Plotting Position-Sensitive Biophysical Properties'
+        text: 'Step13 - Visualize Amino Acid Frequencies'
         font_name: 'app_data/Poppins-Medium.ttf'
         color: 0, 0.033, 0.329, 1
-    
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.875}
+        height: '32dp'
+        text: 'A Simple Difference in AA Frequency Between Groups'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
     Image:
-        id: screen8_img
-        size: '600dp','600dp'
+        id: screen13_img
+        size: '750dp','750dp'
         size_hint: None, None
-        pos_hint: {'center_x': 0.50, 'center_y': 0.5}
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
         source: 'app_data/white.png'
 
     Button:
         size_hint: None, None
         size: '150dp', '48dp'
         pos_hint: {'center_x': 0.5, 'center_y': 0.1}
-        text: 'Get Properties'
+        text: 'Get Frequency'
         background_down: 'app_data/butt_down.png'
         background_normal: 'app_data/butt_up.png'
         color: (0, 0.033, 0.329, 1)
         border: (0, 0, 0, 0)
         on_release:
-            root.get_pos_props()
-            screen8_img.reload()
+            root.get_freq()
+            screen13_img.reload()
 
     Button:
-        id: prev1_8
+        id: prev1_13
         size_hint: None, None
         size: '150dp', '48dp'
         text: '< Go Back'
+        color: (0.341, 0.392, 1, 1)
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'
-        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
-        color: (0.341, 0.392, 1, 1)
         background_color: (0.773, 0.784, 0.796, 1)
-        on_release: app.go_prev_screen( num = 7 )
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: 
+            app.go_prev_screen(num = 12)
 
     Button:
-        id: next1_8
+        id: next1_13
         size_hint: None, None
         size: '150dp', '48dp'
         text: 'Next >'
@@ -70,4 +87,4 @@ Analysis:
         background_color: (0.773, 0.784, 0.796, 1)
         disabled: True
         on_release: 
-            app.go_next_screen( num = 9 )
+            app.go_next_screen( num = 14 )

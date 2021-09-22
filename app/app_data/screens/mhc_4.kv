@@ -1,20 +1,11 @@
 #:kivy 1.8.0
-Analysis:
-    img4: screen4_img
-
+checker:
+    next1_4: next1_4
     Image:
         source: 'app_data/butt_up.png'
         size: '450dp','25dp'
         size_hint: None, None
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
-        keep_ratio: False
-        allow_stretch: True
-
-    Image:
-        source: 'app_data/butt_down.png'
-        size: '350dp','25dp'
-        size_hint: None, None
-        pos_hint: {'center_x': 0.5, 'center_y': 0.875}
         keep_ratio: False
         allow_stretch: True
 
@@ -25,56 +16,57 @@ Analysis:
         pos_hint: {'center_x': 0.95, 'center_y': 0.95}
         text:'A I M S'
 
+    Image:
+        source: 'app_data/square_background.png'
+        size: '900dp','500dp'
+        size_hint: None, None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.55}
+        keep_ratio: False
+        allow_stretch: True
+
     Label:
-        size_hint_y: None
+        size_hint: None , None
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
         height: '32dp'
-        text: 'Step4 - Calculate the properties used for PCA'
+        text:'Step4 - Inclusion of Data for Clustering'
         font_name: 'app_data/Poppins-Medium.ttf'
         color: 0, 0.033, 0.329, 1
 
     Label:
-        size_hint_y: None
-        pos_hint: {'center_x': 0.5, 'center_y': 0.875}
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
         height: '32dp'
-        text: 'NOTE: Slow at the moment (~30 Seconds)'
-        font_name: 'app_data/Poppins-Medium.ttf'
+        text:'These optional data inclusions allow for assesments of how different dataset combinations cluster.'
+        font_name: 'app_data/Poppins-Light.ttf'
 
-    Image:
-        id: screen4_img
-        size: '750dp','750dp'
-        size_hint: None, None
-        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
-        source: 'app_data/white.png'
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.80}
+        height: '32dp'
+        text:'If testing many inclusion combinations, be aware that figures of the same type will be overwritten.'
+        font_name: 'app_data/Poppins-Light.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.3}
+        height: '32dp'
+        text:'NOTE: If only analyzing one or two files, data inclusion cannot be altered.'
+        font_name: 'app_data/Poppins-Light.ttf'
 
     Button:
         size_hint: None, None
-        size: '150dp', '48dp'
+        size: '125dp', '48dp'
         pos_hint: {'center_x': 0.5, 'center_y': 0.1}
-        text: 'Get Properties'
+        text: 'Generate Matrix'
         background_down: 'app_data/butt_down.png'
         background_normal: 'app_data/butt_up.png'
         color: (0, 0.033, 0.329, 1)
         border: (0, 0, 0, 0)
         on_release:
-            root.get_props()
-            screen4_img.reload()
-    
-    Button:
-        id: next1.3
-        size_hint: None, None
-        size: '150dp', '48dp'
-        text: 'Next >'
-        background_normal: 'app_data/transparent.png'
-        background_down: 'app_data/transparent.png'
-        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
-        color: (0.341, 0.392, 1, 1)
-        background_color: (0.773, 0.784, 0.796, 1)
-        on_release: 
-            app.go_next_screen(num = 5)
+            root.get_bigMat()
 
     Button:
-        id: next1.3
+        id: prev1_4
         size_hint: None, None
         size: '150dp', '48dp'
         text: '< Go Back'
@@ -83,5 +75,19 @@ Analysis:
         background_down: 'app_data/transparent.png'
         background_color: (0.773, 0.784, 0.796, 1)
         pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: app.go_prev_screen( num = 3 )
+
+    Button:
+        id: next1_4
+        size_hint: None, None
+        size: '150dp', '48dp'
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        disabled: True
         on_release: 
-            app.go_prev_screen(num = 3)
+            root.check_checks()
+            app.go_next_screen( num = 5 )

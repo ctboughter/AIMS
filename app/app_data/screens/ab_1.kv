@@ -3,6 +3,8 @@ Root:
     name: 'ab_1'
     next1_1: next1_1
     lessF: lessF
+    tbutt1: tbutt1
+    tbutt2: tbutt2
 
     Image:
         source: 'app_data/butt_up.png'
@@ -30,17 +32,50 @@ Root:
     Label:
         size_hint: .1, .1
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
-        text:'Step 1 - Loading Files (Ab/TCR Version)'
+        text:'Step1 - Loading Files (Ab/TCR Version)'
         color: 0, 0.033, 0.329, 1
         font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
-        text:'Two data files required, additional files optional'
+        pos_hint: {'center_x': 0.5, 'center_y': 0.875}
+        text:'Standard analysis is to compare two or more data files'
+        font_name: 'app_data/Poppins-Medium.ttf'
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.45, 'center_y': 0.825}
+        text:'If you want to analyze only one data file, set this switch to "on":'
         font_name: 'app_data/Poppins-Medium.ttf'
 
     ################## K now to the next page. This is not great, but it is pretty
+    ToggleButton:
+        group: 't1'
+        id: tbutt1
+        pos_hint: {'center_x': 0.80, 'center_y': 0.825}
+        size_hint: None, None
+        size: '60dp', '20dp'
+        text: 'ON'
+        active: True
+        color: (1, 1, 1, 1)
+        allow_no_selection: False
+        on_release:
+            root.check_one()
+    
+    ToggleButton:
+        group: 't1'
+        id: tbutt2
+        pos_hint: {'center_x': 0.875, 'center_y': 0.825}
+        size_hint: None, None
+        size: '60dp', '20dp'
+        text: 'OFF'
+        active: False
+        color: (1, 1, 1, 1)
+        state: 'down'
+        allow_no_selection: False
+        on_release:
+            root.check_one()
+
     Button:
         id: next1_1
         size_hint: None, None

@@ -1,5 +1,6 @@
 #:kivy 1.8.0
 lda_binary:
+
     Image:
         source: 'app_data/butt_up.png'
         size: '450dp','25dp'
@@ -46,7 +47,7 @@ lda_binary:
         font_name: 'app_data/Poppins-Medium.ttf'
 
     Button:
-        id: next1.3
+        id: prev1_7
         size_hint: None, None
         size: '150dp', '48dp'
         text: '< Go Back'
@@ -58,6 +59,7 @@ lda_binary:
         on_release: app.go_prev_screen( num = 6 )
 
     Button:
+        id: next1_7
         size_hint: None, None
         size: '150dp', '48dp'
         text: 'Next >'

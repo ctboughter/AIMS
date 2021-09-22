@@ -904,9 +904,12 @@ def gen_splits(splitMat, splitSize = 100):
     final = np.transpose(np.vstack((s1,s2)))
     return(final)
 
-def compile_MP(bigass_pre, pg1, pg2, final_size = 10):
+def compile_MP(bigass_pre, pg1, pg2, final_size = 10, cat = True):
     # Alright this concatenate function should put the final product in the correct form
-    total_mat = np.concatenate(bigass_pre, axis = 0)
+    if cat:
+        total_mat = np.concatenate(bigass_pre, axis = 0)
+    else:
+        total_mat = bigass_pre
     prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
     prop_list_new = ['Hot'+str(b+1) for b in range(46)]
 
