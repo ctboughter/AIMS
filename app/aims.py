@@ -1270,9 +1270,10 @@ class Analysis(Screen):
         pl.title(labels_new[0]+ ' AA Freq - ' + labels_new[1] + ' AA Freq')
 
         place=0
-        for i in mat_size:
-            place += i
-            pl.plot(np.arange(21),place*np.ones(21),'black')
+        if type(mat_size) != int:
+            for i in mat_size:
+                place += i
+                pl.plot(np.arange(21),place*np.ones(21),'black')
         
         # Since there's only two now, just easier to hard code these...
         fig.savefig(this_dir + '/' + dir_name + '/frequency.pdf',format='pdf',dpi=500)
