@@ -5,6 +5,8 @@ Analysis:
     umap3: umap3
     pca2: pca2
     pca3: pca3
+    dat1: dat1
+    dat2: dat2
     dbscan: dbscan
     optics: optics
     kmean: kmean
@@ -47,35 +49,73 @@ Analysis:
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.825, 'center_y': 0.88}
+        pos_hint: {'center_x': 0.825, 'center_y': 0.875}
+        height: '32dp'
+        text:'Select Input Data'
+        font_name: 'app_data/Poppins-Medium.ttf'
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.775, 'center_y': 0.825}
+        height: '32dp'
+        text:'Net Average Properties'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.775, 'center_y': 0.775}
+        height: '32dp'
+        text:'Position Sensitive Properties'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CheckBox:
+        id: dat1
+        size_hint: None,None
+        state: 'down'
+        height: '48dp'
+        group: 'g6969'
+        pos_hint: {'center_x': 0.95, 'center_y': 0.825}
+        allow_no_selection: False
+
+    CheckBox:
+        id: dat2
+        size_hint: None,None
+        height: '48dp'
+        group: 'g6969'
+        pos_hint: {'center_x': 0.95, 'center_y': 0.775}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.825, 'center_y': 0.68}
         height: '32dp'
         text:'Select Dimensionality Reduction'
         font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.825, 'center_y': 0.85}
+        pos_hint: {'center_x': 0.825, 'center_y': 0.65}
         height: '32dp'
         text:'Method of Choice'
         font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.725, 'center_y': 0.775}
+        pos_hint: {'center_x': 0.725, 'center_y': 0.575}
         height: '32dp'
         text:'Reduce Dim Only'
         font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.875, 'center_y': 0.775}
+        pos_hint: {'center_x': 0.875, 'center_y': 0.575}
         height: '32dp'
         text:'2D'
         font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.95, 'center_y': 0.775}
+        pos_hint: {'center_x': 0.95, 'center_y': 0.575}
         height: '32dp'
         text:'3D'
         font_name: 'app_data/Poppins-Medium.ttf'
@@ -86,7 +126,7 @@ Analysis:
         state: 'down'
         height: '48dp'
         group: 'g555'
-        pos_hint: {'center_x': 0.875, 'center_y': 0.725}
+        pos_hint: {'center_x': 0.875, 'center_y': 0.525}
         allow_no_selection: False
 
     CheckBox:
@@ -94,7 +134,7 @@ Analysis:
         size_hint: None,None
         height: '48dp'
         group: 'g555'
-        pos_hint: {'center_x': 0.95, 'center_y': 0.725}
+        pos_hint: {'center_x': 0.95, 'center_y': 0.525}
         allow_no_selection: False
 
     CheckBox:
@@ -102,7 +142,7 @@ Analysis:
         size_hint: None,None
         height: '48dp'
         group: 'g555'
-        pos_hint: {'center_x': 0.875, 'center_y': 0.675}
+        pos_hint: {'center_x': 0.875, 'center_y': 0.475}
         allow_no_selection: False
 
     CheckBox:
@@ -110,19 +150,19 @@ Analysis:
         size_hint: None,None
         height: '48dp'
         group: 'g555'
-        pos_hint: {'center_x': 0.95, 'center_y': 0.675}
+        pos_hint: {'center_x': 0.95, 'center_y': 0.475}
         allow_no_selection: False
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.725, 'center_y': 0.725}
+        pos_hint: {'center_x': 0.725, 'center_y': 0.525}
         height: '32dp'
         text:'Reduce Via PCA'
         font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.725, 'center_y': 0.675}
+        pos_hint: {'center_x': 0.725, 'center_y': 0.475}
         height: '32dp'
         text:'Reduce Via UMAP'
         font_name: 'app_data/Poppins-Medium.ttf'
@@ -133,12 +173,12 @@ Analysis:
         height: '48dp'
         state: 'down'
         group: 'g222'
-        pos_hint: {'center_x': 0.73, 'center_y': 0.45}
+        pos_hint: {'center_x': 0.73, 'center_y': 0.35}
         allow_no_selection: False
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.675, 'center_y': 0.45}
+        pos_hint: {'center_x': 0.675, 'center_y': 0.35}
         height: '32dp'
         text:'KMeans'
         font_name: 'app_data/Poppins-Medium.ttf'
@@ -147,14 +187,14 @@ Analysis:
         id: kclust
         size_hint: 0.05,None
         write_tab: False
-        pos_hint: {'center_x': 0.96, 'center_y': 0.45}
+        pos_hint: {'center_x': 0.96, 'center_y': 0.35}
         height: '32dp'
         multiline: False
         text: '5'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.85, 'center_y': 0.45}
+        pos_hint: {'center_x': 0.85, 'center_y': 0.35}
         height: '32dp'
         text:'# Clusters:'
         font_name: 'app_data/Poppins-Medium.ttf'
@@ -164,12 +204,12 @@ Analysis:
         size_hint: None,None
         height: '48dp'
         group: 'g222'
-        pos_hint: {'center_x': 0.73, 'center_y': 0.40}
+        pos_hint: {'center_x': 0.73, 'center_y': 0.30}
         allow_no_selection: False
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.675, 'center_y': 0.40}
+        pos_hint: {'center_x': 0.675, 'center_y': 0.30}
         height: '32dp'
         text:'OPTICS'
         font_name: 'app_data/Poppins-Medium.ttf'
@@ -178,14 +218,14 @@ Analysis:
         id: opticnum
         size_hint: 0.05,None
         write_tab: False
-        pos_hint: {'center_x': 0.96, 'center_y': 0.40}
+        pos_hint: {'center_x': 0.96, 'center_y': 0.30}
         height: '32dp'
         multiline: False
         text: '10'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.85, 'center_y': 0.40}
+        pos_hint: {'center_x': 0.85, 'center_y': 0.30}
         height: '32dp'
         text:'Min Cluster Size:'
         font_name: 'app_data/Poppins-Medium.ttf'
@@ -195,19 +235,19 @@ Analysis:
         size_hint: None,None
         height: '48dp'
         group: 'g222'
-        pos_hint: {'center_x': 0.73, 'center_y': 0.35}
+        pos_hint: {'center_x': 0.73, 'center_y': 0.25}
         allow_no_selection: False
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.675, 'center_y': 0.35}
+        pos_hint: {'center_x': 0.675, 'center_y': 0.25}
         height: '32dp'
         text:'DBSCAN'
         font_name: 'app_data/Poppins-Medium.ttf'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.85, 'center_y': 0.35}
+        pos_hint: {'center_x': 0.85, 'center_y': 0.25}
         height: '32dp'
         text:'Scan Radius:'
         font_name: 'app_data/Poppins-Medium.ttf'
@@ -216,14 +256,14 @@ Analysis:
         id: dbrad
         size_hint: 0.05,None
         write_tab: False
-        pos_hint: {'center_x': 0.96, 'center_y': 0.35}
+        pos_hint: {'center_x': 0.96, 'center_y': 0.25}
         height: '32dp'
         multiline: False
         text: '0.5'
 
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.825, 'center_y': 0.5}
+        pos_hint: {'center_x': 0.825, 'center_y': 0.41}
         height: '32dp'
         text:'Select Clustering Algorithm'
         font_name: 'app_data/Poppins-Medium.ttf'

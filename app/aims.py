@@ -1,4 +1,5 @@
 from numpy.core.numeric import ones
+from pandas._config.config import set_option
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.factory import Factory
@@ -764,35 +765,59 @@ class Analysis(Screen):
 
     def reduce_dim(self):
         self.clust_butt.disabled = False
-        # Need to add a button for this bad boy.
-        # But for now, odds are you want to cluster on the parsed dataset
         global chosen_dset
-        dChoice = 'parsed'
+        full_big.index = seq_MIf.columns
+
+        if self.dat1.active:
+            dChoice = 'net'
+        elif self.dat2.active:
+            dChoice = 'parsed'
+
         if dChoice == 'full':
             chosen_dset = full_big
         elif dChoice == 'parsed':
             chosen_dset = parsed_mat
+        elif dChoice == 'net':
+            first = True
+            for i in seqNameF:
+                pre_label = i[0]
+                index = [column for column in seq_MIf.columns if pre_label in column]
+                pre_array = np.array(full_big.loc[index])
+                dat_size = len(index)
+                seq_bigF = pre_array.reshape(dat_size,61,len(seq_MIf))
+                if first:
+                    big_reshape = seq_bigF
+                    first = False
+                else:
+                    big_reshape = np.vstack((big_reshape,seq_bigF))
+            chosen_dset = pandas.DataFrame(np.average(big_reshape,axis=2))
+
         chosen_dset.index = seq_MIf.columns
         final_chosen = np.transpose(chosen_dset)
         #### For datasets with > 2 entries need to allow those to pick and choose:
+        global plot_label
         if onlyONE:
+            plot_label = seqNameF
             ID_new = ID
             pass
         elif len(labels) > 2:
             aaa = 0; bbb = 0
             for i in range(len(checked)):
                 # Don't love this solution but it works... so...
-                index = [column for column in seq_MIf.columns if seqNameF[i][0] in column]
+                pre_label = seqNameF[i][0]
+                index = [column for column in seq_MIf.columns if pre_label in column]
                 # Alright so our new matrix, checked is "i" rows by three
                 # 0 is the "group 1", 1 is the "group 2"
                 if checked[i,0]:
                     if aaa == 0:
                         for_clust = final_chosen[index]
                         ID_new = aaa * np.ones(np.shape(for_clust)[1])
+                        plot_label = pre_label
                         aaa = 1
                     else:
                         for_clust = pandas.concat([for_clust,final_chosen[index]],axis=1)
                         ID_new = np.hstack((ID_new, aaa * np.ones(np.shape(final_chosen[index])[1])))
+                        plot_label = np.hstack((plot_label,pre_label))
                         aaa = aaa + 1
                 elif checked[i,1]:
                     if bbb == 0:
@@ -804,6 +829,7 @@ class Analysis(Screen):
             # Then just redefine "for_clust" as "chosen_dset" for consistency with labels <=2
             chosen_dset = np.transpose(for_clust)
         else:
+            plot_label = np.hstack((seqNameF[0][0],seqNameF[1][0]))
             ID_new = ID
 
         global dim
@@ -837,15 +863,28 @@ class Analysis(Screen):
         global clust_input
         clust_input = np.array(np.transpose(transform))
 
+        # A bit of an odd solution to how we add in a legend to the PCA/UMAP
+        from matplotlib.lines import Line2D
+        cmap = pl.get_cmap('rainbow')
+        global cmap_discrete
+        cmap_discrete = cmap(np.linspace(0, 1, len(seqNameF)))
+        for i in np.arange(len(seqNameF)):
+            if i == 0:
+                custom_lines = [Line2D([0], [0], color='w', marker='o',markerfacecolor=cmap_discrete[i], markersize= 10)]
+            else:
+                custom_lines = custom_lines + [Line2D([0], [0], color='w', marker='o',markerfacecolor = cmap_discrete[i], markersize= 10)]
+
         if dim == '2d':
             fig = pl.figure(figsize = (14, 10))
-            pl.scatter(clust_input[:,0],clust_input[:,1],c = ID_new, cmap = 'tab20b')
+            pl.scatter(clust_input[:,0],clust_input[:,1],c = ID_new, cmap = 'rainbow')
+            pl.legend(custom_lines, plot_label)
             pl.xlabel('AX1'); pl.ylabel('AX2')
         elif dim == '3d':
             from mpl_toolkits import mplot3d
             fig = pl.figure(figsize = (14, 10))
             ax3d = fig.add_subplot(111, projection='3d')
-            ax3d.scatter(clust_input[:,0],clust_input[:,1],clust_input[:,2],c = ID_new, cmap ='tab20b')
+            ax3d.scatter(clust_input[:,0],clust_input[:,1],clust_input[:,2],c = ID_new, cmap ='rainbow')
+            pl.legend(custom_lines, plot_label)
             ax3d.set_xlabel('AX1',labelpad=20)
             ax3d.set_ylabel('AX2',labelpad=20)
             ax3d.set_zlabel('AX3',labelpad=10)
@@ -952,14 +991,14 @@ class Analysis(Screen):
                     if newmax > clustmax:
                         clustmax = newmax
                     pad = i*0.8/len(labels)
-                    pl.bar(np.arange(fin_clustL)+pad,cluster_bins[:,i],width=0.8/len(labels),alpha = 0.5)
+                    pl.bar(np.arange(fin_clustL)+pad,cluster_bins[:,i],width=0.8/len(labels),alpha = 0.5, color = cmap_discrete[i])
             else:
                 for i in np.arange(len(labels)):
                     newmax = max(cluster_bins[:-1,i])
                     if newmax > clustmax:
                         clustmax = newmax
                     pad = i*0.8/len(labels)
-                    pl.bar(np.arange(fin_clustL-1)+pad,cluster_bins[:-1,i],width=0.8/len(labels),alpha = 0.5)
+                    pl.bar(np.arange(fin_clustL-1)+pad,cluster_bins[:-1,i],width=0.8/len(labels),alpha = 0.5, color = cmap_discrete[i])
             pl.xlabel('Cluster #')
             pl.ylabel('Count')
             pl.legend(labels)
@@ -1041,70 +1080,66 @@ class Analysis(Screen):
         self.next1_8.disabled = False
         this_dir = os.getcwd()
         full_big.index = seq_MIf.columns
-        global seq1_bigF; global seq2_bigF
-        global sel1_pre; global sel2_pre
+        global sels
         global labels_new
         # Skip7 is our sign of "use the original labels"
         if skip7:
             # define the IDs by the datasets already subsected
-            sel1_pre = np.array(full_big.loc[seq_MIf.columns[cluster_dset[cluster_dset['cluster'] == sel1].index]])
-            sel2_pre = np.array(full_big.loc[seq_MIf.columns[cluster_dset[cluster_dset['cluster'] == sel2].index]])
-            cloneNum1 = len(sel1_pre)
-            cloneNum2 = len(sel2_pre)
-            seq1_bigF = sel1_pre.reshape(cloneNum1,61,len(seq_MIf))
-            seq2_bigF = sel2_pre.reshape(cloneNum2,61,len(seq_MIf))
+            sel1_pre = seq_MIf.columns[cluster_dset[cluster_dset['cluster'] == sel1].index]
+            sel2_pre = seq_MIf.columns[cluster_dset[cluster_dset['cluster'] == sel2].index]
+            sel_pre = np.hstack((sel1_pre,sel2_pre))
+            # So I believe this should just make a big vector with IDs that matches the vector length
+            ID_vect = [sel1] * len(sel1_pre) + [sel2] * len(sel2_pre)
+            sels = np.transpose(pandas.DataFrame((sel_pre,ID_vect)))
+            sels.columns = ['selection','ID']
+
             labels_new =['Cluster '+str(sel1), 'Cluster '+str(sel2)]
         else:
-            aaa = 0; bbb = 0
-            global sub1_MI; global sub2_MI
-            for i in range(len(lda_checked)):
-                # Don't love this solution but it works... so...
-                index = [column for column in seq_MIf.columns if seqNameF[i][0] in column]
-                # Alright so our new matrix, checked is "i" rows by three
-                # 0 is the "group 1", 1 is the "group 2"
-                if lda_checked[i,0]:
-                    if aaa == 0:
-                        sub1_MI = seq_MIf[index]
-                        aaa = 1
+            # try to sort of cheat in creating the labels here...
+            labels_new = [''] * len(group_a_id)
+            first = True
+            for i in np.arange(len(group_a_id)):
+                # lda_checked is now a "dump this data" variable
+                if len(group_a_id) > 2:
+                    if lda_checked[i]:
+                        continue
+                if first:
+                    sel_pre = [column for column in seq_MIf.columns if seqNameF[i][0] in column]
+                    ID_vect = [int(group_a_id[i][0])] * len(sel_pre)
+                    labels_new[int(group_a_id[i][0])] = seqNameF[i][0]
+                    first = False
+                else:
+                    temp_sel = [column for column in seq_MIf.columns if seqNameF[i][0] in column]
+                    sel_pre = np.hstack((sel_pre,temp_sel))
+                    ID_vect = ID_vect + [int(group_a_id[i][0])] * len(temp_sel)
+                    if labels_new[int(group_a_id[i][0])] == '':
+                        labels_new[int(group_a_id[i][0])] = seqNameF[i][0]
                     else:
-                        sub1_MI = pandas.concat([sub1_MI,seq_MIf[index]],axis=1)
-                        aaa = aaa + 1
-                elif lda_checked[i,1]:
-                    if bbb == 0:
-                        sub2_MI = seq_MIf[index]
-                        bbb = 1
-                    else:
-                        sub2_MI = pandas.concat([sub2_MI,seq_MIf[index]],axis=1)
-                        bbb = bbb + 1
-            if aaa == 1 and bbb == 1 and len(labels) < 3:
-                labels_new = [seqNameF[0][0],seqNameF[1][0]]
-            else:
-                labels_new =['Group 1', 'Group 2']
+                        labels_new[int(group_a_id[i][0])] = labels_new[int(group_a_id[i][0])] + ' + ' + seqNameF[i][0]
+            sels = np.transpose(pandas.DataFrame((sel_pre,ID_vect)))
+            sels.columns = ['selection','ID']
+            labels_new = [a for a in labels_new if a != '']
 
-            sel1_pre = np.array(full_big.loc[sub1_MI.columns])
-            sel2_pre = np.array(full_big.loc[sub2_MI.columns])
-            cloneNum1 = len(sel1_pre)
-            cloneNum2 = len(sel2_pre)
-            seq1_bigF = sel1_pre.reshape(cloneNum1,61,len(seq_MIf))
-            seq2_bigF = sel2_pre.reshape(cloneNum2,61,len(seq_MIf))
-            global sub1_seqs; global sub2_seqs
-            sub1_seqs = np.transpose(seq_final[sub1_MI.columns])
-            sub2_seqs = np.transpose(seq_final[sub2_MI.columns])
-            
-
-        global LOOPnum
-        global xtick_loc
-
+        # Alright we need to change the way we plot these too:
         fig, ax = pl.subplots(2, 1,squeeze=False,figsize=(16,8))
-        prop1 = 1
-        plotProp11 = np.average(seq1_bigF[:,prop1,:],axis = 0); plotProp21 = np.average(seq2_bigF[:,prop1,:],axis = 0)
-        ax[0,0].set_ylabel('Charge')
-        ax[0,0].plot(plotProp11); ax[0,0].plot(plotProp21)
+        for j in sels['ID'].drop_duplicates():
+            findex = sels[sels['ID'] == j]['selection']
+            pre_array = np.array(full_big.loc[findex])
+            dat_size = len(findex)
+            seq_bigF = pre_array.reshape(dat_size,61,len(seq_MIf))
+            # If we need the sequences, we can call them this same way but
+            # with the variable seq_final rather than full_big
+            prop1 = 1
+            plotProp1 = np.average(seq_bigF[:,prop1,:],axis = 0)
+            ax[0,0].plot(plotProp1,marker='o',linewidth=2.5,color=cmap_discrete[j])
+            prop2 = 2
+            plotProp2 = np.average(seq_bigF[:,prop2,:],axis = 0)
+            ax[1,0].plot(plotProp2,marker='o',linewidth=2.5,color=cmap_discrete[j])
+            np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat'+str(j)+'.dat',pre_array,fmt='%.3f')
 
-        prop2 = 2
-        plotProp12 = np.average(seq1_bigF[:,prop2,:],axis = 0); plotProp22 = np.average(seq2_bigF[:,prop2,:],axis = 0)
-        ax[1,0].set_ylabel('Hydrophobicity'); ax[1,0].plot(plotProp12)
-        ax[1,0].plot(plotProp22); ax[1,0].set_xlabel('Sequence Position')
+        ax[0,0].set_ylabel('Charge')
+        ax[1,0].set_ylabel('Hydrophobicity')
+        ax[1,0].set_xlabel('Sequence Position')
         pl.legend(labels_new)
 
         if molecule == 'mhc':
@@ -1129,9 +1164,6 @@ class Analysis(Screen):
 
         fig.savefig(this_dir + '/' + dir_name + '/pos_prop.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/pos_prop.png',format='png',dpi=500)
-        # And save the raw data
-        np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat1.dat',sel1_pre,fmt='%.3f')
-        np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat2.dat',sel2_pre,fmt='%.3f')
 
         self.img8.source = this_dir + '/' + dir_name + '/pos_prop.png'
         pl.close()
@@ -1140,15 +1172,32 @@ class Analysis(Screen):
         self.next1_9.disabled = False
         this_dir = os.getcwd()
         # Generate the position sensitive charge across all clones in the dataset
-        fig, axs = pl.subplots(1, 2,squeeze=False,figsize=(20,8))
-        ax1 = axs[0, 0]; ax2 = axs[0, 1]
-        # The "1" here is "charge". 2 would be hydrophobicity
-        x = ax1.imshow(seq1_bigF[:,1,:],interpolation='nearest', aspect='auto',cmap=cm.PiYG)
-        y = ax2.imshow(seq2_bigF[:,1,:],interpolation='nearest', aspect='auto',cmap=cm.PiYG)
-        ax1.set_xlabel('Sequence Position'); ax2.set_xlabel('Sequence Position')
-        ax1.set_ylabel('Sequence Number'); ax2.set_ylabel('Sequence Number')
-        ax1.set_title(labels_new[0] + ' - Charge'); ax2.set_title(labels_new[1] + ' - Charge')
-        fig.colorbar(x, ax=axs[0,0]); fig.colorbar(y, ax=axs[0,1])
+        num_figs = int(np.ceil(len(sels['ID'].drop_duplicates())/2))
+        fig, axs = pl.subplots(num_figs, 2,squeeze=False,figsize=(20,8))
+
+        fig_track = 0; track2 = 0
+        aa = 0
+        for j in sels['ID'].drop_duplicates():
+            findex = sels[sels['ID'] == j]['selection']
+            pre_array = np.array(full_big.loc[findex])
+            dat_size = len(findex)
+            seq_bigF = pre_array.reshape(dat_size,61,len(seq_MIf))
+            # If we need the sequences, we can call them this same way but
+            # with the variable seq_final rather than full_big
+            x = axs[fig_track,track2].imshow(seq_bigF[:,1,:],interpolation='nearest', aspect='auto',cmap=cm.PiYG)
+            # NEED TO CHANGE THIS SO IT ISNT DEFINED FOR EVERY FIGURE
+            axs[fig_track,track2].set_title(labels_new[aa] + ' - Charge')
+            aa += 1
+            fig.colorbar(x, ax=axs[fig_track,track2])
+            if fig_track == num_figs:
+                axs[fig_track,track2].set_xlabel('Sequence Position')
+            axs[fig_track,track2].set_ylabel('Sequence Number')
+
+            if track2 == 0:
+                track2 = 1
+            else:
+                fig_track += 1
+                track2 = 0
 
         fig.savefig(this_dir + '/' + dir_name + '/clone_pos_prop.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/clone_pos_prop.png',format='png',dpi=500)
@@ -1163,22 +1212,29 @@ class Analysis(Screen):
         x_axis = np.array([-0.2,0.9,2,3.1])
         # Need to have some kind of color wheel to replace this...
         # We want to exclude prop0 (the simple 1-21 AA representation entries)
-        for prop in np.arange(4):
-            propF = prop+1
-            plotProp1 = np.average(np.average(seq1_bigF[:,propF,:],axis = 1))
-            plotProp2 = np.average(np.average(seq2_bigF[:,propF,:],axis = 1))
-            plotstd1 = np.std(np.average(seq1_bigF[:,propF,:],axis = 1))
-            plotstd2 = np.std(np.average(seq2_bigF[:,propF,:],axis = 1))
-            if prop == 0:
-                plot1 = plotProp1; std1 = plotstd1
-                plot2 = plotProp2; std2 = plotstd2
-            else:
-                plot1 = np.hstack((plot1,plotProp1)); std1 = np.hstack((std1,plotstd1))
-                plot2 = np.hstack((plot2,plotProp2)); std2 = np.hstack((std2,plotstd2))
-        ax[0,0].bar(x_axis, plot1,
-                    yerr = std1,alpha = 0.5, width = 1/len(labels_new))
-        ax[0,0].bar(x_axis+1/len(labels_new), plot2,
-                    yerr = std2,alpha = 0.5, width = 1/len(labels_new))
+        aa = 0
+        for j in sels['ID'].drop_duplicates():
+            findex = sels[sels['ID'] == j]['selection']
+            pre_array = np.array(full_big.loc[findex])
+            dat_size = len(findex)
+            seq_bigF = pre_array.reshape(dat_size,61,len(seq_MIf))
+            # If we need the sequences, we can call them this same way but
+            # with the variable seq_final rather than full_big
+            plotProp1 = np.average(np.average(seq_bigF[:,1,:],axis = 1))
+            plotProp2 = np.average(np.average(seq_bigF[:,2,:],axis = 1))
+            plotProp3 = np.average(np.average(seq_bigF[:,3,:],axis = 1))
+            plotProp4 = np.average(np.average(seq_bigF[:,4,:],axis = 1))
+            stdProp1 = np.std(np.average(seq_bigF[:,1,:],axis = 1))
+            stdProp2 = np.std(np.average(seq_bigF[:,2,:],axis = 1))
+            stdProp3 = np.std(np.average(seq_bigF[:,3,:],axis = 1))
+            stdProp4 = np.std(np.average(seq_bigF[:,4,:],axis = 1))
+            plotIT = np.hstack((plotProp1, plotProp2,plotProp3,plotProp4))
+            stdIT = np.hstack((stdProp1, stdProp2,stdProp3,stdProp4))
+            ax[0,0].bar(x_axis+aa*1/len(labels_new), plotIT,
+                        yerr = stdIT,alpha = 0.5, width = 1/len(labels_new),color=cmap_discrete[j])
+            aa += 1
+
+
         ax[0,0].legend(labels_new)
         ax[0,0].set_xticks([0.2,1.3,2.4,3.5])
         ax[0,0].set_xticklabels(['Charge','Hydrophobicity','Flexibility','Bulkiness'])
@@ -1193,10 +1249,18 @@ class Analysis(Screen):
     def do_lda(self):
         this_dir = os.getcwd()
         numVects = int(self.inputLDA.text)
+
+        findex1 = sels[sels['ID'] == sels['ID'].drop_duplicates().values[0]]['selection']
+        findex2 = sels[sels['ID'] == sels['ID'].drop_duplicates().values[1]]['selection']
+        pre_array1 = np.array(full_big.loc[findex1])
+        pre_array2 = np.array(full_big.loc[findex2])
+        sub1_seqs = np.transpose(seq_final[findex1])
+        sub2_seqs = np.transpose(seq_final[findex2])
+
         pg1 = np.transpose(sub1_seqs.values); num1 = np.shape(pg1)[1]
         pg2 = np.transpose(sub2_seqs.values); num2 = np.shape(pg2)[1]
-        total_mat = np.vstack((sel1_pre,sel2_pre))
-        full_big, weights, acc_all, mda_all, parsed_mat, top_names = aims.compile_MP(total_mat, pg1, pg2, final_size = numVects, cat = False)
+        total_mat = np.vstack((pre_array1,pre_array2))
+        new_big, weights, acc_all, mda_all, parsed_mat, top_names = aims.compile_MP(total_mat, pg1, pg2, final_size = numVects, cat = False)
 
         # Seaborn plots look nicer for these LDA figures
         import seaborn as sns
@@ -1259,6 +1323,8 @@ class Analysis(Screen):
         global freq1,freq2
         global mat_size
         AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
+        freq1 = freq_hold[0]
+        freq2 = freq_hold[1]
 
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
         freqMax = np.max(freq1[:,1:]-freq2[:,1:]); freqMin = np.min(freq1[:,1:]-freq2[:,1:])
@@ -1288,11 +1354,17 @@ class Analysis(Screen):
     def get_shannon(self):
         self.next1_11.disabled = False
         this_dir = os.getcwd()
-        global freq1, freq2
+        global freq_hold
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
-        entropy1,freq1=aims.calculate_shannon(np.transpose(np.array(sub1_MI)))
-        entropy2,freq2=aims.calculate_shannon(np.transpose(np.array(sub2_MI)))
-        pl.plot(entropy1); pl.plot(entropy2)
+        shannon_hold = np.zeros((len(labels_new),len(seq_MIf)))
+        freq_hold = np.zeros((len(labels_new),len(seq_MIf),21))
+        aa = 0
+        for j in sels['ID'].drop_duplicates():
+            findex = sels[sels['ID'] == j]['selection']
+            sub_MI = seq_MIf[findex]
+            shannon_hold[aa],freq_hold[aa] = aims.calculate_shannon(np.transpose(np.array(sub_MI)))
+            pl.plot(shannon_hold[aa], marker='o',linewidth=2.5,color=cmap_discrete[j])
+            aa += 1
 
         pl.legend(labels_new); pl.xlabel('Position'); pl.ylabel('Shannon Entropy (Bits)')
         # Entropy is a rare case where we know the exact bounds of the values...
@@ -1311,17 +1383,24 @@ class Analysis(Screen):
         fig.savefig(this_dir + '/' + dir_name + '/shannon.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/shannon.png',format='png',dpi=500)
         # And save the raw data
-        np.savetxt(this_dir + '/' + dir_name + '/shannon_mat1.dat',entropy1,fmt='%.3f')
-        np.savetxt(this_dir + '/' + dir_name + '/shannon_mat2.dat',entropy2,fmt='%.3f')
 
         self.img11.source = this_dir + '/' + dir_name + '/shannon.png'
         pl.close()
+        # Don't let them go on if not a binary problem
+        if len(labels_new) > 2:
+            self.next1_11.disabled = True
 
     def get_MI(self):
         self.next1_12.disabled = False
         this_dir = os.getcwd()
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(10,8))
         poses = len(seq_MIf)
+        # So to get this far we are REQUIRING Binary entries
+        findex1 = sels[sels['ID'] == sels['ID'].drop_duplicates().values[0]]['selection']
+        sub1_MI = seq_MIf[findex1]
+        findex2 = sels[sels['ID'] == sels['ID'].drop_duplicates().values[1]]['selection']
+        sub2_MI = seq_MIf[findex2]
+            
         MI1,entropy_cond1,counted1=aims.calculate_MI(np.transpose(np.array(sub1_MI)))
         MI2,entropy_cond2,counted2=aims.calculate_MI(np.transpose(np.array(sub2_MI)))
         x = pl.imshow(MI1 - MI2, cmap=cm.PiYG, vmin = -0.2, vmax = 0.2)
@@ -1547,47 +1626,45 @@ class lda_binary(Screen):
     def on_pre_enter(self, *args):
         global lda_status
         if 'check_lda' not in globals():
-            lda_L1 = Label(text='Binary Class 1',size_hint = (None, None), height = '48dp',
+            lda_L1 = Label(text='Group  ID',size_hint = (None, None), height = '48dp',
                 pos_hint = {'center_x': 0.15, 'center_y': 0.6},font_name='app_data/Poppins-Medium.ttf')
-            lda_L2 = Label(text='Binary Class 2',size_hint = (None, None), height = '48dp',
-                pos_hint = {'center_x': 0.15, 'center_y': 0.45},font_name='app_data/Poppins-Medium.ttf')
+            #lda_L2 = Label(text='Binary Class 2',size_hint = (None, None), height = '48dp',
+            #    pos_hint = {'center_x': 0.15, 'center_y': 0.45},font_name='app_data/Poppins-Medium.ttf')
             FloatLayout.add_widget(self, lda_L1)
-            FloatLayout.add_widget(self, lda_L2)
+            #FloatLayout.add_widget(self, lda_L2)
 
             if len(labels) > 2:
                 lda_L3 = Label(text='Exclude from',size_hint = (None, None), height = '48dp',
-                    pos_hint = {'center_x': 0.15, 'center_y': 0.3},font_name='app_data/Poppins-Medium.ttf')
-                lda_L4 = Label(text='Binary Analysis',size_hint = (None, None), height = '48dp',
-                    pos_hint = {'center_x': 0.15, 'center_y': 0.25},font_name='app_data/Poppins-Medium.ttf')
+                    pos_hint = {'center_x': 0.15, 'center_y': 0.45},font_name='app_data/Poppins-Medium.ttf')
+                lda_L4 = Label(text='Analysis',size_hint = (None, None), height = '48dp',
+                    pos_hint = {'center_x': 0.15, 'center_y': 0.40},font_name='app_data/Poppins-Medium.ttf')
                 FloatLayout.add_widget(self, lda_L3)
                 FloatLayout.add_widget(self, lda_L4)
             
             for j in np.arange(len(labels)):
                 names = Label(text=labels[j], size_hint = (None, None), height = '48dp',
-                pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.70},font_name='app_data/Poppins-Medium.ttf')
+                pos_hint = {'center_x': 0.3+int(j)*0.6/len(labels), 'center_y': 0.70},font_name='app_data/Poppins-Medium.ttf')
                 if j == 0:
-                    box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),state = 'down',
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6},allow_no_selection = False)
-                    box2 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.45},allow_no_selection = False)
+                    box1 = TextInput(text=str(j), multiline=False, size_hint = (None, None),write_tab =False,
+                    pos_hint = {'center_x': 0.3+int(j)*0.6/len(labels), 'center_y': 0.6}, height = '32dp',width='32dp')
+
                 else:
-                    box1 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.6},allow_no_selection = False)
-                    box2 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),state = 'down',
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.45},allow_no_selection = False)
+                    box1 = TextInput(text=str(j), multiline=False, size_hint = (None, None),write_tab =False,
+                    pos_hint = {'center_x': 0.30+int(j)*0.6/len(labels), 'center_y': 0.6}, height = '32dp',width='32dp')
+
                 if len(labels) > 2:
-                    box3 = CheckBox(size_hint = (None,None), height = '48dp', group = 'g'+str(j+50),
-                    pos_hint = {'center_x': 0.3+int(j)*0.6/N, 'center_y': 0.3},allow_no_selection = False)
+                    box3 = CheckBox(size_hint = (None,None), height = '48dp',
+                    pos_hint = {'center_x': 0.3+int(j)*0.6/len(labels), 'center_y': 0.45},allow_no_selection = True)
                 if int(j) == 0:
                     if len(labels) > 2:
-                        lda_status = [[names,box1,box2,box3]]
+                        lda_status = [[names,box1,box3]]
                     else:
-                        lda_status = [[names,box1,box2]]
+                        lda_status = [[names,box1]]
                 else:
                     if len(labels) > 2:
-                        lda_status = lda_status + [[names,box1,box2,box3]]
+                        lda_status = lda_status + [[names,box1,box3]]
                     else:
-                        lda_status = lda_status + [[names,box1,box2]]
+                        lda_status = lda_status + [[names,box1]]
                 # Before adding in all of the new ones
             for entry in lda_status:
                 for j in entry:
@@ -1598,6 +1675,7 @@ class lda_binary(Screen):
 
     def check_checks(self):
         global lda_checked
+        global group_a_id
         # Convert our weird little kivy objects into a numpy array
         x,y = np.shape(lda_status)
         for row in np.arange(x):
@@ -1605,14 +1683,19 @@ class lda_binary(Screen):
                 # Exclude the name column
                 if column == 0:
                     continue
+                # Read in the text column
                 if column == 1:
-                    check_pre_l = lda_status[row][column].active
+                    text_pre_l = lda_status[row][column].text
                 else:
-                    check_pre_l = np.hstack((check_pre_l,lda_status[row][column].active))
+                    check_pre_l = lda_status[row][column].active
             if row == 0:
-                lda_checked = check_pre_l
+                group_a_id = text_pre_l
+                if column > 1:
+                    lda_checked = check_pre_l
             else:
-                lda_checked = np.vstack((lda_checked,check_pre_l))
+                group_a_id = np.vstack((group_a_id,text_pre_l))
+                if column > 1:
+                    lda_checked = np.vstack((lda_checked,check_pre_l))
 
 class intro(Screen):
     global skip7
