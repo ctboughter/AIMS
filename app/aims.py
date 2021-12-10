@@ -1237,7 +1237,7 @@ class Analysis(Screen):
 
         ax[0,0].legend(labels_new)
         ax[0,0].set_xticks([0.2,1.3,2.4,3.5])
-        ax[0,0].set_xticklabels(['Charge','Hydrophobicity','Flexibility','Bulkiness'])
+        ax[0,0].set_xticklabels(['Charge','Hydrophobicity','Bulkiness','Flexibility'])
         ax[0,0].set_xlabel('Biophysical Property')
         ax[0,0].set_ylabel('Normalized Property Value')
 
