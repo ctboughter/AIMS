@@ -243,7 +243,7 @@ def pep_loader(fastapath,label, scrape=False, start_label=0):
         # but I should probably make sure of that at some point
         allele = csv_file[headers[-1]]
     else:
-        data = pandas.read_csv(fastapath,sep=',',header=1)['sequence']
+        data = pandas.read_csv(fastapath,sep=',',header=0)['sequence']
     for i in np.arange(len(data)):
         # Replace 
         titleV = label + '_' + str(a+start_label)

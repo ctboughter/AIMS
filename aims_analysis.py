@@ -777,51 +777,6 @@ def parse_props(X_train,y_train,mat_size=100):
     # Then I can just pull out those locations.
     return(max_diffs)
 
-def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
-    # How many sequences do we have?
-    numClone = len(pre_pep1)
-    final_pep1=[] # initialize a variable
-    # Allow for the possibility that you are doing a binary comparison
-    for re_pep in [pre_pep1, pre_pep2]:
-        numClone = len(re_pep[0])
-        ### FOR NOW, HARD CODE A PEPTIDE SEQUENCE LEN MAX OF 18
-        ### MIGHT NEED TO GET CREATIVE WITH THIS, MIGHT NEED TO
-        ### ADAPT IT AS WE GO, JUST IN CASE.
-        sequence_dim = 18
-        pep_PCA=np.zeros([numClone,sequence_dim])
-
-        for i in range(numClone): # For all of our polyreactive sequences...
-            # this 'count' variable is how we center align... probably 
-            # NOT what we want to do for the peptide analysis... except maybe
-            # for the 'betwixt anchors' section
-            count = int((sequence_dim - len(re_pep[0][i]))/2.0)
-
-            # Check the work of Guillame et al. [PNAS 2018]
-            # for some ideas on how to encode this matrix
-
-            # This loop is where we put these rules for encoding
-            # For now, let's make simple assumptions
-            # (pos 2 and last pos are anchors)
-            # BUT code up a "bulge" region that is centrally aligned
-            for m in re_pep[0][i]:
-                for j in range(len(key)):
-                    if m==AA_key[j]:
-                        pep_PCA[i][count]=key[j]
-                        count=count+1
-        if binary:
-            # Unfortunate naming here for the binary case
-            # but it is what it is...
-            if final_pep1 == []:
-                final_pep1 = pep_PCA
-            else:
-                final_pep2 = pep_PCA
-        else:
-            break
-    
-    if binary:
-        return(final_pep1,final_pep2)
-    else:
-        return(pep_PCA)
 ###################################################
 # Peptide stuff:
 def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
@@ -974,3 +929,36 @@ def split_reshape(ID_big, matShape, total_props = 61):
     seq1_bigReshape = seq1_bigProps.reshape(cloneNum1,total_props,matShape)
     seq2_bigReshape = seq2_bigProps.reshape(cloneNum2,total_props,matShape)
     return(seq1_bigReshape,seq2_bigReshape)
+
+def full_AA_freq(seq,norm='num_AA'):
+    AA_freq_all = np.zeros((20))
+    digram_all = np.zeros((20,20))
+    AAs = 0; num_seq = 0
+    for i in seq.values[0]:
+        num_seq = num_seq + 1
+        AAs = AAs + len(i)
+        for loc in np.arange(len(i)):
+            res1 = i[loc]
+            if loc + 1 < len(i):
+                res2 = i[loc+1]
+            else:
+                res2 = -1
+            matched = False
+            for mat_loc1 in np.arange(len(AA_key)):
+                if AA_key[mat_loc1] == res1:
+                    AA_freq_all[mat_loc1] = AA_freq_all[mat_loc1] + 1
+                    matched = True
+                    if res2 != -1:
+                        for mat_loc2 in np.arange(len(AA_key)):
+                            if AA_key[mat_loc2] == res2:
+                                digram_all[mat_loc1,mat_loc2] = digram_all[mat_loc1,mat_loc2] + 1
+                                break
+                if matched:
+                    break
+    if norm == 'num_AA':
+        AA_freq_all = AA_freq_all/AAs
+        digram_all = digram_all/AAs
+    elif norm == 'num_seq':
+        AA_freq_all = AA_freq_all/num_seq
+        digram_all = digram_all/num_seq
+    return(AA_freq_all,digram_all)

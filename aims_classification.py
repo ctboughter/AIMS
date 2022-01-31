@@ -257,21 +257,15 @@ def apply_pretrained_LDA(bigass_mono,top_names,weights):
 # BEST DISCRIMINATE THE DATASET
 # Add in a new module for "if it's a peptide"
 def do_linear_split(test_mono,test_poly,ridCorr = True,giveSize=[],matSize=75,
-manuscript_arrange=False,pca_split=False,special = ''):
+manuscript_arrange=False,pca_split=False,align='center'):
     num_mono = np.shape(test_mono)[1]
     num_poly = np.shape(test_poly)[1]
 
     mat = np.hstack((test_mono,test_poly))
     if manuscript_arrange:
-        if special == 'peptide':
-            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True, special = 'peptide')
-        else:
-            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True)
+        total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True)
     else:
-        if special == 'peptide':
-            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False, special = 'peptide')
-        else:
-            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False)
+        total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False, alignment=align)
     prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
     prop_list_new = ['Hot'+str(b+1) for b in range(46)]
 
