@@ -865,9 +865,9 @@ class Analysis(Screen):
 
         # A bit of an odd solution to how we add in a legend to the PCA/UMAP
         from matplotlib.lines import Line2D
-        cmap = pl.get_cmap('rainbow')
+        cmap2 = pl.get_cmap('rainbow')
         global cmap_discrete
-        cmap_discrete = cmap(np.linspace(0, 1, len(seqNameF)))
+        cmap_discrete = cmap2(np.linspace(0, 1, len(seqNameF)))
         for i in np.arange(len(seqNameF)):
             if i == 0:
                 custom_lines = [Line2D([0], [0], color='w', marker='o',markerfacecolor=cmap_discrete[i], markersize= 10)]
@@ -1082,6 +1082,8 @@ class Analysis(Screen):
         full_big.index = seq_MIf.columns
         global sels
         global labels_new
+        # This will be the color scheme used for figures downstream of clustering
+        global cmap_discrete_fin
         # Skip7 is our sign of "use the original labels"
         if skip7:
             # define the IDs by the datasets already subsected
@@ -1094,7 +1096,17 @@ class Analysis(Screen):
             sels.columns = ['selection','ID']
 
             labels_new =['Cluster '+str(sel1), 'Cluster '+str(sel2)]
+
+            # If we're skipping 7, we need to redefine our colormap to have more entries...
+            # Redefine as cmap_discrete_fin so it doesn't mess with the previously
+            # defined cmap_discrete (based on # datasets)
+            if clust == 'kmean':
+                cmap2 = 'rainbow'
+                cmap_discrete_fin = cmap2(np.linspace(0, 1, fin_clustL))
+            else:
+                cmap_discrete_fin = cmap(np.linspace(0, 1, fin_clustL))
         else:
+            cmap_discrete_fin = cmap_discrete
             # try to sort of cheat in creating the labels here...
             labels_new = [''] * len(group_a_id)
             first = True
@@ -1131,10 +1143,10 @@ class Analysis(Screen):
             # with the variable seq_final rather than full_big
             prop1 = 1
             plotProp1 = np.average(seq_bigF[:,prop1,:],axis = 0)
-            ax[0,0].plot(plotProp1,marker='o',linewidth=2.5,color=cmap_discrete[j])
+            ax[0,0].plot(plotProp1,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
             prop2 = 2
             plotProp2 = np.average(seq_bigF[:,prop2,:],axis = 0)
-            ax[1,0].plot(plotProp2,marker='o',linewidth=2.5,color=cmap_discrete[j])
+            ax[1,0].plot(plotProp2,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
             np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat'+str(j)+'.dat',pre_array,fmt='%.3f')
 
         ax[0,0].set_ylabel('Charge')
@@ -1231,7 +1243,7 @@ class Analysis(Screen):
             plotIT = np.hstack((plotProp1, plotProp2,plotProp3,plotProp4))
             stdIT = np.hstack((stdProp1, stdProp2,stdProp3,stdProp4))
             ax[0,0].bar(x_axis+aa*1/len(labels_new), plotIT,
-                        yerr = stdIT,alpha = 0.5, width = 1/len(labels_new),color=cmap_discrete[j])
+                        yerr = stdIT,alpha = 0.5, width = 1/len(labels_new),color=cmap_discrete_fin[j])
             aa += 1
 
 
@@ -1363,7 +1375,7 @@ class Analysis(Screen):
             findex = sels[sels['ID'] == j]['selection']
             sub_MI = seq_MIf[findex]
             shannon_hold[aa],freq_hold[aa] = aims.calculate_shannon(np.transpose(np.array(sub_MI)))
-            pl.plot(shannon_hold[aa], marker='o',linewidth=2.5,color=cmap_discrete[j])
+            pl.plot(shannon_hold[aa], marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
             aa += 1
 
         pl.legend(labels_new); pl.xlabel('Position'); pl.ylabel('Shannon Entropy (Bits)')
