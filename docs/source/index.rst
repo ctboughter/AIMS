@@ -11,7 +11,7 @@ Using AIMS to Analyze Immune Repertoires
 
 AIMS, an Automated Immune Molecule Separator, was originally developed to identify differences between two distinct antibody repertoires, but has since expanded to become a multi-purpose repertoire analysis tool. Currently the AIMS analytical tools can be applied to immunoglobulin (Ig) molecules such as T cell receptors and antibodies, major histocompatibility complex (MHC) and MHC-like molecules, and immunopeptidomic data. This documentation will teach users how to use AIMS to:
 
-- **Get started** following the :doc:`Install` intstructions. If you're coming here from the GitHub page, hopefully you already done this.
+- **Get started** following the :doc:`Install` intstructions.
 
 
 - **Analyze repertoires with no programming experience required** in a user-friendly format with the :doc:`AIMS_GUI`.
