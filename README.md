@@ -14,7 +14,7 @@ Boughter CT, Borowska MT, Guthmiller JJ, Bendelac A, Wilson PC, Roux B, Adams EJ
 
 Rather than have all of the instructions on this GitHub page, all information on installation and usage (and more!) has been moved to a separate, more readable documentation page. Please follow this link:
 
-aims-doc.readthedocs.io
+https://aims-doc.readthedocs.io/en/latest/
 
 For the comprehensive AIMS user guide.
 
