@@ -10,6 +10,7 @@ from sklearn.metrics import accuracy_score
 # Define some initial stuff and import analysis functions:
 #AA_key_old=['A','G','L','M','F','W','K','Q','E','S','P','V','I','C','Y','H','R','N','D','T']
 AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
+AA_key_dash = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-']
 
 # So we've got 46 orthogonal (or at least not super correlated)
 # dimensions. Add them in to the matrix
@@ -18,9 +19,13 @@ AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W',
 newnew=pandas.read_csv('app_data/new_props')
 oldold=pandas.read_csv('app_data/old_props')
 
-# Again, ugly to hard code in the number of properties (62) but 
-# For now no harm no foul
-properties=np.zeros((62,20))
+# These next 8 lines re-order the properties to guarantee that everything is in the correct order
+# Would be a HUGE issue if alanine properties were given to arginine, etc.
+prop_parsed = np.zeros((len(oldold),20))
+for i in np.arange(len(AA_key)):
+    prop_parsed[0:16,i]=oldold[AA_key[i]]
+
+properties=np.zeros((len(newnew)+len(oldold),20))
 for i in np.arange(len(AA_key)):
     properties[0:16,i]=oldold[AA_key[i]]
     properties[16:,i]=newnew[AA_key[i]]
@@ -30,32 +35,45 @@ AA_num_key=np.arange(20)+1
 
 def get_sequence_dimension(re_poly):
     num_loops,num_clones=np.shape(re_poly)
+    seqlenF = []
     for i in np.arange(num_loops):
         if i == 0:
             max_len=len(re_poly[i,0])
-        elif i <= 5:
+        elif i <= num_loops:
             max_len=np.vstack((max_len,len(re_poly[i,0])))
         for j in np.arange(num_clones):
+            seqlen = len(re_poly[i,j])
             if i == 0:
-                if len(re_poly[i,j]) > max_len:
-                    max_len = len(re_poly[i,j])
+                if seqlen > max_len:
+                    max_len = seqlen
             else:
-                if len(re_poly[i,j]) > max_len[i]:
-                    max_len[i] = len(re_poly[i,j])
+                if seqlen > max_len[i]:
+                    max_len[i] = seqlen
+            if type(seqlenF) == list:
+                seqlenF = seqlen
+            else:
+                seqlenF = np.vstack((seqlenF,seqlen))
     max_len=max_len+3 # Add 3 here so there's a more pronounced space between loops
     ## SO NOW MAX LEN SHOULD HAVE THE MAXIMUM LENGTH OF EACH CDR LOOP ##
     if num_loops == 1:
         sequence_dim = max_len
+        seqlens = seqlenF.reshape(num_clones,num_loops)
     else:
         sequence_dim = int(sum(max_len))
-    return(max_len,sequence_dim)
+        seqlens = seqlenF.reshape(num_clones,num_loops)
+    return(max_len,sequence_dim,seqlens)
 
 # NOTE, manuscript_arrange=False MUST be selected to run MHC analysis
 # I used to re-arrange the CDR loops for a more position-accurate
 # representation. In the current analysis, this isn't necessary.
 def gen_tcr_matrix(pre_poly,key=AA_num_key_new,binary=False,
 pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False,
-alignment = 'center'):
+alignment = 'center',bulge_pad = 8):
+    if int(bulge_pad) != 8 and int(bulge_pad) != 6 and int(bulge_pad) != 4 and int(bulge_pad) != 2:
+        # We can only accept the above options for bulge
+        print('Can only accept bulge_pad of 8, 6, 4, or 2.')
+        print('Default to bulge_pad = 8')
+        bulge_pad = 8
     # Do this so that 
     if giveSize == []:
         if binary:
@@ -110,7 +128,7 @@ alignment = 'center'):
                     elif alignment.lower() == 'bulge':
                         count = 0
                         b_count = 0 # b_count is bulge count
-                        bulge = leng - 8 # Minus 8 because we are conserving 4 AA on each end
+                        bulge = leng - bulge_pad
                         start_end = True # Have a trigger to start the end of the peptide
                         bulge_cen = int((max_len - bulge)/2.0)
                 else:
@@ -126,29 +144,29 @@ alignment = 'center'):
                         count = int(max_len[k] - leng) + int(sum(max_len[:k]))
                     elif alignment.lower() =='bulge':
                         # If the loop is too short, just do center alignment
-                        if int(LoopMax) < int(10):
+                        if int(LoopMax) < int(bulge_pad+2):
                             count=int((max_len[k]-leng)/2.0)+int(sum(max_len[:k]))
                         else:
                             count = int(0) + int(sum(max_len[:k]))
                             b_count = 0
-                            bulge = leng - 8
+                            bulge = leng - bulge_pad
                             start_end = True
                             bulge_cen = int((max_len[k] - bulge)/2.0) + loopBuff
                 for m in re_poly[k][i]: # SO IS THIS ONE for bootstrapping
                     for j in range(len(key)):
                         if m==AA_key[j]:
                             # Can't be doing this for short sequences
-                            if alignment.lower() == 'bulge' and int(LoopMax) > int(10):
+                            if alignment.lower() == 'bulge' and int(LoopMax) > int(bulge_pad+2):
                                 if bulge < 0:
                                     if count > 3 + loopBuff:
                                         if start_end:
                                             start_end = False
                                             # So here is where we skip to the very end
-                                            count = LoopMax-4 + loopBuff
+                                            count = LoopMax-int(bulge_pad/2) + loopBuff
                                 else:
                                     # Clearly don't need to do any of this stuff
                                     # if we DONT have a bulge, so make exception
-                                    if count > 3 + loopBuff and count < LoopMax-4 +loopBuff:
+                                    if count > int(bulge_pad/2)-1 + loopBuff and count < LoopMax-int(bulge_pad/2) +loopBuff:
                                         if b_count == 0:
                                             count = bulge_cen
                                         b_count += 1
@@ -157,7 +175,7 @@ alignment = 'center'):
                                     # ie, gaps should go around the bulk
                                     if b_count > bulge:
                                         if start_end:
-                                            count = LoopMax-4 + loopBuff
+                                            count = LoopMax-int(bulge_pad/2) + loopBuff
                                             start_end = False
                             poly_PCA[i][int(count)]=key[j]
                             count += 1
@@ -180,12 +198,15 @@ alignment = 'center'):
         return(poly_PCA,max_lenp)
     else:
         return(poly_PCA)
+
 def calculate_shannon(poly_PCA):
     clones,aas = np.shape(poly_PCA)
     prob_poly_full=np.zeros((clones,aas,21))
     # We technically have 21 entries, 20 AAs (1-20) and spaces 0... Take a look at all of that
-    AAs=np.arange(0,21)
-    #print(AAs)
+    # Actually 22 now that we are allowing for '-' in MSA
+    AAs=np.arange(0,22)
+    #Actually for the time being, there is no "22". Whenever we see '-' we wouldn't see a space
+    # so we can let them be equal for now
 
     for i in np.arange(clones):
         for j in np.arange((aas)):
@@ -312,7 +333,7 @@ def gen_clone_props(poly_PCA):
     
     # This whole code block used to be outside the function, but kept running into a very weird issue
     # where it seemed like the "props" were changing in a strange way.
-    properties=np.zeros((62,20))
+    properties=np.zeros((len(newnew)+len(oldold),20))
     for i in np.arange(len(AA_key)):
         properties[0:16,i]=oldold[AA_key[i]]
         properties[16:,i]=newnew[AA_key[i]]
@@ -359,7 +380,7 @@ def get_props():
     newnew=pandas.read_csv('app_data/new_props')
     oldold=pandas.read_csv('app_data/old_props')
 
-    props=np.zeros((62,20))
+    props=np.zeros((len(newnew)+len(oldold),20))
     for i in np.arange(len(AA_key)):
         props[0:16,i]=oldold[AA_key[i]]
         props[16:,i]=newnew[AA_key[i]]
@@ -693,10 +714,17 @@ def gen_1Chain_matrix(pre_poly,key=AA_num_key_new,binary=False,pre_mono=[],giveS
         return(poly_PCA)
 
 #### K.I.S.S. just make a new script to get the big matrix:
-def getBig(mono_PCA, norm = True):
+def getBig(mono_PCA, norm = True,prop_parse=False):
     # Try to maximize differences across the properties by looking at patterning...
     # Redifine "properties" because I was getting some weird errors...
-    properties=np.zeros((62,20))
+        # Prop_parse removes the "hotspot" variables for better physical
+    # interpretability (a key moving forward)
+    if prop_parse:
+        properties=np.zeros((len(oldold),20))
+        for i in np.arange(len(AA_key)):
+            properties[0:16,i]=oldold[AA_key[i]]
+    else:
+        properties=np.zeros((len(newnew)+len(oldold),20))
     for i in np.arange(len(AA_key)):
         properties[0:16,i]=oldold[AA_key[i]]
         properties[16:,i]=newnew[AA_key[i]]
@@ -719,6 +747,9 @@ def getBig(mono_PCA, norm = True):
     for i in np.arange(len(props)): # For all of our properties...
         for j in np.arange(mono_dim1): # for every clone
             for k in np.arange(int(mono_dim2)): # for every position
+                # Hopefully this should speed things up a *tiny* bit
+                if mono_pca_NEW[j,k]==0:
+                    continue
                 for m in AA_num_key:
                     if mono_pca_NEW[j,k]==m:
                         mono_prop_masks[i,j,k]=mono_prop_masks[i,j,k]+props[i,m-1]
@@ -859,7 +890,7 @@ def gen_splits(splitMat, splitSize = 100):
     final = np.transpose(np.vstack((s1,s2)))
     return(final)
 
-def compile_MP(bigass_pre, pg1, pg2, final_size = 10, cat = True):
+def compile_MP(bigass_pre, pg1, pg2, final_size = 10, prop_parse=False, cat = True):
     # Alright this concatenate function should put the final product in the correct form
     if cat:
         total_mat = np.concatenate(bigass_pre, axis = 0)
@@ -868,8 +899,11 @@ def compile_MP(bigass_pre, pg1, pg2, final_size = 10, cat = True):
     prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
     prop_list_new = ['Hot'+str(b+1) for b in range(46)]
 
-    prop_names = prop_list_old + prop_list_new
-    num_locs = int(np.shape(total_mat)[1]/61)
+    if prop_parse:
+        prop_names = prop_list_old
+    else:
+        prop_names = prop_list_old + prop_list_new
+    num_locs = int(np.shape(bigass_pre)[1]/len(prop_names))
     Bigass_names = []
     for i in prop_names:
         for j in np.arange(num_locs):
@@ -929,6 +963,338 @@ def split_reshape(ID_big, matShape, total_props = 61):
     seq1_bigReshape = seq1_bigProps.reshape(cloneNum1,total_props,matShape)
     seq2_bigReshape = seq2_bigProps.reshape(cloneNum2,total_props,matShape)
     return(seq1_bigReshape,seq2_bigReshape)
+
+###### Dpr-DIP Matrix #######
+def gen_MSA_matrix(pre_poly,key=AA_num_key_new,binary=False,
+pre_mono=[],giveSize=[],return_Size=False):
+    # Do this so that 
+    if giveSize == []:
+        if binary:
+            # NEW ADDITION TO CLEAN THINGS UP A BIT #
+            max_len1 = get_sequence_dimension(pre_poly)[0]
+            max_len2 = get_sequence_dimension(pre_mono)[0]
+            max_lenp=np.zeros(len(max_len1))
+            for i in np.arange(len(max_len1)):
+                max_lenp[i]=int(max(max_len1[i],max_len2[i]))
+            if type(max_lenp) == int:
+                sequence_dim = max_lenp
+            else:
+                sequence_dim = int(sum(max_lenp))
+        else:
+            max_lenp,sequence_dim=get_sequence_dimension(pre_poly)
+    else:
+        max_lenp = giveSize
+        if type(max_lenp) == int:
+            sequence_dim = max_lenp
+        else:
+            sequence_dim = int(sum(max_lenp))
+    final_poly=[] # initialize a variable
+
+    max_len = max_lenp
+    
+    for re_poly in [pre_poly,pre_mono]:
+
+        numLoop,numClone = np.shape(re_poly)
+
+        poly_PCA=np.zeros([numClone,sequence_dim])
+        for i in range(numClone): # For all of our polyreactive sequences...
+            loop=0
+            for k in range(numLoop): # Scroll through all of the loops within a clone                
+                leng=len(re_poly[k][i]) #should be this if re-sampling
+                # the int clause below is how we center align
+
+                if type(max_len) == int:
+                    count = int((max_len-leng)/2.0)
+                else:
+                    # Can go ahead and replace these below... at some point
+                    # For now define them for the purpose of the bulge alignment below
+                    count = int((max_len[k]-leng)/2.0) + int(sum(max_len[:k]))
+                for m in re_poly[k][i]: # SO IS THIS ONE for bootstrapping
+                    for j in range(len(key)):
+                        if m==AA_key_dash[j]:
+                            poly_PCA[i][int(count)]=key[j]
+                            count += 1
+                loop=loop+1
+        if binary:
+            # Unfortunate naming here for the binary case
+            # but it is what it is...
+            if final_poly == []:
+                final_poly = poly_PCA
+            else:
+                final_mono = poly_PCA
+        else:
+            break
+    
+    if binary and return_Size:
+        return(final_poly,final_mono,max_lenp)
+    elif binary:
+        return(final_poly,final_mono)
+    elif return_Size:
+        return(poly_PCA,max_lenp)
+    else:
+        return(poly_PCA)
+
+def get_interaction_score(seq,MSA=True,scorMat='v1'):
+    if scorMat == 'v1':
+        scoring_mat = pandas.read_csv('app_data/AA_interactionV1.csv',sep=',')
+    elif scorMat == 'v2':
+        scoring_mat = pandas.read_csv('app_data/AA_interactionV2.csv',sep=',')
+    scoring_mat.index = scoring_mat['Residue'].values
+    scoring_pre = scoring_mat.drop(labels='Residue',axis=1)
+    dash1 = np.transpose(pandas.DataFrame(np.zeros(20)))
+    dash1.columns = scoring_mat['Residue'].values; dash1.index = ["-"]
+    dash2 = pandas.DataFrame(np.zeros(20))
+    dash2.index = scoring_mat['Residue'].values; dash2.columns= ["-"]
+    scoreF = pandas.concat([scoring_pre,dash1],axis=0)
+    scoring_final = pandas.concat([scoreF,dash2],axis=1)
+    scoring_final['-']['-'] = 0.0
+
+    # So seq input HAS to be 2 columns x N rows for each sample.
+    # 2 being the interacting proteins, so let's get back out the length
+    # Original version of the script assumed MSA input, but would like to expand that
+    if MSA:
+        len1 = len(seq.values[0,0])
+        len2 = len(seq.values[1,0])
+    else:
+        # Find the maxlens
+        len1 = 0
+        for i in np.arange(len(seq.values[0])):
+            if len(seq.values[0,i]) > len1:
+                len1 = len(seq.values[0,i])
+        len2 = 0
+        for j in np.arange(len(seq.values[1])):
+            if len(seq.values[1,j]) > len2:
+                len2 = len(seq.values[j,i])
+
+    for i in np.arange(np.shape(seq)[1]):
+        cognate_scores = np.zeros([len1,len2])
+        dpr_temp = seq.values[0,i]
+        dip_temp = seq.values[1,i]
+        # All of this just to center align sequences
+        # of different lengths
+        if len(dpr_temp) < len1:
+            difflen = len1 - len(dpr_temp)
+            split = difflen/2
+            if split < 1:
+                dpr_temp = dpr_temp + '-'
+            else:
+                pad = int(np.floor(split))
+                dpr_temp = pad*'-' + dpr_temp + pad*'-'
+                dpr_temp = dpr_temp + '-'*int(np.ceil(split)-pad)
+        if len(dip_temp) < len2:
+            difflen = len2 - len(dip_temp)
+            split = difflen/2
+            if split < 1:
+                dip_temp = dip_temp + '-'
+            else:
+                pad = int(np.floor(split))
+                dip_temp = pad*'-' + dip_temp + pad*'-'
+                dip_temp = dip_temp + '-'*int(np.ceil(split)-pad)
+
+        for a in np.arange(len(dpr_temp)):
+            for b in np.arange(len(dip_temp)):
+                res1 = dpr_temp[a]
+                res2 = dip_temp[b]
+                cognate_scores[a,b] = scoring_final[res1][res2]
+        if i == 0:
+            cognate_final = cognate_scores
+        else:
+            cognate_final = np.vstack((cognate_final,cognate_scores))
+        
+    cognate_scores = cognate_final.reshape(i+1,len1,len2)
+    cognate_average = np.average(cognate_scores,axis=0)
+    cognate_std = np.std(cognate_scores,axis=0)
+    return(cognate_scores,cognate_average,cognate_std)
+
+def create_msa_pairs(file1, file2, pair_list, names, label = 'Pair'):
+    csv1 = pandas.read_csv(file1,sep=','); csv2 = pandas.read_csv(file2,sep=',')
+    csv1_seq = np.transpose(pandas.DataFrame(csv1['Sequence']))
+    csv2_seq = np.transpose(pandas.DataFrame(csv2['Sequence']))
+    
+    csv1_seq.columns = csv1[names[0]]; csv2_seq.columns = csv2[names[1]]
+    pairs_frame = pandas.read_csv(pair_list,sep=',',header=None)
+    pairs = pairs_frame.values
+    
+    for i in np.arange(len(pairs)):
+        seq1 = csv1_seq[pairs[i,0]]
+        seq2 = csv2_seq[pairs[i,1]]
+        new_frame = pandas.DataFrame([seq1,seq2])
+        new_frame.index = [names[0],names[1]]
+        new_frame.columns = [ label + ' ' + str(i)]
+        if i == 0:
+            final_pairs = new_frame
+        else:
+            final_pairs = pandas.concat([final_pairs,new_frame],axis=1)
+    return(final_pairs)
+
+########## So this is a first draft of loading metadata into AIMS ##########
+# For now, this is specifically for loading in distance metadata for the
+# Dpr-DIP application. Need to create a standard formatting for future use
+def load_metadata(file):
+    dist_load = pandas.read_csv(file,sep = '|',header=1)
+    dist_load.columns = ['Query Chain', 'Interacting Chains', 'Dist', 'AtomClasses']
+    first = True
+    for i in dist_load['Interacting Chains'].values:
+        # So it seems like there are always 3 spaces before the numbers
+        skip = False
+        hold = i.find('   ')
+        count = 3
+        zz = i[hold+count:]
+        hold2 = zz.find(' ')
+        while hold2 == 0:
+            count += 1
+            zz = i[hold+count:]
+            hold2 = zz.find(' ')
+        if first:
+            interact_num = int(zz[:hold2])
+            first = False
+        else:
+            interact_num = np.hstack((interact_num, int(zz[:hold2])))
+    first = True
+    for i in dist_load['Query Chain'].values:
+        # So it seems like there are always 3 spaces before the numbers
+        skip = False
+        hold = i.find('   ')
+        count = 3
+        zz = i[hold+count:]
+        hold2 = zz.find(' ')
+        while hold2 == 0:
+            count += 1
+            zz = i[hold+count:]
+            hold2 = zz.find(' ')
+        if first:
+            query_num = int(zz[:hold2])
+            first = False
+        else:
+            query_num = np.hstack((query_num, int(zz[:hold2])))
+            
+    dist_load['Query Chain'] = query_num
+    dist_load['Interacting Chains'] = interact_num
+
+    first = True
+    for i in dist_load[['Query Chain','Interacting Chains']].drop_duplicates().values:
+        res1 = dist_load[dist_load['Query Chain'] == i[0]]
+        resf = res1[res1['Interacting Chains'] == i[1]]
+        avg_dist = np.average(resf['Dist'])
+        if first:
+            # WE CAN CHANGE THIS TO EITHER MIN, MAX, OR AVG DIST
+            input_vects = np.hstack((i,avg_dist))
+            new_frame = pandas.DataFrame(input_vects)
+            first = False
+        else:
+            # WE CAN CHANGE THIS TO EITHER MIN, MAX, OR AVG DIST
+            input_vects = np.hstack((i,avg_dist))
+            new_frame = pandas.concat([new_frame,pandas.DataFrame(input_vects)],axis=1)
+    meta_dist = np.transpose(new_frame)
+    meta_dist.columns = ['Dpr','DIP','Dist']
+
+    # Need to define the different alignments for visually matching to alignment figure AND for incorporating
+    # in some distance metadata for these...
+    # Dpr first
+    dpr_pdb_numbering = [33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,
+                        0,0,0,0,0,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107]
+    dpr_aln_numbering = [40,41,47,48,49,50,51,52,53,54,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,
+                        0,0,0,0,0,113,114,115,116,117,118,120,121,122,123,124,125,126,127,128,129,130,131,132]
+    # Then DIP
+    dip_pdb_numbering = [140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,
+                        161,162,163,164,165,0,0,0,0,0,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204]
+    dip_aln_numbering = [33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,
+                        0,0,0,0,0,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100]
+
+    # And export it all:
+    return(meta_dist,dpr_pdb_numbering,dpr_aln_numbering,dip_pdb_numbering,dip_aln_numbering)
+
+def generate_score_df(seq,scores,dist,pairs,mols):
+    first = True
+    for i in np.arange(np.shape(seq)[1]):
+        for j in pairs:
+            res1 = np.transpose(seq)[mols[0]].values[i][int(j[0])]
+            res2 = np.transpose(seq)[mols[1]].values[i][int(j[1])]
+            
+            score_temp1 = scores[i][int(j[0]),int(j[1])] * dist.values[int(j[0]),int(j[1])]
+            score_temp2 = scores[i][int(j[0]),int(j[1])]
+            
+            vect = [res1,res2,score_temp1,score_temp2,int(j[0]),int(j[1]),i]
+            if first:
+                important_res = vect
+                first = False
+            else:
+                important_res = np.vstack((important_res,vect))
+
+    res_df = pandas.DataFrame(important_res); res_df.columns = ['Mol1_res','Mol2_res','Pair_Score','Unweight_Score','Res1','Res2','ID']
+    return(res_df)
+
+def reshape_scores(dataframe):
+    first = True
+    for i in dataframe['ID'].drop_duplicates():
+        sin_prot_score = dataframe[dataframe['ID'] == i]['Pair_Score']
+        if first:
+            score_reshape = [float(a) for a in sin_prot_score.values]
+            first = False
+        else:
+            score_reshape = np.vstack((score_reshape, [float(a) for a in sin_prot_score.values]))
+    return(score_reshape)
+    
+def msa_maxdiff(frame, pairs, scores, top_X):
+    avg_score_df = pandas.DataFrame(scores)
+    pos_index = pandas.DataFrame(abs(avg_score_df[0] - avg_score_df[1])).sort_values(0).index[-top_X:]
+    first = True
+    for i in pairs[pos_index]:
+        sub_df = frame[frame['Res1'] == str(int(i[0]))]
+        fin_df = sub_df[sub_df['Res2'] == str(int(i[1]))]
+        if first:
+            TOP = fin_df
+            first = False
+        else:
+            TOP = pandas.concat((TOP,fin_df))
+
+    return(TOP)
+
+# So the score_reshape vars are #pairs x #vectors, we want to change that to #pairs x 6
+# Need to program in options to either count or accumulate some kind of average score
+def general_score(dataframe,option = 'count'):
+    first=True; scores = [-2.0, -1.0, -0.5, 0.0, 1.0, 2.0]
+    for i in dataframe['ID'].drop_duplicates():
+        sin_prot_score = dataframe[dataframe['ID'] == i]['Unweight_Score']
+        sin_prot_weighted = dataframe[dataframe['ID'] == i]['Pair_Score']
+        if first:
+            first = False
+            counter = [0,0,0,0,0,0]
+            for j in np.arange(len(sin_prot_score)):
+                for k in np.arange(len(scores)):
+                    if float(sin_prot_score.values[j]) == scores[k]:
+                        if option == 'count':
+                            counter[k] = counter[k] + 1
+                        elif option == 'sum':
+                            counter[k] = counter[k] + float(sin_prot_weighted.values[j])
+            counterF = counter
+        else:
+            counter = [0,0,0,0,0,0]
+            for j in np.arange(len(sin_prot_score)):
+                for k in np.arange(len(scores)):
+                    if float(sin_prot_score.values[j]) == scores[k]:
+                        if option == 'count':
+                            counter[k] = counter[k]+1
+                        elif option == 'sum':
+                            counter[k] = counter[k] + float(sin_prot_weighted.values[j])
+            counterF = np.vstack((counterF,counter))
+    return(counterF)
+
+def convert_3Let(inp):
+    first = True
+    three_let = ['ALA','GLY','ARG','LYS','ASP','GLU','ASN','GLN','MET','CYS','PHE','TYR','THR','TRP','PRO','SER','LEU','VAL','HIS','ILE']
+    sin_let = [  'A',  'G',  'R',  'K',  'D',  'E',  'N',  'Q',  'M',  'C',  'F',  'Y',  'T',  'W',  'P',  'S',  'L',  'V',  'H',  'I']
+    for i in inp:
+        for scan in np.arange(len(three_let)):
+            if i.lower() == three_let[scan].lower():
+                hold = sin_let[scan]
+                break
+        if first:
+            sin_final = hold
+            first = False
+        else:
+            sin_final = np.hstack((sin_final,hold))
+    return(sin_final)
 
 def full_AA_freq(seq,norm='num_AA'):
     AA_freq_all = np.zeros((20))

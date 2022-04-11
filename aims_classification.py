@@ -36,9 +36,7 @@ AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W',
 newnew=pandas.read_csv('app_data/new_props')
 oldold=pandas.read_csv('app_data/old_props')
 
-# Again, ugly to hard code in the number of properties (62) but 
-# For now no harm no foul
-properties=np.zeros((62,20))
+properties=np.zeros((len(newnew)+len(oldold),20))
 for i in np.arange(len(AA_key)):
     properties[0:16,i]=oldold[AA_key[i]]
     properties[16:,i]=newnew[AA_key[i]]
@@ -83,7 +81,7 @@ def apply_matrix(mono_PCA,max_diffs,mat_size=100,props=properties[1:],ridZero=Fa
     return(new_mat_mono/win_size)
 
 # CAN WE DO IT WITH ONE MATRIX???
-def get_bigass_matrix(ALL_mono, OneChain = False, giveSize=[], onlyCen = False,
+def get_bigass_matrix(ALL_mono, OneChain = False, giveSize=[], onlyCen = False, bulge_pad=8, prop_parse=False,
 manuscript_arrange=False,special='', alignment = 'center', norm = True):
     # THIS TERM IS ACTUALLY IRRELEVANT. NEED TO DEFINE A "GET MASK" function
     
@@ -95,11 +93,16 @@ manuscript_arrange=False,special='', alignment = 'center', norm = True):
             mono_PCA = aims.gen_peptide_matrix(ALL_mono,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),
             binary=False)
             mono_MI = aims.gen_peptide_matrix(ALL_mono,key=AA_num_key,binary=False)
+        elif special == 'MSA':
+            AA_num_key_new_dash = np.hstack((AA_num_key_new,[0]))/np.linalg.norm(np.hstack((AA_num_key_new,[0])))
+            AA_num_key_dash = np.hstack((AA_num_key,[0]))
+            mono_PCA = aims.gen_MSA_matrix(np.array(ALL_mono),key = AA_num_key_new_dash, giveSize = giveSize)
+            mono_MI = aims.gen_MSA_matrix(np.array(ALL_mono),key = AA_num_key_dash, giveSize = giveSize)
         else:
             mono_PCA = aims.gen_tcr_matrix(ALL_mono,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),
-            binary=False,giveSize=giveSize,manuscript_arrange = manuscript_arrange, alignment = alignment)
+            binary=False,giveSize=giveSize,manuscript_arrange = manuscript_arrange, alignment = alignment,bulge_pad=bulge_pad)
             mono_MI = aims.gen_tcr_matrix(ALL_mono,key=AA_num_key,binary=False,giveSize=giveSize,
-            manuscript_arrange=manuscript_arrange, alignment = alignment)
+            manuscript_arrange=manuscript_arrange, alignment = alignment,bulge_pad=bulge_pad)
 
     if onlyCen:
         mono_PCAF = mono_PCA[:,4:-4]
@@ -108,7 +111,7 @@ manuscript_arrange=False,special='', alignment = 'center', norm = True):
         mono_PCAF = mono_PCA
         mono_MIF = mono_MI
 
-    BIG_mono = aims.getBig(mono_MIF, norm = norm)
+    BIG_mono = aims.getBig(mono_MIF, norm = norm,prop_parse=prop_parse)
     amono,bmono,cmono = np.shape(BIG_mono)
 
     #SO WE CANT JUST USE NP.RESHAPE
@@ -232,15 +235,19 @@ def do_classy_mda(ALL_mono, ALL_poly, matsize = 100, OneChain = False, special= 
         #print(acc_all)
     return(acc_fin)
 
-def apply_pretrained_LDA(bigass_mono,top_names,weights):
+def apply_pretrained_LDA(bigass_mono,top_names,weights,prop_parse=False):
     # Take already bigass matrices and drop entries to look indentical to 
     # Need to have all these pre-defined variables in there
     prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4',
     'Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
     prop_list_new = ['Hot'+str(b+1) for b in range(46)]
 
-    prop_names = prop_list_old + prop_list_new
-    num_locs = int(np.shape(bigass_mono)[1]/61)
+    if prop_parse:
+        prop_names = prop_list_old
+    else:
+        prop_names = prop_list_old + prop_list_new
+        
+    num_locs = int(np.shape(bigass_mono)[1]/len(prop_parse))
     Bigass_names = []
     for i in prop_names:
         for j in np.arange(num_locs):
@@ -256,21 +263,32 @@ def apply_pretrained_LDA(bigass_mono,top_names,weights):
 # DISTINCT FROM CLASSIFICATION. HERE IS HOW WE FIND THE PROPERTIES WHICH
 # BEST DISCRIMINATE THE DATASET
 # Add in a new module for "if it's a peptide"
-def do_linear_split(test_mono,test_poly,ridCorr = True,giveSize=[],matSize=75,
-manuscript_arrange=False,pca_split=False,align='center'):
+def do_linear_split(test_mono,test_poly,ridCorr = True,giveSize=[],matSize=75,prop_parse=False,
+manuscript_arrange=False,pca_split=False,special = '',align='center'):
     num_mono = np.shape(test_mono)[1]
     num_poly = np.shape(test_poly)[1]
 
     mat = np.hstack((test_mono,test_poly))
     if manuscript_arrange:
-        total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True)
+        if special == 'peptide':
+            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True, special = 'peptide')
+        else:
+            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True)
     else:
-        total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False, alignment=align)
+        if special == 'peptide':
+            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False, special = 'peptide')
+        elif special == 'MSA':
+            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False, special = 'MSA')
+        else:
+            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False,alignment=align)
     prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
     prop_list_new = ['Hot'+str(b+1) for b in range(46)]
 
-    prop_names = prop_list_old + prop_list_new
-    num_locs = int(np.shape(total_mat)[1]/61)
+    if prop_parse:
+        prop_names = prop_list_old
+    else:
+        prop_names = prop_list_old + prop_list_new
+    num_locs = int(np.shape(total_mat)[1]/len(prop_names))
     Bigass_names = []
     for i in prop_names:
         for j in np.arange(num_locs):
@@ -290,7 +308,6 @@ manuscript_arrange=False,pca_split=False,align='center'):
 
         final = y.drop(y[to_drop], axis=1)
         X_train = np.array(final); cols = final.columns
-
     else:
         X_train = total_mat; cols = np.array(Bigass_names)
         final = pandas.DataFrame(total_mat,columns = Bigass_names)

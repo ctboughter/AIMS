@@ -1101,7 +1101,7 @@ class Analysis(Screen):
             # Redefine as cmap_discrete_fin so it doesn't mess with the previously
             # defined cmap_discrete (based on # datasets)
             if clust == 'kmean':
-                cmap2 = 'rainbow'
+                cmap2 = pl.get_cmap('rainbow')
                 cmap_discrete_fin = cmap2(np.linspace(0, 1, fin_clustL))
             else:
                 cmap_discrete_fin = cmap(np.linspace(0, 1, fin_clustL))
