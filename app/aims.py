@@ -777,6 +777,7 @@ class Analysis(Screen):
             chosen_dset = full_big
         elif dChoice == 'parsed':
             chosen_dset = parsed_mat
+            print(parsed_mat.columns)
         elif dChoice == 'net':
             first = True
             for i in seqNameF:
@@ -791,6 +792,7 @@ class Analysis(Screen):
                 else:
                     big_reshape = np.vstack((big_reshape,seq_bigF))
             chosen_dset = pandas.DataFrame(np.average(big_reshape,axis=2))
+            chosen_dset.columns = prop_names
 
         chosen_dset.index = seq_MIf.columns
         final_chosen = np.transpose(chosen_dset)
@@ -848,7 +850,20 @@ class Analysis(Screen):
             pca = PCA(n_components=3, svd_solver='full')
             final=pca.fit_transform(chosen_dset)
             transform = pandas.DataFrame(np.transpose(final),columns = chosen_dset.index)
-            #print(pca.explained_variance_ratio_)
+            # Alright if using PCA, output the explained variance and top10 components
+            explain_var = pca.explained_variance_ratio_
+            comp1_df = np.transpose(pandas.DataFrame([np.abs(pca.components_[0]),chosen_dset.columns]))
+            comp2_df = np.transpose(pandas.DataFrame([np.abs(pca.components_[1]),chosen_dset.columns]))
+            comp3_df = np.transpose(pandas.DataFrame([np.abs(pca.components_[2]),chosen_dset.columns]))
+            comp1_top10 = comp1_df.sort_values(0,ascending=False).values[0:10]
+            comp2_top10 = comp2_df.sort_values(0,ascending=False).values[0:10]
+            comp3_top10 = comp3_df.sort_values(0,ascending=False).values[0:10]
+            # Save all the good stuff
+            this_dir = os.getcwd()
+            np.savetxt(this_dir + '/' + dir_name + '/pca_explainVar.dat',explain_var,fmt='%.3f')
+            np.savetxt(this_dir + '/' + dir_name + '/pca_comp1_top10.dat',comp1_top10,fmt='%s')
+            np.savetxt(this_dir + '/' + dir_name + '/pca_comp2_top10.dat',comp2_top10,fmt='%s')
+            np.savetxt(this_dir + '/' + dir_name + '/pca_comp3_top10.dat',comp3_top10,fmt='%s')
         elif reduce == 'umap':
             import umap
             reducer = umap.UMAP(n_components=3, n_neighbors = 25, n_jobs=1, random_state = 47)
@@ -888,7 +903,6 @@ class Analysis(Screen):
             ax3d.set_xlabel('AX1',labelpad=20)
             ax3d.set_ylabel('AX2',labelpad=20)
             ax3d.set_zlabel('AX3',labelpad=10)
-        this_dir = os.getcwd()
         fig.savefig(this_dir + '/' + dir_name + '/'+reduce+'_'+dim+'_fig.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/'+reduce+'_'+dim+'_fig.png',format='png',dpi=500)
         np.savetxt(this_dir + '/' + dir_name + '/'+reduce+'_'+dim+'.dat',clust_input,fmt='%.3f')
@@ -1240,6 +1254,13 @@ class Analysis(Screen):
             stdProp2 = np.std(np.average(seq_bigF[:,2,:],axis = 1))
             stdProp3 = np.std(np.average(seq_bigF[:,3,:],axis = 1))
             stdProp4 = np.std(np.average(seq_bigF[:,4,:],axis = 1))
+            compile_avg = [plotProp1,plotProp2,plotProp3,plotProp4]
+            compile_std = [stdProp1,stdProp2,stdProp3,stdProp4]
+            if aa == 0:
+                compile_names = ['Charge','Hydrophobicity','Bulkiness','Flexibility']
+                save_these = [compile_names,compile_avg,compile_std]
+            else:
+                save_these = save_these + [compile_avg,compile_std]
             plotIT = np.hstack((plotProp1, plotProp2,plotProp3,plotProp4))
             stdIT = np.hstack((stdProp1, stdProp2,stdProp3,stdProp4))
             ax[0,0].bar(x_axis+aa*1/len(labels_new), plotIT,
@@ -1256,6 +1277,7 @@ class Analysis(Screen):
         fig.savefig(this_dir + '/' + dir_name + '/avg_props.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/avg_props.png',format='png',dpi=500)
         self.img10.source = this_dir + '/' + dir_name + '/avg_props.png'
+        np.savetxt(this_dir + '/' + dir_name + '/avg_props.dat',save_these,fmt='%s')
         pl.close()
 
     def do_lda(self):
@@ -1519,6 +1541,7 @@ class checker(Screen):
         dsetF = seq_final.values
         global parsed_mat
         global full_big
+        global prop_names
         bigass = classy.get_bigass_matrix(dsetF, giveSize = mat_size, alignment = align, norm = True )
         # This definition will be important if I get parallel processing into the app... see notebook for EX
         total_mat = bigass
