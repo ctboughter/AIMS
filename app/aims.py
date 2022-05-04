@@ -21,6 +21,7 @@ import matplotlib.pyplot as pl
 from matplotlib import rcParams
 from matplotlib import rc
 import pandas
+import scipy
 from time import time
 
 import aims_loader as aimsLoad
@@ -1231,6 +1232,7 @@ class Analysis(Screen):
         pl.close()
 
     def get_props(self):
+        do_stats = True
         self.next1_10.disabled = False
         this_dir = os.getcwd()
         # Generate the position sensitive charge across all clones in the dataset
@@ -1267,7 +1269,43 @@ class Analysis(Screen):
                         yerr = stdIT,alpha = 0.5, width = 1/len(labels_new),color=cmap_discrete_fin[j])
             aa += 1
 
-
+        if do_stats:
+            first = True
+            # Calculate Welch's t-test for the statistics in the plot
+            # NOTE: This is essentially Student's T test, but when
+            # we cannot assume equal variance or sample size
+            # The null hypothesis here is that the means are equal
+            temp_labels = sels['ID'].drop_duplicates().values
+            for a in np.arange(len(sels['ID'].drop_duplicates())):
+                for b in np.arange(len(sels['ID'].drop_duplicates())):
+                    # Only have a trailing b
+                    if a >= b:
+                        continue
+                    findex1 = sels[sels['ID'] == temp_labels[a]]['selection']
+                    findex2 = sels[sels['ID'] == temp_labels[b]]['selection']
+                    dat_size1 = len(findex1); dat_size2 = len(findex2)
+                    for cc in np.arange(4):
+                        # temp_prop will cycle through charge, phob, bulk, flex
+                        # in that particular order
+                        temp_prop = np.transpose(save_these)[cc]
+                        # So it seems like the data is saved linearly. avg, std, avg, std, etc
+                        mean1 = float(temp_prop[a*2+1]); mean2 = float(temp_prop[b*2+1])
+                        std1 = float(temp_prop[a*2+2]); std2 = float(temp_prop[b*2+2])
+                        t = (mean1-mean2)/np.sqrt(std1**2/dat_size1 + std2**2/dat_size2)
+                        
+                        # Two sided t-test here, null: "the means are not equal"
+                        # This scipy is just the t-statistic lookup table
+                        # Here using dof = Nsample-1 (Nsample=2)
+                        fin_p = scipy.stats.t.sf(abs(t), df=1)*2
+                        
+                        if first:
+                            fin_ptest = pandas.DataFrame([compile_names[cc],labels_new[a],labels_new[b],fin_p])
+                            first = False
+                        else:
+                            fin_ptest = pandas.concat([fin_ptest,pandas.DataFrame([compile_names[cc],labels_new[a],labels_new[b],fin_p])],axis=1)
+            final_ptest = np.transpose(fin_ptest)
+            final_ptest.columns = [['Property','Dset1','Dset2','p-value']]
+            final_ptest.to_csv(this_dir + '/' + dir_name + '/avg_props_stats.csv',index=False)
         ax[0,0].legend(labels_new)
         ax[0,0].set_xticks([0.2,1.3,2.4,3.5])
         ax[0,0].set_xticklabels(['Charge','Hydrophobicity','Bulkiness','Flexibility'])
