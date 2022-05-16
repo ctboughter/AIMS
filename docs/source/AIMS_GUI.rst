@@ -148,7 +148,7 @@ In this step, we are averaging the biophysical properties over all positions and
 .. note::
    A large standard deviation in these plots are to be expected, especially if users are analyzing original input datasets rather than selected cluster subsets
 
-This figure is saved as "avg_props.pdf/png".
+This figure is saved as "avg_props.pdf/png", while statistical significance, as calculated using Welch's t-Test with the number of degrees of freedom set to 1, is saved as "avg_prop_stats.csv".
 
 **Step 11: Calculate Shannon Entropy**
 
@@ -345,7 +345,7 @@ In this step, we are averaging the biophysical properties over all positions and
 .. note::
    A large standard deviation in these plots are to be expected, especially if users are analyzing original input datasets rather than selected cluster subsets
 
-This figure is saved as "avg_props.pdf/png".
+This figure is saved as "avg_props.pdf/png", while statistical significance, as calculated using Welch's t-Test with the number of degrees of freedom set to 1, is saved as "avg_prop_stats.csv".
 
 **Step 11: Calculate Shannon Entropy**
 
@@ -359,7 +359,7 @@ This figure is saved as "shannon.pdf/png".
 .. note::
    Due to the requirement for a binary comparison in subsequent steps, this is the last GUI screen if users are comparing more than 2 groups
 
-** END MHC Analysis **
+**END MHC Analysis **
 
 Due to the analysis of three distinct groups in this walkthrough, the MHC analysis ends here at step 11. However, as discussed previously these steps are identical to those in the immunoglobulin analysis. If you'd like to learn more about steps 12, 13, and 14, go back to the end of the :ref:`AIMSig`.
 

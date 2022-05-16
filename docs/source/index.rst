@@ -9,7 +9,7 @@ Using AIMS to Analyze Immune Repertoires
 .. note::
    This readthedocs site is still under development. Hopefully what is included thus far helps users, but more information is coming soon!
 
-AIMS, an Automated Immune Molecule Separator, was originally developed to identify differences between two distinct antibody repertoires, but has since expanded to become a multi-purpose repertoire analysis tool. Currently the AIMS analytical tools can be applied to immunoglobulin (Ig) molecules such as T cell receptors and antibodies, major histocompatibility complex (MHC) and MHC-like molecules, and immunopeptidomic data. This documentation will teach users how to use AIMS to:
+AIMS, an Automated Immune Molecule Separator, was originally developed to identify differences between two distinct antibody repertoires, but has since expanded to become a multi-purpose repertoire analysis tool. Currently the AIMS analytical tools can be applied to immunoglobulin (Ig) molecules such as T cell receptors and antibodies, major histocompatibility complex (MHC) and MHC-like molecules, immunopeptidomic data, and broadly to any data presented in a multi-sequence alignment format. This documentation will teach users how to use AIMS to:
 
 - **Get started** following the :doc:`Install`.
 
@@ -25,7 +25,7 @@ AIMS, an Automated Immune Molecule Separator, was originally developed to identi
 
 - **Build off the AIMS analysis with your own custom features** by taking advantage of the :doc:`AIMS_notebooks`.
 
-AIMS is a python package distributed in both a notebook and GUI format. Those wishing to use the GUI, particularly those relatively new to programming, can follow the installation instructions below. Example data is provided in AIMS/app/ab_testData and AIMS/app/mhc_testData, and an example of an application of AIMS can be seen in this peer-reviewed article: https://elifesciences.org/articles/61393
+AIMS is a python package distributed in both a notebook and GUI format. Those wishing to use the GUI, particularly those relatively new to programming, can follow the installation instructions. Example data is provided in AIMS/app/ab_testData and AIMS/app/mhc_testData, and an example of an application of AIMS can be seen in this peer-reviewed article: https://elifesciences.org/articles/61393
    
 .. note::
    When publishing analysis from this software, please cite:

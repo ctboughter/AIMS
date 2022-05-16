@@ -36,7 +36,12 @@ You should now see a little extra bit of text on your terminal command line that
 
 Use terminal to navigate into the newly downloaded folder. If you've never used terminal before, you can type in "cd" and then drag and drop the folder into the terminal. Doing so should automatically populate the "path" to the folder. Then hit enter.
 
-When I do this, my terminal line reads "cd /Users/boughter/Desktop/AIMS-master" hopefully you see something similar (replacing my user name with your own), and when you hit enter you can move to the next step.
+When I do this, my terminal line reads: 
+
+.. code-block:: python
+    cd /Users/boughter/Desktop/AIMS-master
+
+Hopefully you see something similar (replacing my user name with your own), and when you hit enter you can move to the next step.
 
 .. _aims.install:
 

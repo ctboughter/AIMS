@@ -78,20 +78,18 @@ This is the first of two sections that are not yet implemented in the AIMS GUI, 
 
 .. code-block:: python
     
-    [Example file not yet on the GitHub]
-    pep_input
-    APATPAVVL
-    PSPEAAVAV
-    VALGGPHDP
-    PAALPVPSL
-    PTAPVTPSI
-    CPGASQPIL
-    DRGSCGVTV
+    [Example file from AIMS/app_data/pancreas_hla_atlas.csv]
+    sequence
+    ALVSGNNTVPF
+    TYRGVDLDQLL
+    NYIDIVKYV
+    SYIPIFPQ
+    NYFPGGVALI
     .
     .
     .
 
-In future releases, data related to mass spectrometry approaches used for the identification of these peptides will be included in the analysis. Metadata will be included in additional columns of the csv.
+Example data provided from the HLA Ligand Atlas (https://hla-ligand-atlas.org/welcome). In future releases, data related to mass spectrometry approaches used for the identification of these peptides will be included in the analysis. Metadata will be included in additional columns of the csv.
 
 **Multi-Sequence Alignment Formatting**
 
@@ -99,7 +97,7 @@ Again, this multi-sequence alignment input is not yet available in the AIMS GUI,
 
 .. code-block:: python
     
-    [Example file not yet on the GitHub]
+    [Example file from AIMS/app/MSA_testData/Dpr_interface.csv]
     Dpr,Sequence
     Dpr1,DKDVSWIRKRDLHILTAGGTTYTSD-----QINTEPKMSLSYTFNVVEL
     Dpr2,DKSVSWIRKRDLHILTAGILTYTSD-----QVNTEPKISMAFRLNVIVT
@@ -122,4 +120,195 @@ Functionalities coming soon!
 Biophysical Properties
 ------------
 
-Details on the BPHYS properties coming soon!
+In generating the core biophysical property matrix of the AIMS analysis, the same 61 biophysical properties are used in all analyses, with an option to use fewer if the user decides to. The properties are listed in the table below:
+
+.. list-table:: Table of AIMS Biophysical Properties
+   :widths: 20 40 40
+   :header-rows: 1
+
+   * - #
+     - Property Shorthand
+     - Decription
+   * - 0
+     - Phob1
+     - Hydrophobicity Scale [-1,1]\\
+   * - 1
+     - Charge 
+     - Charge [ec]
+   * - 2
+     - Phob2
+     - Octanol-Interface Hydrophobicity Scale
+   * - 3
+     - Bulk
+     - Side-Chain Bulkiness
+   * - 4
+     - Flex
+     - Side-Chain Flexibility
+   * - 5 
+     - KD1
+     - Helix/Bend Preference
+   * - 6
+     - KD2
+     - Side-Chain Size
+   * - 7
+     - KD3
+     - Extended Structure Preference
+   * - 8
+     - KD4
+     - Hydrophobicity
+   * - 9 
+     - KD5
+     - Double-bend Preference
+   * - 10
+     - KD6
+     - Flat Extended Preference
+   * - 11
+     - KD7
+     - Partial Specific Volume
+   * - 12
+     - KD8
+     - Occurrence in alpha-region
+   * - 13
+     - KD9
+     - pK-C
+   * - 14
+     - KD10
+     - Surrounding Hydrophobicity
+   * - 15
+     - HS1
+     - Normalized Positional Residue Freq at Helix C-term
+   * - 16
+     - HS2
+     - Normalized Positional Residue Freq at Helix C4-term
+   * - 17
+     - HS3
+     - Spin-spin coupling constants
+   * - 18
+     - HS4
+     - Random Parameter
+   * - 19
+     - HS5
+     - pK-N
+   * - 20
+     - HS6
+     - Alpha-Helix Indices for Beta-Proteins
+   * - 21
+     - HS7
+     - Linker Propensity from 2-Linker Dataset
+   * - 22
+     - HS8
+     - Linker Propensity from Long Dataset
+   * - 23
+     - HS9
+     - Normalized Relative Freq of Helix End
+   * - 24
+     - HS10
+     - Normalized Relative Freq of Double Bend
+   * - 25
+     - HS11
+     - pK-COOH
+   * - 26
+     - HS12
+     - Relative Mutability
+   * - 27
+     - HS13
+     - Kerr-Constant Increments
+   * - 28
+     - HS14
+     - Net Charge
+   * - 29
+     - HS15
+     - Norm Freq Zeta-R
+   * - 30
+     - HS16
+     - Hydropathy Scale
+   * - 31
+     - HS17
+     - Ratio of Average Computed Composition
+   * - 32
+     - HS18
+     - Intercept in Regression Analysis
+   * - 33
+     - HS19
+     - Correlation coefficient in Reg Anal
+   * - 34
+     - HS20
+     - Weights for Alpha-Helix at window pos
+   * - 35
+     - HS21
+     - Weights for Beta-sheet at window pos -3
+   * - 36
+     - HS22
+     Weights for Beta-sheet at window pos 3
+   * - 37
+     -HS23
+     - Weights for coil at win pos -5
+   * - 38
+     - HS24
+     - Weights coil win pos -4
+   * - 39
+     - HS25
+     - Weights coil win pos 6
+   * - 40
+     - HS26
+     - Avg Rel Frac occur in AL
+   * - 41
+     - HS27
+     - Avg Rel Frac occur in EL
+   * - 42
+     - HS28
+     - Avg Rel Frac occur in A0
+   * - 43
+     - HS29
+     - Rel Pref at N
+   * - 44
+     - HS30
+     - Rel Pref at N1
+   * - 45
+     - HS31
+     - Rel Pref at N2
+   * - 46
+     - HS32
+     - Rel Pref at C1
+   * - 47
+     - HS33
+     - Rel Pref at C
+   * - 48
+     -  HS34
+     - Information measure for extended without H-bond
+   * - 49
+     - HS35
+     - Information measure for C-term turn
+   * - 50
+     - HS36
+     - Loss of SC hydropathy by helix formation
+   * - 51
+     - HS37
+     - Principal Component 4 (Sneath 1966)
+   * - 52
+     - HS38
+     - Zimm-Bragg Parameter
+   * - 53
+     - HS39
+     - Normalized Freq of ZetaR
+   * - 54
+     - HS40
+     - Rel Pop Conformational State A
+   * - 55
+     - HS41
+     - Rel Pop Conformational State C
+   * - 56
+     - HS42
+     - Electron-Ion Interaction Potential
+   * - 57
+     - HS43
+     - Free energy change of epsI to epsEx
+   * - 58
+     - HS44
+     - Free energy change of alphaRI to alphaRH
+   * - 59
+     - HS45
+     - Hydrophobicity coeff
+   * - 60 
+     - HS46
+     - Principal Property Value z3 Wold et. al. 1987
