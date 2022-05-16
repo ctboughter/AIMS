@@ -239,7 +239,7 @@ In generating the core biophysical property matrix of the AIMS analysis, the sam
      - Weights for Beta-sheet at window pos -3
    * - 36
      - HS22
-     Weights for Beta-sheet at window pos 3
+     - Weights for Beta-sheet at window pos 3
    * - 37
      -HS23
      - Weights for coil at win pos -5
