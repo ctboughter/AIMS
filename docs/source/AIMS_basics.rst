@@ -126,189 +126,199 @@ In generating the core biophysical property matrix of the AIMS analysis, the sam
   :widths: 20 40 40
   :header-rows: 1
 
-  * - #
-    - Property Shorthand
+  * - Number
+    - Property [Shorthand]
     - Decription
   * - 0
-    - Phob1
+    - Hydrophobicity1 [Phob1]
     - Hydrophobicity Scale [-1,1]
   * - 1
-    - Charge 
+    - Charge [Charge]
     - Charge [ec]
   * - 2
-    - Phob2
+    - Hydrophobicity2 [Phob2]
     - Octanol-Interface Hydrophobicity Scale
   * - 3
-    - Bulk
+    - Bulkiness [Bulk]
     - Side-Chain Bulkiness
   * - 4
-    - Flex
+    - Flexibility [Flex]
     - Side-Chain Flexibility
   * - 5 
-    - KD1
+    - Kidera 1 [KD1]
     - Helix/Bend Preference
   * - 6
-    - KD2
+    - Kidera 2 [KD2]
     - Side-Chain Size
   * - 7
-    - KD3
+    - Kidera 3 [KD3]
     - Extended Structure Preference
   * - 8
-    - KD4
+    - Kidera 4 [KD4]
     - Hydrophobicity
   * - 9 
-    - KD5
+    - Kidera 5 [KD5]
     - Double-bend Preference
   * - 10
-    - KD6
+    - Kidera 6 [KD6]
     - Flat Extended Preference
   * - 11
-    - KD7
+    - Kidera 7 [KD7]
     - Partial Specific Volume
   * - 12
-    - KD8
+    - Kidera 8 [KD8]
     - Occurrence in alpha-region
   * - 13
-    - KD9
+    - Kidera 9 [KD9]
     - pK-C
   * - 14
-    - KD10
+    - Kidera 10 [KD10]
     - Surrounding Hydrophobicity
   * - 15
-    - HS1
+    - Hotspot 1 [HS1]
     - Normalized Positional Residue Freq at Helix C-term
   * - 16
-    - HS2
+    - Hotspot 2[HS2]
     - Normalized Positional Residue Freq at Helix C4-term
   * - 17
-    - HS3
+    - Hotspot 3 [HS3]
     - Spin-spin coupling constants
   * - 18
-    - HS4
+    - Hotspot 4 [HS4]
     - Random Parameter
   * - 19
-    - HS5
+    - Hotspot 5 [HS5]
     - pK-N
   * - 20
-    - HS6
+    - Hotspot 6 [HS6]
     - Alpha-Helix Indices for Beta-Proteins
   * - 21
-    - HS7
+    - Hotspot 7 [HS7]
     - Linker Propensity from 2-Linker Dataset
   * - 22
-    - HS8
+    - Hotspot 8 [HS8]
     - Linker Propensity from Long Dataset
   * - 23
-    - HS9
+    - Hotspot 9 [HS9]
     - Normalized Relative Freq of Helix End
   * - 24
-    - HS10
+    - Hotspot 10 [HS10]
     - Normalized Relative Freq of Double Bend
   * - 25
-    - HS11
+    - Hotspot 11 [HS11]
     - pK-COOH
   * - 26
-    - HS12
+    - Hotspot 12 [HS12]
     - Relative Mutability
   * - 27
-    - HS13
+    - Hotspot 13 [HS13]
     - Kerr-Constant Increments
   * - 28
-    - HS14
+    - Hotspot 14 [HS14]
     - Net Charge
   * - 29
-    - HS15
+    - Hotspot 15 [HS15]
     - Norm Freq Zeta-R
   * - 30
-    - HS16
+    - Hotspot 16 [HS16]
     - Hydropathy Scale
   * - 31
-    - HS17
+    - Hotspot 17 [HS17]
     - Ratio of Average Computed Composition
   * - 32
-    - HS18
+    - Hotspot 18 [HS18]
     - Intercept in Regression Analysis
   * - 33
-    - HS19
+    - Hotspot 19 [HS19]
     - Correlation coefficient in Reg Anal
   * - 34
-    - HS20
+    - Hotspot 20 [HS20]
     - Weights for Alpha-Helix at window pos
   * - 35
-    - HS21
+    - Hotspot 21 [HS21]
     - Weights for Beta-sheet at window pos -3
   * - 36
-    - HS22
+    - Hotspot 22 [HS22]
     - Weights for Beta-sheet at window pos 3
   * - 37
-    - HS23
+    - Hotspot 23 [HS23]
     - Weights for coil at win pos -5
   * - 38
-    - HS24
+    - Hotspot 24 [HS24]
     - Weights coil win pos -4
   * - 39
-    - HS25
+    - Hotspot 25 [HS25]
     - Weights coil win pos 6
   * - 40
-    - HS26
+    - Hotspot 26 [HS26]
     - Avg Rel Frac occur in AL
   * - 41
-    - HS27
+    - Hotspot 27 [HS27]
     - Avg Rel Frac occur in EL
   * - 42
-    - HS28
+    - Hotspot 28 [HS28]
     - Avg Rel Frac occur in A0
   * - 43
-    - HS29
+    - Hotspot 29 [HS29]
     - Rel Pref at N
   * - 44
-    - HS30
+    - Hotspot 30 [HS30]
     - Rel Pref at N1
   * - 45
-    - HS31
+    - Hotspot 31 [HS31]
     - Rel Pref at N2
   * - 46
-    - HS32
+    - Hotspot 32 [HS32]
     - Rel Pref at C1
   * - 47
-    - HS33
+    - Hotspot 33 [HS33]
     - Rel Pref at C
   * - 48
-    - HS34
+    - Hotspot 34 [HS34]
     - Information measure for extended without H-bond
   * - 49
-    - HS35
+    - Hotspot 35 [HS35]
     - Information measure for C-term turn
   * - 50
-    - HS36
+    - Hotspot 36 [HS36]
     - Loss of SC hydropathy by helix formation
   * - 51
-    - HS37
+    - Hotspot 37 [HS37]
     - Principal Component 4 (Sneath 1966)
   * - 52
-    - HS38
+    - Hotspot 38 [HS38]
     - Zimm-Bragg Parameter
   * - 53
-    - HS39
+    - Hotspot 39 [HS39]
     - Normalized Freq of ZetaR
   * - 54
-    - HS40
+    - Hotspot 40 [HS40]
     - Rel Pop Conformational State A
   * - 55
-    - HS41
+    - Hotspot 41 [HS41]
     - Rel Pop Conformational State C
   * - 56
-    - HS42
+    - Hotspot 42 [HS42]
     - Electron-Ion Interaction Potential
   * - 57
-    - HS43
+    - Hotspot 43 [HS43]
     - Free energy change of epsI to epsEx
   * - 58
-    - HS44
+    - Hotspot 44 [HS44]
     - Free energy change of alphaRI to alphaRH
   * - 59
-    - HS45
+    - Hotspot 45 [HS45]
     - Hydrophobicity coeff
   * - 60 
-    - HS46
+    - Hotspot 46 [HS46]
     - Principal Property Value z3 Wold et. al. 1987
+
+The so-called Kidera factors are from the published work: 
+
+Kidera et al. Statistical analysis of the physical properties of the 20 naturally occurring amino acids
+Journal of Protein Chemistry (1985)
+
+While the hotspot variables mentioned above are from:
+
+Liu et al. Hot spot prediction in protein-protein interactions by an ensemble system
+BMC Systems Biology (2018)
