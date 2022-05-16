@@ -6,8 +6,8 @@ project = 'AIMS'
 copyright = '2022, Boughter'
 author = 'Boughter'
 
-release = '0.5'
-version = 'AIMS_0.5.5'
+release = '0.6'
+version = 'AIMS_0.6'
 
 # -- General configuration
 
