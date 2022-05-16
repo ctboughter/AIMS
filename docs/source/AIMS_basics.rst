@@ -131,7 +131,7 @@ In generating the core biophysical property matrix of the AIMS analysis, the sam
     - Decription
   * - 0
     - Phob1
-    - Hydrophobicity Scale [-1,1]\\
+    - Hydrophobicity Scale [-1,1]
   * - 1
     - Charge 
     - Charge [ec]
@@ -241,7 +241,7 @@ In generating the core biophysical property matrix of the AIMS analysis, the sam
     - HS22
     - Weights for Beta-sheet at window pos 3
   * - 37
-    -HS23
+    - HS23
     - Weights for coil at win pos -5
   * - 38
     - HS24
@@ -274,7 +274,7 @@ In generating the core biophysical property matrix of the AIMS analysis, the sam
     - HS33
     - Rel Pref at C
   * - 48
-    -  HS34
+    - HS34
     - Information measure for extended without H-bond
   * - 49
     - HS35
