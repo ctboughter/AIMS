@@ -41,7 +41,7 @@ Using the same example input data as used above for the PCA example, we see belo
 
 Now, we see the reverse of what was seen for PCA. UMAP does not separate out the biophysically distinct MHC and MHC-like molecules (left), because UMAP is focusing more on the similar features of the molecules rather than the regions of highest variation in the data. MHC and MHC-like molecules are structurally very similar, and the differences are localized only in specific regions of the molecules. In this specific application, PCA is likely the more appropriate algorithm. Conversely, we can see in the TCR data (right) that there are still large regions of biophysically similar TCRs for each antigen specificity. Clearly, this is a fundamental feature of the input data here. We see multiple distinct small clusters of biophysically similar TCRs, compared to the three large clusters in the PCA analysis. Eventual clustering of these data will help to further break down the differences between PCA and UMAP.
 
-**t-SNE
+**t-SNE**
 
 T-distributed Stochastic Neighbor Embedding (t-SNE) is largely similar to UMAP, in that is looking for a lower-dimensional projection of the data which preserves the general structure of the high-dimensional data. However, use of t-SNE is largely deprecated in AIMS, as it performs much worse than UMAP in all applications tested so far. t-SNE is no longer and option available in the AIMS GUI, but may still be used in the Jupyter notebooks. For more information on t-SNE and its use, see the SKLearn [the python implementation of t-SNE used in AIMS] documentation page (https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html).
 
