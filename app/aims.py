@@ -778,7 +778,6 @@ class Analysis(Screen):
             chosen_dset = full_big
         elif dChoice == 'parsed':
             chosen_dset = parsed_mat
-            print(parsed_mat.columns)
         elif dChoice == 'net':
             first = True
             for i in seqNameF:
@@ -870,11 +869,13 @@ class Analysis(Screen):
             reducer = umap.UMAP(n_components=3, n_neighbors = 25, n_jobs=1, random_state = 47)
             final = reducer.fit_transform(chosen_dset)
             transform = pandas.DataFrame(np.transpose(final),columns = chosen_dset.index)
+            this_dir = os.getcwd()
         elif reduce == 'tsne':
             from sklearn.manifold import TSNE
             tsne = TSNE(n_components = 3, random_state = 47, n_jobs = 1)
             final=tsne.fit_transform(chosen_dset)
             transform = pandas.DataFrame(np.transpose(final),columns = chosen_dset.index)
+            this_dir = os.getcwd()
         
         global clust_input
         clust_input = np.array(np.transpose(transform))

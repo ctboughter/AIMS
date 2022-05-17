@@ -178,7 +178,7 @@ In generating the core biophysical property matrix of the AIMS analysis, the sam
     - Hotspot 1 [HS1]
     - Normalized Positional Residue Freq at Helix C-term
   * - 16
-    - Hotspot 2[HS2]
+    - Hotspot 2 [HS2]
     - Normalized Positional Residue Freq at Helix C4-term
   * - 17
     - Hotspot 3 [HS3]
@@ -311,14 +311,14 @@ In generating the core biophysical property matrix of the AIMS analysis, the sam
     - Hydrophobicity coeff
   * - 60 
     - Hotspot 46 [HS46]
-    - Principal Property Value z3 Wold et. al. 1987
+    - Principal Property Value z3 (Wold et. al. 1987)
 
 The so-called Kidera factors are from the published work: 
 
-Kidera et al. Statistical analysis of the physical properties of the 20 naturally occurring amino acids
+Kidera et al. Statistical analysis of the physical properties of the 20 naturally occurring amino acids.
 Journal of Protein Chemistry (1985)
 
 While the hotspot variables mentioned above are from:
 
-Liu et al. Hot spot prediction in protein-protein interactions by an ensemble system
+Liu et al. Hot spot prediction in protein-protein interactions by an ensemble system.
 BMC Systems Biology (2018)
