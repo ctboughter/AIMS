@@ -247,7 +247,7 @@ def apply_pretrained_LDA(bigass_mono,top_names,weights,prop_parse=False):
     else:
         prop_names = prop_list_old + prop_list_new
         
-    num_locs = int(np.shape(bigass_mono)[1]/len(prop_parse))
+    num_locs = int(np.shape(bigass_mono)[1]/len(prop_names))
     Bigass_names = []
     for i in prop_names:
         for j in np.arange(num_locs):
@@ -256,7 +256,7 @@ def apply_pretrained_LDA(bigass_mono,top_names,weights,prop_parse=False):
     x = pandas.DataFrame(bigass_mono,columns = Bigass_names)
 
     pre_final = x[top_names]
-    final_apply=np.matmul(pre_final,np.transpose(weights))
+    final_apply=np.matmul(pre_final.values,np.transpose(weights))
 
     return(final_apply)
 
