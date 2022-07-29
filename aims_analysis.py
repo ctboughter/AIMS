@@ -1328,3 +1328,371 @@ def full_AA_freq(seq,norm='num_AA'):
         AA_freq_all = AA_freq_all/num_seq
         digram_all = digram_all/num_seq
     return(AA_freq_all,digram_all)
+
+#### Begin Changes Made Explicitly for MHC Germline Analysis Manuscript##############
+####################################################################################
+def labelIT(dlen,labels):
+    for j in np.arange(dlen):
+        if j ==0:
+            tab = [labels+ str(j)];
+            organ = [labels]
+        else:
+            tab = tab + [labels + str(j)]; 
+            organ = organ + [labels]
+    return(tab,organ)
+
+# Get out specific regions of the MHC Helices
+def get_mhcSub(mhc,seq_choice,multiOrg=False,input_loc=[]):
+    # This variable is only important for multi-org analysis
+    # Key for matching sequences to metadata down the line
+    loc_choice = input_loc
+    if mhc == 'classI':
+        alpha1 = [55,56,59,60,63,66,67,70,74,77,80]
+        pep_contact = [3,5,7,20,22,24,43,57,61,64,65,68,71,72,75,78,79,82,93,95,97,112,114,141,145,150,154,157,169]
+        alpha2 = [143,144,147,148,149,152,153,156,160,161,164,165,167,168]
+    elif mhc == 'classIIa':
+        II_alpha_contacts = [51, 53, 55, 56, 58, 59, 62, 63, 66, 69, 70, 73, 74]
+        alpha1 = II_alpha_contacts
+        alpha2 = []
+        pep_contact =[]
+    elif mhc == 'classIIb':
+        II_beta_contacts = [63, 66, 67, 70, 71, 73, 74, 76, 77, 80, 83, 84, 87, 88, 91, 92]
+        alpha1 = II_beta_contacts
+        alpha2 = []
+        pep_contact = []
+
+
+    first = True
+    for i in np.arange(len(seq_choice)):
+        sub_seq1 = ''
+        for j in alpha1:
+            let = seq_choice[i][j]
+            sub_seq1 = sub_seq1 + let
+        sub_seq2 = ''
+        for j in alpha2:
+            let = seq_choice[i][j]
+            sub_seq2 = sub_seq2 + let
+        sub_seq3 = ''
+        for j in pep_contact:
+            let = seq_choice[i][j]
+            sub_seq3 = sub_seq3 + let
+        # Remove incomplete sequences
+        if sub_seq1.find('-') != -1 or sub_seq2.find('-') != -1 or sub_seq3.find('-') != -1:
+            continue
+        # Make sure we dont have empty entries for classII
+        if mhc == 'classI':
+            pre_seq = np.array([sub_seq1,sub_seq2,sub_seq3])
+        else:
+            pre_seq = sub_seq1
+        # Make our final output
+        if first:
+            plot_seq = pre_seq
+            first = False
+            if multiOrg:
+                seq_loc = loc_choice[i]
+        else:
+            plot_seq = np.vstack((plot_seq,pre_seq))
+            if multiOrg:
+                seq_loc = np.hstack((seq_loc,loc_choice[i]))
+    if multiOrg:
+        return(plot_seq,seq_loc)
+    else:
+        return(plot_seq)
+
+# A fuction used for randomizing TCR-MHC pairing to calculate information theoertic quantitites
+def randomize_tcr_mhc_pair(trv_mat_df,mhc_mat_df,multiOrg = False,mhc_orgs=['Human']):
+    first = True
+            
+    for org in mhc_orgs:
+        if multiOrg:
+            trv_sub = trv_mat_df[trv_mat_df.index.str.contains(org)]
+            mhc_sub = mhc_mat_df[mhc_mat_df.index.str.contains(org)]
+        else:
+            trv_sub = trv_mat_df
+            mhc_sub = mhc_mat_df
+
+        # Some of our organism subsets dont have representatives in every subset
+        if len(mhc_sub) == 0:
+            continue
+        if len(trv_sub) == 0:
+            continue
+
+        if len(mhc_sub) > len(trv_sub):
+            mhc_re = []
+            trv_re = trv_sub
+            mhc_pre=mhc_sub.sample(frac=1).reset_index(drop=True)
+            smallLen = len(trv_re)
+            # We take advantage of the fact that "sample" randomly shuffles
+            # the sequences in the subset of interest
+            mhc_re = mhc_pre[:smallLen]
+            
+        elif len(mhc_sub) < len(trv_sub):
+            trv_re = []
+            mhc_re = mhc_sub
+            trv_pre = trv_sub.sample(frac=1).reset_index(drop=True)
+            smallLen = len(mhc_re)
+            # We take advantage of the fact that "sample" randomly shuffles
+            # the sequences in the subset of interest
+            trv_re = trv_pre[:smallLen]
+
+        # So at this point, they should already be equal values
+        MHCseq = mhc_re.values
+        TRVseq = trv_re.values
+        # So in this version of the script, we take the SAME structural subfeatures and
+        # apply a single sequence to each one. This feels the most rigorous.
+        for i in np.arange(smallLen):
+            tcr = TRVseq[i,:]
+            mhc = MHCseq[i]
+
+            if first:
+                matF = np.hstack([tcr,mhc])
+                first = False
+            else:
+                mat_pre = np.hstack([tcr,mhc])
+                matF = np.vstack((matF,mat_pre))
+    return(matF)
+
+# This script is for actively breaking down the interaction scores for TCR-MHC interactions
+def get_byAllele_scores(SCORES,tcr_names,hla_names,mhc_type = 'classI',ScoreAlpha1=True,ScoreAlpha2 = False,
+                           len_weight=False,score_weight=False,clash=False,BADclash = False):
+    # In this, we want to take the scores and identify WHERE
+    # The positive interactions are coming from.
+    # This is for if you want a subset
+    if mhc_type == 'classI':
+        alpha1 = [55,56,59,60,63,66,67,70,74,77,80]
+        alpha2 = [143,144,147,148,149,152,153,156,160,161,164,165,167,168]
+    elif mhc_type == 'classII_alpha':
+        II_alpha_contacts = [51, 53, 55, 56, 58, 59, 62, 63, 66, 69, 70, 73, 74]
+        alpha1 = II_alpha_contacts
+        alpha2 = []
+    elif mhc_type == 'classII_beta':
+        II_beta_contacts = [63, 66, 67, 70, 71, 73, 74, 76, 77, 80, 83, 84, 87, 88, 91, 92]
+        alpha1 = II_beta_contacts
+        alpha2 = []
+    
+    output_hist = np.zeros((len(tcr_names),len(hla_names)))
+    output_df = pandas.DataFrame(output_hist)
+    output_df.columns = [i[0] for i in hla_names]
+    output_df.index = [i[0] for i in tcr_names]
+    First = True
+    for i in hla_names:
+        for j in tcr_names:
+            if First:
+                fin_name = [i[0],j[0]]
+                First = False
+            else:
+                fin_name = np.vstack((fin_name,[i[0],j[0]]))
+    
+    noMatch = []
+    first = True
+    for seq in np.arange(len(SCORES)):
+        lochla = fin_name[seq][0]
+        loctcr = fin_name[seq][1]
+        test_score = SCORES[seq]
+        len1, len2 = np.shape(test_score)
+        save_coords = []
+        for i in np.arange(len1):
+            # Break when you are reaching past the end
+            if i + 2 >= len1:
+                break
+            if ScoreAlpha1:
+                #do it for the alpha1 loop
+                for j in np.arange(len(alpha1)):
+                    # Break when you are past the end
+                    if j + 2 >= len(alpha1):
+                        break
+                    # Looking for contiguous regions
+                    # of some positive interactions
+                    # can change criteria later
+                    test1 = test_score[i,alpha1[j]]
+                    test2 = test_score[i+1,alpha1[j+1]]
+                    test3 = test_score[i+2,alpha1[j+2]]
+                    if clash:
+                        tf1 = (test1 < 0)
+                        tf2 = (test2 < 0)
+                        tf3 = (test3 < 0)
+                    elif BADclash:
+                        # only test tf1
+                        tf1 = (test1 == -2)
+                        tf2 = True
+                        tf3 = True
+                    else:
+                        tf1 = (test1 > 0)
+                        tf2 = (test2 > 0)
+                        tf3 = (test3 > 0)
+                    if tf1 & tf2 & tf3:
+                        # Save only the middle coords
+                        save_coords = save_coords + [[i+1,alpha1[j],alpha1[j+1],alpha1[j+2]]]
+
+                        # Add to a counter using this complicated line
+                        if score_weight:
+                            output_df.loc[loctcr,lochla] = output_df.loc[loctcr,lochla] + (test1+test2+test3)/3
+                        elif BADclash:
+                            output_df.loc[loctcr,lochla] = output_df.loc[loctcr,lochla] + test1
+                        else:
+                            output_df.loc[loctcr,lochla] = output_df.loc[loctcr,lochla] + 1
+            if ScoreAlpha2:
+                # Do it again for the alpha2 loop
+                for j in np.arange(len(alpha2)):
+                    # Break when you are past the end
+                    if j + 2 >= len(alpha2):
+                        break
+                    # Looking for contiguous regions
+                    # of some positive interactions
+                    # can change criteria later
+                    test1 = test_score[i,alpha2[j]]
+                    test2 = test_score[i+1,alpha2[j+1]]
+                    test3 = test_score[i+2,alpha2[j+2]]
+                    if clash:
+                        tf1 = (test1 < 0)
+                        tf2 = (test2 < 0)
+                        tf3 = (test3 < 0)
+                    elif BADclash:
+                        # only test tf1
+                        tf1 = (test1 == -2)
+                        tf2 = True
+                        tf3 = True
+                    else:
+                        tf1 = (test1 > 0)
+                        tf2 = (test2 > 0)
+                        tf3 = (test3 > 0)
+                    if tf1 & tf2 & tf3:
+                        # Save only the middle coords
+                        save_coords = save_coords + [[i+1,alpha2[j],alpha2[j+1],alpha2[j+2]]]
+
+                        # Add to the counter above
+                        if score_weight:
+                            output_df.loc[loctcr,lochla] = output_df.loc[loctcr,lochla] + (test1+test2+test3)/3
+                        elif BADclash:
+                            output_df.loc[loctcr,lochla] = output_df.loc[loctcr,lochla] + test1
+                        else:
+                            output_df.loc[loctcr,lochla] = output_df.loc[loctcr,lochla] + 1
+                            
+        # Before we move on, if you want to, scale all these by the CDR lengths
+        # Obviously based on this simple counting metric, longer CDRs will have
+        # higher interaction scores by default
+        if len_weight:
+            # len1 should give the length of the CDR of interest
+            output_df.loc[loctcr,lochla] = output_df.loc[loctcr,lochla]/len1
+        if save_coords == []:
+            # There were no contiguous matches for a bunch of these sequences!
+            # Save the list of these sequences to be sure
+            noMatch = noMatch + [seq]
+            continue
+            
+        if first:
+            final_coords = save_coords
+            first = False
+        else:
+            final_coords = np.vstack((final_coords,save_coords))
+    if first:
+        print('no matches at all')
+        return(1,2,3)
+    else:
+        return(output_df,final_coords,noMatch)
+
+# Make a script to identify regions of contiguous positive interactions
+# Start out first looking for ONLY strings of positive interactions
+# Given the curvature of TCRs, lets only look in strings of 3
+
+def get_byRes_scores(SCORES,mhc_type = 'classI',scoreWeight = False,lenWeight=False):
+    # This is for if you want FULL interact scores
+    #test_score = SCORES[0]
+    #len1, len2 = np.shape(test_score)
+    #bind_loc = np.zeros(len2)
+    # This is for if you want a subset
+    if mhc_type == 'classI':
+        alpha1 = [55,56,59,60,63,66,67,70,74,77,80]
+        alpha2 = [143,144,147,148,149,152,153,156,160,161,164,165,167,168]
+    elif mhc_type == 'classII_alpha':
+        II_alpha_contacts = [51, 53, 55, 56, 58, 59, 62, 63, 66, 69, 70, 73, 74]
+        alpha1 = II_alpha_contacts
+        alpha2 = []
+    elif mhc_type == 'classII_beta':
+        II_beta_contacts = [63, 66, 67, 70, 71, 73, 74, 76, 77, 80, 83, 84, 87, 88, 91, 92]
+        alpha1 = II_beta_contacts
+        alpha2 = []
+    
+    hist_alpha1 = np.zeros(len(alpha1))
+    hist_alpha2 = np.zeros(len(alpha2))
+
+    noMatch = []
+    first = True
+    for seq in np.arange(len(SCORES)):
+        test_score = SCORES[seq]
+        len1, len2 = np.shape(test_score)
+        save_coords = []
+        for i in np.arange(len1):
+            # Break when you are reaching past the end
+            if i + 2 >= len1:
+                break
+            #do it for the alpha1 loop
+            for j in np.arange(len(alpha1)):
+                # Break when you are past the end
+                if j + 2 >= len(alpha1):
+                    break
+                # Looking for contiguous regions
+                # of some positive interactions
+                # can change criteria later
+                test1 = (test_score[i,alpha1[j]] > 0)
+                test2 = (test_score[i+1,alpha1[j+1]] > 0)
+                test3 = (test_score[i+2,alpha1[j+2]] > 0)
+                if test1 & test2 & test3:
+                    # Save only the middle coords
+                    save_coords = save_coords + [[i+1,alpha1[j],alpha1[j+1],alpha1[j+2]]]
+                    
+                    # Add to a histogram
+                    if scoreWeight:
+                        mult1 = test_score[i,alpha1[j]]
+                        mult2 = test_score[i+1,alpha1[j+1]]
+                        mult3 = test_score[i+2,alpha1[j+2]]
+                    else:
+                        mult1 = 1; mult2 = 1; mult3 = 1
+                        
+                    hist_alpha1[j] = hist_alpha1[j] + 1 * mult1
+                    hist_alpha1[j+1] = hist_alpha1[j+1] + 1 * mult2
+                    hist_alpha1[j+2] = hist_alpha1[j+2] + 1 * mult3
+                    
+            # Do it again for the alpha2 loop
+            for j in np.arange(len(alpha2)):
+                # Break when you are past the end
+                if j + 2 >= len(alpha2):
+                    break
+                # Looking for contiguous regions
+                # of some positive interactions
+                # can change criteria later
+                test1 = (test_score[i,alpha2[j]] > 0)
+                test2 = (test_score[i+1,alpha2[j+1]] > 0)
+                test3 = (test_score[i+2,alpha2[j+2]] > 0)
+                if test1 & test2 & test3:
+                    # Save only the middle coords
+                    save_coords = save_coords + [[i+1,alpha2[j],alpha2[j+1],alpha2[j+2]]]
+                    
+                    # Add to a histogram
+                    if scoreWeight:
+                        mult1 = test_score[i,alpha2[j]]
+                        mult2 = test_score[i+1,alpha2[j+1]]
+                        mult3 = test_score[i+2,alpha2[j+2]]
+                    else:
+                        mult1 = 1; mult2 = 1; mult3 = 1
+                        
+                    hist_alpha2[j] = hist_alpha2[j] + 1 * mult1
+                    hist_alpha2[j+1] = hist_alpha2[j+1] + 1 * mult2
+                    hist_alpha2[j+2] = hist_alpha2[j+2] + 1 * mult3
+                    
+        if save_coords == []:
+            # There were no contiguous matches for a bunch of these sequences!
+            # Save the list of these sequences to be sure
+            noMatch = noMatch + [seq]
+            continue
+            
+        if first:
+            final_coords = save_coords
+            first = False
+        else:
+            final_coords = np.vstack((final_coords,save_coords))
+    if lenWeight:
+        fin_data = np.hstack((hist_alpha1,hist_alpha2))/len(SCORES)
+    else:
+        fin_data = np.hstack((hist_alpha1,hist_alpha2))
+    return(fin_data)
