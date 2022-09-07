@@ -15,7 +15,7 @@ thing = True
 # For the hlaA.fasta we have: 170,218,260,306,348
 # For cd1_ufa_genes.fasta: 22,66,105,158,199
 
-def mhc_loader(fastapath,mat_coords,label):
+def mhc_loader(fastapath,mat_coords,label,drop_dups = False):
 
     thing = True
     xxx1 = fastapath.rfind('/')
@@ -50,7 +50,10 @@ def mhc_loader(fastapath,mat_coords,label):
     ff_seg1 = np.transpose(final_Seg1)
     # Obviously don't need to worry about extra sequences if there is only one...
     # What a dumb f***ing way to do this, but it works...
-    if np.shape(np.shape(ff_seg1))[0] != 1:
+    if np.shape(np.shape(ff_seg1))[0] == 1:
+        drop_dups = False
+
+    if drop_dups:
         # Extra bit here to delete duplicate sequences
         # REMOVE POINT MUTANTS AND SEQs TWO MUTATIONS OFF
         num_muts = 2

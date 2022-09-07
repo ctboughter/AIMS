@@ -482,7 +482,6 @@ class aligner(Screen):
         global thing_loaded
         self.next1_2.disabled = False
         # Literally just here so we can have these messages or not
-
         if align_label.text == 'ERROR: MUST LOAD AT LEAST TWO FILES':
             FloatLayout.remove_widget(self,align_label)
             align_label.text = ''
@@ -543,6 +542,9 @@ class aligner(Screen):
         global mat_coords
         global labels
         global check_run
+        # Real quick check if users want to drop degenerate sequences or not.
+        global exp_drop
+        exp_drop = self.degen_drop.active
         # Really idiot-proof this thing, in case someone is just buzzing through the screens
         if 'thing_loaded' in globals():
             if thing_loaded:
@@ -562,6 +564,16 @@ class aligner(Screen):
             labels = mat_coords[0]
         else:
             labels = mat_coords[:,0]
+            # All of this here is to fix issues in naming
+            # this fix will also break if users for some reason end filenames
+            # with "___". Better hope they don't do that
+            dum_len = len(labels)
+            for i in np.arange(dum_len):
+                for j in np.arange(dum_len):
+                    if i == j:
+                        continue
+                    if labels[i].find(labels[j]) == 0:
+                        labels[j] = labels[j]+'___'
         # When you go back this far, make sure we recreate the checkbox screen
         if 'check_run' in globals():
             # So intelligently, if you define something as a global variable
@@ -649,10 +661,10 @@ class Analysis(Screen):
                 # turn data into an integer.
                 if onlyONE:
                     int_dat = [int(x) for x in data]
-                    seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i])
+                    seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i],drop_dups = exp_drop)
                 else:
                     int_dat = [int(x) for x in data[i]]
-                    seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i])
+                    seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i],drop_dups = exp_drop)
             else:
                 # My first ever error handling! Works pretty well (for now)
                 # Probably need more "exceptions" here for formatting errors
@@ -688,7 +700,7 @@ class Analysis(Screen):
                         max_lenp[i]=int(max(mat_size[i],mat_size2[i]))
                 else:
                     max_lenp = int(max(mat_size,mat_size2))
-                mat_size = max_lenp       
+                mat_size = max_lenp
         # Alright if we have gotten this far, bring the "next" button back online
         self.next1_3.disabled = False
         # Obviously need to define this somewhere in the software
@@ -1679,7 +1691,16 @@ class aligner_ab(Screen):
             pass
         else:
             labels = [i[0] for i in labels]
-        
+            # All of this here is to fix issues in naming
+            # this fix will also break if users for some reason end filenames
+            # with "___". Better hope they don't do that
+            dum_len = len(labels)
+            for i in np.arange(dum_len):
+                for j in np.arange(dum_len):
+                    if i == j:
+                        continue
+                    if labels[i].find(labels[j]) == 0:
+                        labels[j] = labels[j]+'___'
         # Figure out what number of loops we are doing
         global LOOPnum
         if self.cdr1.active == True:

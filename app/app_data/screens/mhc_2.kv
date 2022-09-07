@@ -1,7 +1,8 @@
 #:kivy 1.8.0
 aligner:
     name: 'mhc_2'
-
+    
+    degen_drop: degen_drop
     align_button1: align_button1
     align_button2: align_button2
     input1: input1
@@ -54,16 +55,16 @@ aligner:
     
     Label:
         size_hint: None , None
-        pos_hint: {'center_x': 0.2, 'center_y': 0.725}
+        pos_hint: {'center_x': 0.15, 'center_y': 0.725}
         height: '32dp'
         text:'New Folder Name:'
         font_name: 'app_data/Poppins-Medium.ttf'
 
     CTextInput:
         id: input1
-        size_hint: 0.5,None
+        size_hint: 0.4,None
         write_tab: False
-        pos_hint: {'center_x': 0.6, 'center_y': 0.725}
+        pos_hint: {'center_x': 0.45, 'center_y': 0.725}
         height: '32dp'
         multiline: False
         text: 'new_folder'
@@ -137,6 +138,21 @@ aligner:
         on_release:
             root.drop_buts()
             root.load_aligners()
+
+    # Need to have an extra section to drop degenerate loops:
+    CheckBox:
+        id: degen_drop
+        size_hint: None,None
+        height: '48dp'
+        state: 'down'
+        pos_hint: {'center_x': 0.9, 'center_y': 0.725}
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.8, 'center_y': 0.725}
+        height: '32dp'
+        text:'Drop Duplicates:'
+        font_name: 'app_data/Poppins-Medium.ttf'
 
 
     ####################### END FASTA DESIGNATIONS ############################
