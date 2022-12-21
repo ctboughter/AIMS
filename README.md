@@ -11,12 +11,18 @@ When publishing analysis from this software, please cite:
 Boughter CT, Borowska MT, Guthmiller JJ, Bendelac A, Wilson PC, Roux B, Adams EJ. Biochemical Patterns of Antibody Polyreactivity Revealed Through a Bioinformatics-Based Analysis of CDR Loops. eLife. 2020. DOI: 10.7554/eLife.61393
 
 # Documentation
-
 Rather than have all of the instructions on this GitHub page, all information on installation and usage (and more!) has been moved to a separate, more readable documentation page. Please follow this link:
 
 https://aims-doc.readthedocs.io/en/latest/
 
 For the comprehensive AIMS user guide.
+
+# Further Reading
+Now that AIMS has been out and in the wild for around two years, there have been additional published peer-reviewed manuscripts or posted preprints that highlight the capabilities of AIMS! I'll try to keep this list relatively up to date, and if it ever gets lengthy will likely move it to the ReadTheDocs page. Manuscripts thus far include:
+
+- An application of AIMS to non-immune molecules using multi-sequence alignment (MSA) encoding: https://pubs.acs.org/doi/abs/10.1021/acs.jpcb.2c02173
+- The AIMS bible, with a thorough explanation of the rationale behind the AIMS analysis: https://www.biorxiv.org/content/10.1101/2022.12.07.519510v1
+- An investigation of the nature of the germline interactions between TCR CDR loops and MHC: https://www.biorxiv.org/content/10.1101/2022.12.07.519507v1
 
 # Acknowledgements
 This initial stable build has only been possible through a highly collaborative effort focused on creating a functional pipeline with the incorporated features necessary for thorough repertoire analysis. The following people have made major contributions to this project:
