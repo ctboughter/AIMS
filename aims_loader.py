@@ -2,7 +2,6 @@ from Bio import AlignIO
 from Bio.Seq import Seq
 from Bio import SeqIO
 from Bio import pairwise2
-from Bio.pairwise2 import format_alignment
 import numpy as np
 import pandas
 
@@ -110,7 +109,7 @@ def mhc_loader(fastapath,mat_coords,label,drop_dups = False):
         return(finalDF,title_key)
 # So in the main version of the script, we have a special loader for each data subset
 # Can we make just a generalizable one? Let's give it a try...
-def Ig_loader(fastapath,label,loops=6,drop_degens = False):
+def Ig_loader(fastapath,label,loops=6,drop_degens = False,return_index = False):
     if loops == 6:
         total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdrL1_aa','cdrL2_aa','cdrL3_aa','cdrH1_aa','cdrH2_aa','cdrH3_aa'])
     elif loops == 3:
@@ -121,6 +120,8 @@ def Ig_loader(fastapath,label,loops=6,drop_degens = False):
         total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdr_aa'])
     # Remove empty entries
     total_abs1 = total_Abs.where((pandas.notnull(total_Abs)), '')
+    if return_index:
+        index_temp = total_abs1.index
     # Remove X's in sequences... Should actually get a count of these at some point...
     if loops == 6:
         total_abs2=total_abs1[~total_abs1['cdrL1_aa'].str.contains("X")]
@@ -175,6 +176,8 @@ def Ig_loader(fastapath,label,loops=6,drop_degens = False):
                 a=a+1
 
     final_Ig=np.delete(totalF,del_these,axis=0)
+    if return_index:
+        index_temp_del=np.delete(index_temp,del_these,axis=0)
 
     # Remove degeneracies in the dataset (optional)
     if drop_degens:
@@ -220,13 +223,20 @@ def Ig_loader(fastapath,label,loops=6,drop_degens = False):
             f_Ig = final_Ig[indices,:].reshape(len(indices),3)
         elif loops == 6:
             f_Ig = final_Ig[indices,:].reshape(len(indices),6)
+        if return_index:
+            index_f = index_temp_del[indices,:]
     else:
         f_Ig = final_Ig
+        if return_index:
+            index_f = index_temp_del
 
     final_title = [label + '_' + str(a) for a in np.arange(len(f_Ig))]
     final_Df = pandas.DataFrame(np.transpose(f_Ig),columns = final_title)
 
-    return(final_Df)
+    if return_index:
+        return(final_Df,index_f)
+    else:
+        return(final_Df)
 #####################################################################################
 def pep_loader(fastapath,label, scrape=False, start_label=0):
 
@@ -422,3 +432,181 @@ def get_classII():
     beta_df = beta_noN.drop_duplicates(0)
 
     return(alpha_df,beta_df)
+
+############## Currently non-functional loading scripts ################
+
+#######################################################################
+# So as a note, this script actually loads in ALL MHC. Class I
+def load_multiOrgMHC():
+    records = list(SeqIO.parse('germline_data/MHC_prot.fasta','fasta'))
+    mhc_codes = pandas.read_csv('germline_data/MHCprot_orgCode.csv')
+
+    first = True
+    for tester in records:
+        ID = tester.id
+        for sin_code in mhc_codes['IMGTcode']:
+            find_code = tester.description.find(sin_code)
+            if find_code != -1:
+                metaDat = mhc_codes[mhc_codes['IMGTcode'] == sin_code]
+                break
+        pre_df = np.transpose(pandas.DataFrame(np.hstack([str(tester.seq),ID,metaDat.values[0]])))
+        if first:
+            fin_df = pre_df
+            first = False
+        else:
+            fin_df = pandas.concat([fin_df,pre_df],axis=0)
+    fin_df.columns = ['seq','ID','broadOrg', 'species', 'IMGTcode', 'commonName', 'numCode']
+    pre_final_df = fin_df.drop_duplicates('seq')
+    pre_final_df.index = np.arange(len(pre_final_df))
+
+    # Specifically load in the mouse data
+    records2 = list(SeqIO.parse('germline_data/mouse_classI.fasta','fasta'))
+    mouse_seqF = []
+    for tester in records2:
+        ID = tester.id
+        seq = str(tester.seq)
+        mouse_seqF = mouse_seqF + [seq]
+    mouse_ids = ['H2D','H2K','H2L','H2M','H2Q','H2T']
+    broadOrg = ['Mus','Mus','Mus','Mus','Mus','Mus']
+    ID = ['','','','','','']
+    species = ['Mouse','Mouse','Mouse','Mouse','Mouse','Mouse']
+    commonName = ['Mouse','Mouse','Mouse','Mouse','Mouse','Mouse']
+    numCode = [0,0,0,0,0,0]
+    IMGTcode = ['Mus','Mus','Mus','Mus','Mus','Mus']
+
+    mouse_tempdf = np.transpose(pandas.DataFrame([mouse_seqF,mouse_ids,broadOrg,species,IMGTcode,commonName,numCode]))
+    mouse_tempdf.columns = pre_final_df.columns
+
+    # Need to ALSO load in the human molecules. I THINK that allowing us to randomly subsample the 
+    # MHC molecules should actually suffice to control for the heavy skewing of the dataset in number towards human
+    # Loaded them in earlier, just process them into the "finalDF"
+    classI = get_HLA()
+    classIIa_df,classIIb_df = get_classII()
+
+    classIIa_human_len = len(classIIa_df[0])
+    classIIb_human_len = len(classIIb_df[0])
+    classI_human_len = len(classI[0])
+
+    classI_ids = classI[0]; classIIa_ids = classIIa_df['Allele']; classIIb_ids = classIIb_df['Allele']
+    classI_broadOrg = ['Human']*classI_human_len; classIIa_broadOrg = ['Human']*classIIa_human_len; classIIb_broadOrg = ['Human']*classIIb_human_len 
+    classI_ID = ['']*classI_human_len; classIIa_ID = ['']*classIIa_human_len; classIIb_ID = ['']*classIIb_human_len
+    classI_numCode = [0]*classI_human_len; classIIa_numCode = [1]*classIIa_human_len; classIIb_numCode = [2]*classIIb_human_len;
+    classI_IMGTcode = ['Hosa']*classI_human_len; classIIa_IMGTcode = ['Hosa']*classIIa_human_len; classIIb_IMGTcode = ['Hosa']*classIIb_human_len;
+
+    classI_tempdf = np.transpose(pandas.DataFrame([classI[1].values,classI_ids,classI_broadOrg,classI_broadOrg,classI_IMGTcode,classI_broadOrg,classI_numCode]))
+    classIIa_tempdf = np.transpose(pandas.DataFrame([classIIa_df[0].values,classIIa_ids,classIIa_broadOrg,classIIa_broadOrg,classIIa_IMGTcode,classIIa_broadOrg,classIIa_numCode]))
+    classIIb_tempdf = np.transpose(pandas.DataFrame([classIIb_df[0].values,classIIb_ids,classIIb_broadOrg,classIIb_broadOrg,classIIb_IMGTcode,classIIb_broadOrg,classIIb_numCode]))
+
+    classI_tempdf.columns = pre_final_df.columns
+    classIIa_tempdf.columns = pre_final_df.columns
+    classIIb_tempdf.columns = pre_final_df.columns
+
+    final_df = pandas.concat([pre_final_df,mouse_tempdf,classI_tempdf,classIIa_tempdf,classIIb_tempdf])
+    final_df.index = np.arange(len(final_df))
+    
+    return(final_df)
+
+def load_multiOrgTCR():
+    tcr_orgs = ['human','mouse','rhesus','sheeps','maMonkey','cow','goat']
+    mhc_orgs = ['Human','Mouse','rhesus','Sheep','_Ma_','Cattle','Goat']
+
+    # Define how many CDR loops are in the files you are loading
+    num_loop=3
+    for i in np.arange(len(tcr_orgs)):
+        trav = Ig_loader('germline_data/Ig_displays/trav_'+tcr_orgs[i]+'_cdrs.csv',label=mhc_orgs[i],loops=num_loop,drop_degens = True)
+        trbv = Ig_loader('germline_data/Ig_displays/trbv_'+tcr_orgs[i]+'_cdrs.csv',label=mhc_orgs[i],loops=num_loop,drop_degens = True)
+        if tcr_orgs[i] == 'human':
+            fin_trav = trav.loc[0:1]
+            fin_trbv = trbv.loc[0:1]
+        else:
+            fin_trav = pandas.concat([fin_trav,trav],axis=1)
+            fin_trbv = pandas.concat([fin_trbv,trbv],axis=1)
+
+    return(fin_trav,fin_trbv)
+
+def get_KIR(KIR):
+    # Then go on to the loading script
+    kir_dir = 'IPDKIR-Latest/fasta/'
+    records = list(SeqIO.parse(kir_dir+KIR+'_prot.fasta','fasta'))
+    # KIR2DL1,2,3 have D1-D2 arrangements
+    # Other KIRs have D0-D2, or the 3-domain KIRs
+        
+    full_id = []; d1_l0_concat = []; d2_l0_concat = []
+    d1_l1_concat = []; d2_l1_concat = []; 
+    d1_l2_concat = []; d2_l2_concat = []; 
+    connect_concat = []
+    for i in np.arange(len(records)):
+        rec_desc = records[i].description
+        seqs_pre = str(records[i].seq)
+        hla_loc = rec_desc.find('*')
+        partial_id = rec_desc[hla_loc-1:]
+        id_end = partial_id.find(' ')
+
+        # So far, all of the truncated sequences end with an "N"
+        # Search for it, and then shitcan these sequences
+        if rec_desc.find('N') != -1:
+            continue
+        #############################################################################
+        # This is the start of the D1 domain
+        start_plat = seqs_pre.find('HRKP')
+        if start_plat == -1:
+            continue
+        # This is the end of the D1 domain
+        end_plat = seqs_pre.find('DIVI')
+        if end_plat == -1:
+            # Alternate possibility for this sequence
+            end_plat = seqs_pre.find('DVVI')
+            if end_plat == -1:
+                continue
+        else:
+            # Otherwise need to add in the remainder of the sqeuence
+            end_plat = end_plat + 4
+            
+        d1_seqs = seqs_pre[start_plat:end_plat]
+        #############################################################################
+        # This is the start of the D2 domain
+        start_plat = seqs_pre.find('GLYEKP')
+        if start_plat == -1:
+            # Alternate possibility for this sequence
+            start_plat = seqs_pre.find('GLYQKP')
+            if start_plat == -1:
+                continue
+        # This is the end of the D2 domain
+        end_plat = seqs_pre.find('VSVT')
+        if end_plat == -1:
+            end_plat = seqs_pre.find('VSVI')
+            if end_plat == -1:
+                continue
+        else:
+            # Otherwise need to add in the remainder of the sqeuence
+            end_plat = end_plat + 4
+        d2_seqs = seqs_pre[start_plat:end_plat]
+        
+        # Based on a few papers: Moradi and Berry, JBC 2015 // Moradi et al. Nat Comm 2021 // Fan, Long, and Wiley Nat Immuno 2001
+        # We can pick out a few key regions for interacting regions of the KIRS
+        # VERY specifically for the KIR D1 and D2 domains
+        D1_loop0 = d1_seqs[12:22]
+        D1_loop1 = d1_seqs[34:44]
+        D1_loop2 = d1_seqs[63:73]
+        connect = d2_seqs[0:10]
+        D2_loop0 = d2_seqs[26:36]
+        # Structure doesn't show any contact with this region, but appears highly variable.
+        # Keep it in the analysis for now
+        D2_loop1 = d2_seqs[48:58]
+        D2_loop2 = d2_seqs[78:88]
+
+        full_id = full_id +  [partial_id[:id_end]]
+        d1_l0_concat = d1_l0_concat + [D1_loop0]
+        d2_l0_concat = d2_l0_concat + [D2_loop0]
+        d1_l1_concat = d1_l1_concat + [D1_loop1]
+        d2_l1_concat = d2_l1_concat + [D2_loop1]
+        d1_l2_concat = d1_l2_concat + [D1_loop2]
+        d2_l2_concat = d2_l2_concat + [D2_loop2]
+        connect_concat = connect_concat + [connect]
+    sequence_frame = np.transpose(pandas.DataFrame(np.vstack((full_id,d1_l0_concat,d1_l1_concat,
+                    d1_l2_concat,connect_concat,d2_l0_concat,d2_l1_concat,d2_l2_concat))))
+    # remove duplicate entries
+    nonDup_locs = sequence_frame[[1,2,3,4,5,6,7]].drop_duplicates().index
+    seqFrameF = sequence_frame.loc[nonDup_locs]
+
+    return(seqFrameF)

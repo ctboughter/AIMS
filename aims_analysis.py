@@ -6,6 +6,7 @@ import matplotlib as mpl
 from matplotlib import cm
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import accuracy_score
+import aims_loader as aimsLoad
 
 # Define some initial stuff and import analysis functions:
 #AA_key_old=['A','G','L','M','F','W','K','Q','E','S','P','V','I','C','Y','H','R','N','D','T']
@@ -1473,15 +1474,15 @@ def get_byAllele_scores(SCORES,tcr_names,hla_names,mhc_type = 'classI',ScoreAlph
     output_hist = np.zeros((len(tcr_names),len(hla_names)))
     output_df = pandas.DataFrame(output_hist)
     output_df.columns = [i[0] for i in hla_names]
-    output_df.index = [i[0] for i in tcr_names]
+    output_df.index = [i for i in tcr_names]
     First = True
     for i in hla_names:
         for j in tcr_names:
             if First:
-                fin_name = [i[0],j[0]]
+                fin_name = [i[0],j]
                 First = False
             else:
-                fin_name = np.vstack((fin_name,[i[0],j[0]]))
+                fin_name = np.vstack((fin_name,[i[0],j]))
     
     noMatch = []
     first = True
@@ -1696,3 +1697,87 @@ def get_byRes_scores(SCORES,mhc_type = 'classI',scoreWeight = False,lenWeight=Fa
     else:
         fin_data = np.hstack((hist_alpha1,hist_alpha2))
     return(fin_data)
+
+# convert matF back into sequences...
+# So the input to matF should be a single numeric row of the AIMS matrix
+def decode_mat(matF,num_key_AA,key_AA):
+    hold_str = []
+    for i in matF:
+        if i == 0:
+            hold_str = hold_str + ['-']
+        else:
+            for j in num_key_AA:
+                if i == j:
+                    hold_str = hold_str + [key_AA[j-1]]
+    final = ''.join(hold_str)
+    return(final)
+
+# This script is necessary to pull out the CDR 1 and 2 loop from gene names
+def pull_cdr_1_2(gene_list,chain='trav',organism='Human'):
+    org = organism.lower()
+    trv = chain.lower()
+    fin_trv, trv_name_pre = aimsLoad.Ig_loader('germline_data/'+trv+'_'+org+'_cdrs.csv','tcr',loops=3,return_index = True)    
+    fin_trv.columns = trv_name_pre
+    
+    fin_cdrs = []
+    for i in gene_list.values:
+        # Should probably include some sort of failsafe in case 
+        try:
+            cdrs = [fin_trv[i].values]
+        except:
+            # So in dealing with MiSeq data, these may be pseudogenes frequently.
+            print("Gene " +i+" not found")
+            cdrs = [['','','']]
+        
+        fin_cdrs = fin_cdrs + cdrs
+    
+    return(pandas.DataFrame(fin_cdrs))
+
+# Turn a single column dataframe of metadata into a numeric dataframe
+# Currently only for tags/integers, but will be edited in the future for numeric float data
+def encode_meta(metadat):
+    temp_df = metadat
+    uniq_labels = temp_df.drop_duplicates().values
+    dict_f = {}
+    for i in np.arange(len(uniq_labels)):
+        dict_temp = {uniq_labels[i][0]:i}
+        dict_f.update(dict_temp)
+    encoded=temp_df.replace({0:dict_f})
+    return(encoded)
+
+# For returning cluster purity of biophysical clusters with metadata
+def calc_cluster_purity(final_breakdown,meta_name):
+    a = 0
+    for i in np.sort(final_breakdown['cluster'].drop_duplicates()):
+        sub_clust = final_breakdown[final_breakdown['cluster'] == i]
+        uniq_ant = ['antigen','num']
+        for ant in np.sort(sub_clust[meta_name]):
+            matched = False
+            if np.shape(uniq_ant) == (2,):
+                uniq_ant  = np.vstack((uniq_ant,[ant,int(1)]))
+            else:
+                for uniqs in np.arange(len(uniq_ant)):
+                    if uniq_ant[uniqs,0] == 'antigen':
+                        continue
+                    # IF YOU DO THIS RIGHT, THESE SHOULD ALL BE INTEGERS
+                    # So you should not get an error...
+                    if int(ant) == int(uniq_ant[uniqs,0]):
+                        matched = True
+                        break
+                    else:
+                        matched = False
+                if matched:
+                    uniq_ant[uniqs,1] = int(uniq_ant[uniqs,1]) + 1
+                else:
+                    uniq_ant = np.vstack((uniq_ant,[ant,1]))
+        int_data = [uniq_ant[1:,0],[int(a) for a in uniq_ant[1:,1]]]
+        antigen_quant = pandas.DataFrame(np.transpose(int_data),columns=[uniq_ant[0,:]])
+        # Now FROM this, calculate cluster purity
+        antigen_ints = [int(a) for a in antigen_quant[['num']].values]
+        purity_pre = float(np.max(antigen_ints))/sum(antigen_ints)
+        if a == 0:
+            cluster_purity = purity_pre
+            a+=1
+        else:
+            cluster_purity = np.vstack((cluster_purity,purity_pre))
+    return(cluster_purity)

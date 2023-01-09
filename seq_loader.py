@@ -1,3 +1,5 @@
+### This script is for loading VERY specific antibody data from the eLife manuscript ###
+# To see how more general data is loaded in, look through "aims_loader.py"
 # Let's start off by loading in Jeff's CDR3's
 import numpy as np
 import pandas
