@@ -1128,11 +1128,13 @@ class Analysis(Screen):
             # If we're skipping 7, we need to redefine our colormap to have more entries...
             # Redefine as cmap_discrete_fin so it doesn't mess with the previously
             # defined cmap_discrete (based on # datasets)
-            if clust == 'kmean':
-                cmap2 = pl.get_cmap('rainbow')
-                cmap_discrete_fin = cmap2(np.linspace(0, 1, fin_clustL))
-            else:
-                cmap_discrete_fin = cmap(np.linspace(0, 1, fin_clustL))
+            #if clust == 'kmean':
+            
+            # I think that no matter what, we want this...
+            cmap2 = pl.get_cmap('rainbow')
+            cmap_discrete_fin = cmap2(np.linspace(0, 1, fin_clustL))
+            #else:
+                #cmap_discrete_fin = cmap(np.linspace(0, 1, fin_clustL))
         else:
             cmap_discrete_fin = cmap_discrete
             # try to sort of cheat in creating the labels here...
