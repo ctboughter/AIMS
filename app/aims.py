@@ -10,6 +10,7 @@ from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.textinput import TextInput
+from kivy.uix.colorpicker import ColorPicker
 from kivy.clock import Clock
 from kivy.event import EventDispatcher
 
@@ -23,6 +24,7 @@ from matplotlib import rc
 import pandas
 import scipy
 from time import time
+from matplotlib.colors import LinearSegmentedColormap
 
 import aims_loader as aimsLoad
 import aims_analysis as aims
@@ -46,11 +48,27 @@ from kivy.config import Config
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 # Jesus, this thing really was built for phone apps...
 
+# Hopefully defining this outside everything lets it be called whenever I want:
+# Lets try to create our own color gradient:
+# code from: https://medium.com/@BrendanArtley/matplotlib-color-gradients-21374910584b
+def get_color_gradient(c1, c2,c3, n):
+    assert n > 1
+    
+    c1_rgb = np.array(c1)
+    c2_rgb = np.array(c2)
+    c3_rgb = np.array(c3)
+    mix_pcts = [x/(n-1) for x in range(n)]
+    rgb_colors1 = [((1-mix)*c1_rgb + (mix*c2_rgb)) for mix in mix_pcts]
+    rgb_colors2 = [((1-mix)*c2_rgb + (mix*c3_rgb)) for mix in mix_pcts]
+    rgb_colors=rgb_colors1+rgb_colors2
+    return (rgb_colors)
+
 class Root(Screen):
     # REALLY Sucks to use global variables, but I'm unsure how else to
     # pass all of these across functions
     global N; N = 4
     global LFile; LFile = ['']
+    global LFile_cut; LFile_cut = ['']
     fullscreen = BooleanProperty(False)
 
     def on_pre_enter(self):
@@ -58,6 +76,7 @@ class Root(Screen):
         global loadButton
         if 'loadLabel' not in globals():
             global LFile; LFile = ['']
+            global LFile_cut; LFile_cut = ['']
             N = 4
             a=0
             # Need to re-read through this shit to see what's going on...
@@ -74,25 +93,25 @@ class Root(Screen):
                 if LFile == ['']:
                     if j > 0:
                         button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                        pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                        pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                         on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
                         background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
                         disabled = True)
                     else:
                         button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                        pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                        pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                         on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
                         background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
                 else:
                     if j > len(LFile):
                         button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                        pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                        pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                         on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
                         background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
                         disabled = True)
                     else:
                         button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                        pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                        pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                         on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
                         background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
                 
@@ -103,7 +122,9 @@ class Root(Screen):
                     pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
                 else:
                     if LFile[int(j)] != '':
-                        label = Label(text=LFile[int(j)], size_hint=(0.2, 0.075),
+                        # Shouldnt worry about entering IF on LFile then showing LFile_cut,
+                        # because they are defined together
+                        label = Label(text=LFile_cut[int(j)], size_hint=(0.2, 0.075),
                         pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
                     else:
                         label = Label(text=xname+'File ' + str(j+1) + ' Path', size_hint=(0.2, 0.075),
@@ -152,6 +173,7 @@ class Root(Screen):
             else:
                 if len(LFile) > 1:
                     LFile = [LFile[0]]
+                    LFile_cut = [LFile_cut[0]]
                 self.next1_1.disabled = False
         elif self.tbutt2.state == 'down':
             onlyONE = False
@@ -168,20 +190,28 @@ class Root(Screen):
         
         content = LoadDialog(load=self.load, cancel=self.dismiss_popup, fas1 = self.do_thing(win2 = win))
         self._popup = Popup(title="Load file", content=content,
-                            size_hint=(0.9, 0.9))
+                            size_hint=(0.75, 0.9))
         self._popup.open()
 
     def load(self, path, filename):
         global LFile
+        # LFile_cut will be a more visually appealing path
+        # Users will hopefully be able to see the full LFile by clicking a button
+        global LFile_cut
         path1 = os.path.join(path, filename[0])
         # So FASTA_L should tell you WHERE
         # The loadfile is coming from
         while FASTA_L+1 > len(LFile):
             LFile = LFile + ['']
+            LFile_cut = LFile_cut + ['']
         LFile[FASTA_L] = path1
+        # Break up path1 a little bit
+        # rfind is "find the last one"
+        path1_cut = path1[path1.rfind("/")+1:]
+        LFile_cut[FASTA_L] = path1_cut
         # Need to have two separate options because we move from Kivy defined buttons to
         # python defined buttons. I handle those slightly differently.
-        loadLabel[FASTA_L].text = path1
+        loadLabel[FASTA_L].text = path1_cut
         if len(loadButton) > FASTA_L+1: 
             loadButton[FASTA_L+1].disabled = False
         self.check_one()
@@ -213,6 +243,7 @@ class Root(Screen):
         # Remove any extra entries, just in case...
         while len(LFile) > N:
             LFile = LFile[:-1]
+            LFile_cut = LFile_cut[:-1]
 
 
     def more_fastas(self):
@@ -241,25 +272,25 @@ class Root(Screen):
             if LFile == ['']:
                 if j > 0:
                     button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                     on_release=lambda x = int(j):self.show_load(win = x),
                     background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
                     disabled = True)
                 else:
                     button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                     on_release=lambda x = int(j):self.show_load(win = x),
                     background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             else:
                 if j > len(LFile):
                     button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                     on_release=lambda x = int(j):self.show_load(win = x),
                     background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
                     disabled = True)
                 else:
                     button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                     on_release=lambda x = int(j):self.show_load(win = x),
                     background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             # What an absolute fucking nightmare solution the line above... works though
@@ -269,7 +300,7 @@ class Root(Screen):
                 pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
             else:
                 if LFile[int(j)] != '':
-                    label = Label(text=LFile[int(j)], size_hint=(0.2, 0.075),
+                    label = Label(text=LFile_cut[int(j)], size_hint=(0.2, 0.075),
                     pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
                 else:
                     label = Label(text=xname+'File ' + str(j+1) + ' Path', size_hint=(0.2, 0.075),
@@ -318,25 +349,25 @@ class Root(Screen):
             if LFile == ['']:
                 if j > 0:
                     button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                     on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
                     background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
                     disabled = True)
                 else:
                     button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                     on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
                     background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             else:
                 if j > len(LFile):
                     button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                     on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
                     background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0),
                     disabled = True)
                 else:
                     button = Button(text='Load '+ xxname + str(j+1), size_hint=(0.2, 0.075),
-                    pos_hint={'center_x':.15, 'center_y':.75-int(a)*0.6/N},
+                    pos_hint={'center_x':.25, 'center_y':.75-int(a)*0.6/N},
                     on_release=lambda x = int(j):self.show_load(win = x),background_down='app_data/butt_down.png', 
                     background_normal='app_data/butt_up.png',color=(0, 0.033, 0.329, 1),border=(0, 0, 0, 0))
             
@@ -347,7 +378,7 @@ class Root(Screen):
                 pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
             else:
                 if LFile[int(j)] != '':
-                    label = Label(text=LFile[int(j)], size_hint=(0.2, 0.075),
+                    label = Label(text=LFile_cut[int(j)], size_hint=(0.2, 0.075),
                     pos_hint={'center_x':.62, 'center_y':.75-int(a)*0.6/N},font_name='app_data/Poppins-Light.ttf')
                 else:
                     label = Label(text=xname+'File ' + str(j+1) + ' Path', size_hint=(0.2, 0.075),
@@ -581,8 +612,8 @@ class aligner(Screen):
             del check_run
     
 class LoadDialog(FloatLayout):
-    load = ObjectProperty(None)
-    cancel = ObjectProperty(None)
+    load = ObjectProperty(size_hint=(0.2,0.2))
+    cancel = ObjectProperty(size_hint=(0.2,0.2))
     fas1 = ObjectProperty(None)
 
     def get_path(self):
@@ -1050,6 +1081,11 @@ class Analysis(Screen):
         global sub1_seqs; global sub2_seqs
         global sel1; global sel2
         global skip7
+        # Define these so you can reset user-defined cmaps
+        global user_cmap1; global user_cmap2
+        user_cmap1 = ['']; user_cmap2 = ['']
+        global grad_cmap1; global grad_cmap2
+        grad_cmap1 = ['']; grad_cmap2 = ['']
         # This is defined to be sure that 
         if clust == 'kmean':
             subt_clust = 1
@@ -1106,12 +1142,16 @@ class Analysis(Screen):
 
     def get_pos_props(self):
         self.next1_8.disabled = False
+        property1 = str(self.prop1_sel.text)
+        property2 = str(self.prop2_sel.text)
+
         this_dir = os.getcwd()
         full_big.index = seq_MIf.columns
         global sels
         global labels_new
         # This will be the color scheme used for figures downstream of clustering
         global cmap_discrete_fin
+        global cmap_discrete
         # Skip7 is our sign of "use the original labels"
         if skip7:
             # define the IDs by the datasets already subsected
@@ -1136,7 +1176,8 @@ class Analysis(Screen):
             #else:
                 #cmap_discrete_fin = cmap(np.linspace(0, 1, fin_clustL))
         else:
-            cmap_discrete_fin = cmap_discrete
+            cmap2 = pl.get_cmap('rainbow')
+            cmap_discrete_fin = cmap2(np.linspace(0, 1, len(seqNameF)))
             # try to sort of cheat in creating the labels here...
             labels_new = [''] * len(group_a_id)
             first = True
@@ -1162,6 +1203,25 @@ class Analysis(Screen):
             sels.columns = ['selection','ID']
             labels_new = [a for a in labels_new if a != '']
 
+        # Let users define their own colormaps. This should also allow for an easy reset (I hope)
+        if len(user_cmap1) != 1:
+            cmap_discrete_fin[0] = user_cmap1
+        if len(user_cmap2) != 1:
+            cmap_discrete_fin[1] = user_cmap2
+
+        # Also let users define the properties
+        prop_dict = {'Charge':1,'Hydropathy':2, 'Flexibility':4, 'Bulk':3}
+        if property1 == 'Property1':
+            prop1 = 1
+            property1 = 'Charge'
+        else: 
+            prop1 = prop_dict[property1]
+        if property2 == 'Property2':
+            prop2 = 2
+            property2 = 'Hydropathy'
+        else:
+            prop2 = prop_dict[property2]
+
         # Alright we need to change the way we plot these too:
         fig, ax = pl.subplots(2, 1,squeeze=False,figsize=(16,8))
         for j in sels['ID'].drop_duplicates():
@@ -1171,16 +1231,14 @@ class Analysis(Screen):
             seq_bigF = pre_array.reshape(dat_size,61,len(seq_MIf))
             # If we need the sequences, we can call them this same way but
             # with the variable seq_final rather than full_big
-            prop1 = 1
             plotProp1 = np.average(seq_bigF[:,prop1,:],axis = 0)
             ax[0,0].plot(plotProp1,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
-            prop2 = 2
             plotProp2 = np.average(seq_bigF[:,prop2,:],axis = 0)
             ax[1,0].plot(plotProp2,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
-            np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat'+str(j)+'.dat',pre_array,fmt='%.3f')
+            np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat_clust'+str(j)+'.dat',pre_array,fmt='%.3f')
 
-        ax[0,0].set_ylabel('Charge')
-        ax[1,0].set_ylabel('Hydrophobicity')
+        ax[0,0].set_ylabel(property1)
+        ax[1,0].set_ylabel(property2)
         ax[1,0].set_xlabel('Sequence Position')
         pl.legend(labels_new)
 
@@ -1200,22 +1258,41 @@ class Analysis(Screen):
             elif LOOPnum == 1:
                 ax[0,0].set_xticks(xtick_loc)
                 ax[0,0].set_xticklabels(['CDR Loop'])
-        # Since there's only two now, just easier to hard code these...
-        ax[0,0].set_ylabel('Normalized Charge')
-        ax[1,0].set_ylabel('Normalized Hydrophobicity')
 
-        fig.savefig(this_dir + '/' + dir_name + '/pos_prop.pdf',format='pdf',dpi=500)
-        fig.savefig(this_dir + '/' + dir_name + '/pos_prop.png',format='png',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/pos_prop'+str(prop1)+str(prop2)+'.pdf',format='pdf',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/pos_prop'+str(prop1)+str(prop2)+'.png',format='png',dpi=500)
 
-        self.img8.source = this_dir + '/' + dir_name + '/pos_prop.png'
+        self.img8.source = this_dir + '/' + dir_name + '/pos_prop'+str(prop1)+str(prop2)+'.png'
         pl.close()
 
     def get_clone_pos_props(self):
         self.next1_9.disabled = False
+        property1 = str(self.prop1_sel1.text)
         this_dir = os.getcwd()
+        # Also let users define the properties
+        prop_dict = {'Charge':1,'Hydropathy':2, 'Flexibility':4, 'Bulk':3}
+        if property1 == 'Property':
+            prop1 = 1
+            property1 = 'Charge'
+        else: 
+            prop1 = prop_dict[property1]
         # Generate the position sensitive charge across all clones in the dataset
         num_figs = int(np.ceil(len(sels['ID'].drop_duplicates())/2))
         fig, axs = pl.subplots(num_figs, 2,squeeze=False,figsize=(20,8))
+        # Lets get some more control over plot colors
+        global grad_cmap1
+        global grad_cmap2
+        global gradMap
+        if grad_cmap1== [''] or grad_cmap2 == ['']:
+            gradMap = cm.PiYG
+        else:
+            # Need to take off the transparency
+            # pretty sure this is all 1 on the wheel anyway
+            c1=grad_cmap1[:3]
+            c2=[1,1,1]
+            c3=grad_cmap2[:3]
+            grad_list = get_color_gradient(c1,c2,c3,n=1000)
+            gradMap = LinearSegmentedColormap.from_list('myGrad', grad_list, N=1000)
 
         fig_track = 0; track2 = 0
         aa = 0
@@ -1224,11 +1301,24 @@ class Analysis(Screen):
             pre_array = np.array(full_big.loc[findex])
             dat_size = len(findex)
             seq_bigF = pre_array.reshape(dat_size,61,len(seq_MIf))
+            # Some tricks to make sure 0 is at the center of the colorbar
+            min_temp = np.min(seq_bigF[:,prop1,:])
+            max_temp = np.max(seq_bigF[:,prop1,:])
+            if abs(min_temp) > abs(max_temp):
+                propMin = min_temp
+                propMax = -min_temp
+            elif abs(max_temp) > abs(min_temp):
+                propMin = -max_temp
+                propMax = max_temp
+            else:
+                propMin = min_temp
+                propMax = max_temp
             # If we need the sequences, we can call them this same way but
             # with the variable seq_final rather than full_big
-            x = axs[fig_track,track2].imshow(seq_bigF[:,1,:],interpolation='nearest', aspect='auto',cmap=cm.PiYG)
+            x = axs[fig_track,track2].imshow(seq_bigF[:,prop1,:],interpolation='nearest', aspect='auto',
+            cmap=gradMap,vmin=propMin,vmax=propMax)
             # NEED TO CHANGE THIS SO IT ISNT DEFINED FOR EVERY FIGURE
-            axs[fig_track,track2].set_title(labels_new[aa] + ' - Charge')
+            axs[fig_track,track2].set_title(labels_new[aa] + ' - '+property1)
             aa += 1
             fig.colorbar(x, ax=axs[fig_track,track2])
             if fig_track == num_figs:
@@ -1241,9 +1331,9 @@ class Analysis(Screen):
                 fig_track += 1
                 track2 = 0
 
-        fig.savefig(this_dir + '/' + dir_name + '/clone_pos_prop.pdf',format='pdf',dpi=500)
-        fig.savefig(this_dir + '/' + dir_name + '/clone_pos_prop.png',format='png',dpi=500)
-        self.img9.source = this_dir + '/' + dir_name + '/clone_pos_prop.png'
+        fig.savefig(this_dir + '/' + dir_name + '/clone_pos_'+property1+'.pdf',format='pdf',dpi=500)
+        fig.savefig(this_dir + '/' + dir_name + '/clone_pos_'+property1+'.png',format='png',dpi=500)
+        self.img9.source = this_dir + '/' + dir_name + '/clone_pos_'+property1+'.png'
         pl.close()
 
     def get_props(self):
@@ -1412,11 +1502,25 @@ class Analysis(Screen):
         AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
         freq1 = freq_hold[0]
         freq2 = freq_hold[1]
+        # Lets get some more control over plot colors
+        global grad_cmap1
+        global grad_cmap2
+        global gradMap
+        if grad_cmap1== [''] or grad_cmap2 == ['']:
+            gradMap = cm.PiYG
+        else:
+            # Need to take off the transparency
+            # pretty sure this is all 1 on the wheel anyway
+            c1=grad_cmap1[:3]
+            c2=[1,1,1]
+            c3=grad_cmap2[:3]
+            grad_list = get_color_gradient(c1,c2,c3,n=1000)
+            gradMap = LinearSegmentedColormap.from_list('myGrad', grad_list, N=1000)
 
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
         freqMax = np.max(freq1[:,1:]-freq2[:,1:]); freqMin = np.min(freq1[:,1:]-freq2[:,1:])
         freqBound = max(abs(freqMax),abs(freqMin))
-        x=ax[0,0].pcolormesh(freq1[:,1:]-freq2[:,1:],cmap=cm.PiYG,vmin = -freqBound, vmax = freqBound)
+        x=ax[0,0].pcolormesh(freq1[:,1:]-freq2[:,1:],cmap=gradMap,vmin = -freqBound, vmax = freqBound)
         pl.colorbar(x)
         pl.ylabel('Sequence Position')
         xax=pl.setp(ax,xticks=np.arange(20)+0.5,xticklabels=AA_key)
@@ -1478,10 +1582,32 @@ class Analysis(Screen):
             self.next1_11.disabled = True
 
     def get_MI(self):
+        ylim_min = float(self.min_mi.text)
+        ylim_max = float(self.max_mi.text)
+        if ylim_min > ylim_max:
+            popup = Popup(title='ERROR (Click Anywhere to Dismiss)',
+                    content=Label(text='MI min > MI max'),
+                    size_hint=(None, None), size=(600, 600))
+            popup.open()
+            return()
         self.next1_12.disabled = False
         this_dir = os.getcwd()
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(10,8))
         poses = len(seq_MIf)
+        # Lets get some more control over plot colors
+        global grad_cmap1
+        global grad_cmap2
+        global gradMap
+        if grad_cmap1== [''] or grad_cmap2 == ['']:
+            gradMap = cm.PiYG
+        else:
+            # Need to take off the transparency
+            # pretty sure this is all 1 on the wheel anyway
+            c1=grad_cmap1[:3]
+            c2=[1,1,1]
+            c3=grad_cmap2[:3]
+            grad_list = get_color_gradient(c1,c2,c3,n=1000)
+            gradMap = LinearSegmentedColormap.from_list('myGrad', grad_list, N=1000)
         # So to get this far we are REQUIRING Binary entries
         findex1 = sels[sels['ID'] == sels['ID'].drop_duplicates().values[0]]['selection']
         sub1_MI = seq_MIf[findex1]
@@ -1490,7 +1616,7 @@ class Analysis(Screen):
             
         MI1,entropy_cond1,counted1=aims.calculate_MI(np.transpose(np.array(sub1_MI)))
         MI2,entropy_cond2,counted2=aims.calculate_MI(np.transpose(np.array(sub2_MI)))
-        x = pl.imshow(MI1 - MI2, cmap=cm.PiYG, vmin = -0.2, vmax = 0.2)
+        x = pl.imshow(MI1 - MI2, cmap=gradMap, vmin = ylim_min, vmax = ylim_max)
         pl.colorbar(x); pl.title(labels_new[0]+ ' MI - ' + labels_new[1] + ' MI')
 
         # Help Guide the eyes a bit
@@ -1507,6 +1633,62 @@ class Analysis(Screen):
         np.savetxt(this_dir + '/' + dir_name + '/MI_mat2.dat',MI2,fmt='%.3f')
         self.img12.source = this_dir + '/' + dir_name + '/MI.png'
         pl.close()
+
+    def show_colorWheel1(self):
+        def on_color(instance, value):
+            global user_cmap1
+            user_cmap1 = value
+        content = ColorPicker()
+        self._popup = Popup(title="Pick Color1, Click Anywhere to Exit", content=content,
+                            size_hint=(0.8, 0.8))
+        content.bind(color=on_color)
+        self._popup.open()
+
+    def show_colorWheel2(self):
+        def on_color(instance, value):
+            global user_cmap2
+            user_cmap2 = value
+        content = ColorPicker()
+        self._popup = Popup(title="Pick Color1, Click Anywhere to Exit", content=content,
+                            size_hint=(0.8, 0.8))
+        content.bind(color=on_color)
+        self._popup.open()
+
+    def reset_userColor(self):
+        global user_cmap1
+        global user_cmap2
+        user_cmap1 = ['']
+        user_cmap2 = ['']
+
+    # Define all the gradient functions separately so we can
+    # separately define and reset the color options
+    def show_gradWheel1(self):
+        def on_color(instance, value):
+            global grad_cmap1
+            grad_cmap1 = value
+        content = ColorPicker()
+        self._popup = Popup(title="Pick Color1, Click Anywhere to Exit", content=content,
+                            size_hint=(0.8, 0.8))
+        content.bind(color=on_color)
+        self._popup.open()
+
+    def show_gradWheel2(self):
+        def on_color(instance, value):
+            global grad_cmap2
+            grad_cmap2 = value
+        content = ColorPicker()
+        self._popup = Popup(title="Pick Color1, Click Anywhere to Exit", content=content,
+                            size_hint=(0.8, 0.8))
+        content.bind(color=on_color)
+        self._popup.open()
+
+    def reset_gradColor(self):
+        global gradMap
+        global grad_cmap1
+        global grad_cmap2
+        grad_cmap1 = ['']
+        grad_cmap2 = ['']
+        gradMap=cm.PiYG
 
 class checker(Screen):
     # Need to redefine a different type of loading from the wild one above.
@@ -1860,6 +2042,7 @@ class AIMSApp(App):
         # we get back to this main screen. HARD restart
         global N; N = 4
         global LFile; LFile = ['']
+        global LFile_cut; LFile_cut = ['']
         # Delete some global variables so we have a HARD reset.
         global check_run
         if 'check_run' in globals():
@@ -1887,6 +2070,7 @@ class AIMSApp(App):
         # we get back to this main screen. HARD restart
         global N; N = 4
         global LFile; LFile = ['']
+        global LFile_cut; LFile_cut = ['']
         # Delete some global variables so we have a HARD reset.
         global check_run
         if 'check_run' in globals():

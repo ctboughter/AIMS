@@ -3,16 +3,14 @@ lda_binary:
 
     Image:
         source: 'app_data/butt_up.png'
-        size: '450dp','25dp'
-        size_hint: None, None
+        size_hint: 0.5, 0.075
         pos_hint: {'center_x': 0.50, 'center_y': 0.95}
         keep_ratio: False
         allow_stretch: True
 
     Image:
         source: 'app_data/square_background.png'
-        size: '900dp','500dp'
-        size_hint: None, None
+        size_hint: 1.25, 0.8
         pos_hint: {'center_x': 0.505, 'center_y': 0.525}
         keep_ratio: False
         allow_stretch: True
@@ -48,8 +46,7 @@ lda_binary:
 
     Button:
         id: prev1_7
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: '< Go Back'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'
@@ -60,8 +57,7 @@ lda_binary:
 
     Button:
         id: next1_7
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: 'Next >'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'

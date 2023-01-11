@@ -10,8 +10,7 @@ aligner:
 
     Image:
         source: 'app_data/butt_up.png'
-        size: '450dp','25dp'
-        size_hint: None, None
+        size_hint: 0.5, 0.075
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
         keep_ratio: False
         allow_stretch: True
@@ -25,9 +24,8 @@ aligner:
     
     Image:
         source: 'app_data/square_background.png'
-        size: '900dp','500dp'
-        size_hint: None, None
-        pos_hint: {'center_x': 0.505, 'center_y': 0.51}
+        size_hint: 1.1, 0.3
+        pos_hint: {'center_x': 0.505, 'center_y': 0.76}
         keep_ratio: False
         allow_stretch: True
 
@@ -113,13 +111,12 @@ aligner:
 
     Button:
         id: align_button1
-        size_hint: None, None
+        size_hint: 0.25, 0.1
         background_down: 'app_data/butt_down.png'
         background_normal: 'app_data/butt_up.png'
         color: (0, 0.033, 0.329, 1)
         border: (0, 0, 0, 0)
         text: 'Load Preformatted Matrix'
-        size: '250dp', '60dp'
         pos_hint: {'center_x':.3, 'center_y':0.5}
         on_release:
             root.drop_buts()
@@ -127,13 +124,12 @@ aligner:
             root.show_load()
     Button:
         id: align_button2
-        size_hint: None, None
+        size_hint: 0.25, 0.1
         background_down: 'app_data/butt_down.png'
         background_normal: 'app_data/butt_up.png'
         color: (0, 0.033, 0.329, 1)
         border: (0, 0, 0, 0)
         text: 'Enter Values Manually'
-        size: '250dp', '60dp'
         pos_hint: {'center_x':.7, 'center_y':0.5}
         on_release:
             root.drop_buts()
@@ -158,8 +154,7 @@ aligner:
     ####################### END FASTA DESIGNATIONS ############################
     Button:
         id: prev1_2
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: '< Go Back'
         color: (0.341, 0.392, 1, 1)
         background_normal: 'app_data/transparent.png'
@@ -170,8 +165,7 @@ aligner:
 
     Button:
         id: next1_2
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: 'Next >'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'

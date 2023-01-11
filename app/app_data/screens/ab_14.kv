@@ -25,16 +25,14 @@ Analysis:
 
     Image:
         source: 'app_data/square_background.png'
-        size: '350dp','525dp'
-        size_hint: None, None
-        pos_hint: {'center_x': 0.81, 'center_y': 0.525}
+        size_hint: 0.4, 0.9
+        pos_hint: {'center_x': 0.81, 'center_y': 0.53}
         keep_ratio: False
         allow_stretch: True
 
     Image:
         source: 'app_data/butt_up.png'
-        size: '350dp','25dp'
-        size_hint: None, None
+        size_hint: 0.5, 0.075
         pos_hint: {'center_x': 0.32, 'center_y': 0.95}
         keep_ratio: False
         allow_stretch: True
@@ -208,16 +206,16 @@ Analysis:
         height: '32dp'
         text:''
     # Then into the last bits of it...
+
     Image:
         id: screen14_img
-        size: '500dp','500dp'
-        size_hint: None, None
-        pos_hint: {'center_x': 0.30, 'center_y': 0.6}
+        size_hint: 0.5, 0.75
+        pos_hint: {'center_x': 0.30, 'center_y': 0.55}
         source: 'app_data/white.png'
+        keep_ratio: True
 
     Button:
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         pos_hint: {'center_x': 0.5, 'center_y': 0.1}
         background_down: 'app_data/butt_down.png'
         background_normal: 'app_data/butt_up.png'
@@ -230,8 +228,7 @@ Analysis:
 
     Button:
         id: next1.3
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: '< Go Back'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'
@@ -248,7 +245,7 @@ Analysis:
 
     CTextInput:
         id: inputLDA
-        size_hint: None,None
+        size_hint: 0.05,0.05
         write_tab: False
         pos_hint: {'center_x': 0.825, 'center_y': 0.185}
         height: '32dp'

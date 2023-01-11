@@ -5,8 +5,7 @@ Analysis:
 
     Image:
         source: 'app_data/butt_up.png'
-        size: '450dp','25dp'
-        size_hint: None, None
+        size_hint: 0.6, 0.075
         pos_hint: {'center_x': 0.50, 'center_y': 0.95}
         keep_ratio: False
         allow_stretch: True
@@ -28,14 +27,13 @@ Analysis:
     
     Image:
         id: screen10_img
-        size: '800dp','800dp'
-        size_hint: None, None
+        size_hint: 0.8, 0.8
         pos_hint: {'center_x': 0.50, 'center_y': 0.5}
         source: 'app_data/white.png'
+        keep_ratio: True
 
     Button:
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         pos_hint: {'center_x': 0.5, 'center_y': 0.1}
         text: 'Get Properties'
         background_down: 'app_data/butt_down.png'
@@ -48,8 +46,7 @@ Analysis:
 
     Button:
         id: prev1_10
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: '< Go Back'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'
@@ -60,8 +57,7 @@ Analysis:
 
     Button:
         id: next1_10
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: 'Next >'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'

@@ -6,16 +6,14 @@ Analysis:
 
     Image:
         source: 'app_data/butt_up.png'
-        size: '450dp','25dp'
-        size_hint: None, None
+        size_hint: 0.5, 0.075
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
         keep_ratio: False
         allow_stretch: True
 
     Image:
         source: 'app_data/butt_down.png'
-        size: '425dp','25dp'
-        size_hint: None, None
+        size_hint: 0.6, 0.075
         pos_hint: {'center_x': 0.5, 'center_y': 0.875}
         keep_ratio: False
         allow_stretch: True
@@ -26,6 +24,39 @@ Analysis:
         size_hint: .1, .1
         pos_hint: {'center_x': 0.95, 'center_y': 0.95}
         text:'A I M S'
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.3, 'center_y': 0.775}
+        text: 'Choose Color 1'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release:
+            root.show_gradWheel1()
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.775}
+        text: 'Choose Color 2'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release:
+            root.show_gradWheel2()
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.7, 'center_y': 0.775}
+        text: 'Default Colors'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release:
+            root.reset_gradColor()
 
     Label:
         size_hint_y: None
@@ -44,14 +75,13 @@ Analysis:
 
     Image:
         id: screen13_img
-        size: '750dp','750dp'
-        size_hint: None, None
-        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        size_hint: 0.75, 0.75
+        pos_hint: {'center_x': 0.5, 'center_y': 0.45}
         source: 'app_data/white.png'
+        keep_ratio: True
 
     Button:
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         pos_hint: {'center_x': 0.5, 'center_y': 0.1}
         text: 'Get Frequency'
         background_down: 'app_data/butt_down.png'
@@ -64,8 +94,7 @@ Analysis:
 
     Button:
         id: prev1_13
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: '< Go Back'
         color: (0.341, 0.392, 1, 1)
         background_normal: 'app_data/transparent.png'
@@ -77,8 +106,7 @@ Analysis:
 
     Button:
         id: next1_13
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: 'Next >'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'

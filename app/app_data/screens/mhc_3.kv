@@ -6,16 +6,14 @@ Analysis:
 
     Image:
         source: 'app_data/butt_up.png'
-        size: '450dp','25dp'
-        size_hint: None, None
+        size_hint: 0.6, 0.075
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
         keep_ratio: False
         allow_stretch: True
 
     Image:
         source: 'app_data/butt_down.png'
-        size: '600dp','25dp'
-        size_hint: None, None
+        size_hint: 0.75, 0.075
         pos_hint: {'center_x': 0.5, 'center_y': 0.85}
         keep_ratio: False
         allow_stretch: True
@@ -44,14 +42,12 @@ Analysis:
 
     Image:
         id: screen3_img
-        size: '750dp','750dp'
-        size_hint: None, None
+        size_hint: 0.75, 0.5
         pos_hint: {'center_x': 0.5, 'center_y': 0.5}
         source: 'app_data/white.png'
 
     Button:
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         pos_hint: {'center_x': 0.5, 'center_y': 0.1}
         text: 'Get Matrix'
         background_down: 'app_data/butt_down.png'
@@ -64,8 +60,7 @@ Analysis:
 
     Button:
         id: next1_3
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: 'Next >'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'
@@ -78,8 +73,7 @@ Analysis:
 
     Button:
         id: prev1_3
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: '< Go Back'
         color: (0.341, 0.392, 1, 1)
         background_normal: 'app_data/transparent.png'

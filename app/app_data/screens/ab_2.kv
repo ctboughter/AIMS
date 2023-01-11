@@ -10,8 +10,7 @@ aligner_ab:
 
     Image:
         source: 'app_data/butt_up.png'
-        size: '450dp','25dp'
-        size_hint: None, None
+        size_hint: 0.5, 0.075
         pos_hint: {'center_x': 0.5, 'center_y': 0.95}
         keep_ratio: False
         allow_stretch: True
@@ -25,9 +24,8 @@ aligner_ab:
     
     Image:
         source: 'app_data/square_background.png'
-        size: '900dp','150dp'
-        size_hint: None, None
-        pos_hint: {'center_x': 0.505, 'center_y': 0.775}
+        size_hint: 0.95, 0.325
+        pos_hint: {'center_x': 0.505, 'center_y': 0.76}
         keep_ratio: False
         allow_stretch: True
 
@@ -95,8 +93,7 @@ aligner_ab:
 
     CheckBox:
         id: cdr6
-        size_hint: None,None
-        height: '48dp'
+        size_hint: 0.15, 0.1
         group: 'g101'
         state: 'down'
         pos_hint: {'center_x': 0.2, 'center_y': 0.2}
@@ -112,8 +109,7 @@ aligner_ab:
 
     CheckBox:
         id: cdr3
-        size_hint: None,None
-        height: '48dp'
+        size_hint: 0.15, 0.1
         group: 'g101'
         pos_hint: {'center_x': 0.4, 'center_y': 0.2}
         allow_no_selection: False
@@ -128,8 +124,7 @@ aligner_ab:
 
     CheckBox:
         id: cdr2
-        size_hint: None,None
-        height: '48dp'
+        size_hint: 0.15, 0.1
         group: 'g101'
         pos_hint: {'center_x': 0.6, 'center_y': 0.2}
         allow_no_selection: False
@@ -144,8 +139,7 @@ aligner_ab:
 
     CheckBox:
         id: cdr1
-        size_hint: None,None
-        height: '48dp'
+        size_hint: 0.15, 0.1
         group: 'g101'
         pos_hint: {'center_x': 0.8, 'center_y': 0.2}
         allow_no_selection: False
@@ -153,8 +147,7 @@ aligner_ab:
     # Need to have an extra section to drop degenerate loops:
     CheckBox:
         id: degen_drop
-        size_hint: None,None
-        height: '48dp'
+        size_hint: 0.15, 0.1
         state: 'down'
         pos_hint: {'center_x': 0.65, 'center_y': 0.1}
 
@@ -170,8 +163,7 @@ aligner_ab:
     ####################### END FASTA DESIGNATIONS ############################
     Button:
         id: next1.3
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: 'Next >'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'
@@ -185,8 +177,7 @@ aligner_ab:
 
     Button:
         id: next1.3
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: '< Go Back'
         color: (0.341, 0.392, 1, 1)
         background_normal: 'app_data/transparent.png'

@@ -18,16 +18,14 @@ Analysis:
 
     Image:
         source: 'app_data/square_background.png'
-        size: '350dp','525dp'
-        size_hint: None, None
-        pos_hint: {'center_x': 0.81, 'center_y': 0.535}
+        size_hint: .425,.8
+        pos_hint: {'center_x': 0.82, 'center_y': 0.55}
         keep_ratio: False
         allow_stretch: True
 
     Image:
         source: 'app_data/butt_up.png'
-        size: '450dp','25dp'
-        size_hint: None, None
+        size_hint: .4,0.075
         pos_hint: {'center_x': 0.30, 'center_y': 0.95}
         keep_ratio: False
         allow_stretch: True
@@ -185,10 +183,9 @@ Analysis:
 
     CTextInput:
         id: kclust
-        size_hint: 0.05,None
+        size_hint: 0.05,0.04
         write_tab: False
         pos_hint: {'center_x': 0.96, 'center_y': 0.35}
-        height: '32dp'
         multiline: False
         text: '5'
 
@@ -216,10 +213,9 @@ Analysis:
 
     CTextInput:
         id: opticnum
-        size_hint: 0.05,None
+        size_hint: 0.05,0.04
         write_tab: False
         pos_hint: {'center_x': 0.96, 'center_y': 0.30}
-        height: '32dp'
         multiline: False
         text: '10'
 
@@ -254,10 +250,9 @@ Analysis:
 
     CTextInput:
         id: dbrad
-        size_hint: 0.05,None
+        size_hint: 0.05,0.04
         write_tab: False
         pos_hint: {'center_x': 0.96, 'center_y': 0.25}
-        height: '32dp'
         multiline: False
         text: '0.5'
 
@@ -271,15 +266,14 @@ Analysis:
     # Then into the last bits of it...
     Image:
         id: screen6_img
-        size: '500dp','500dp'
-        size_hint: None, None
-        pos_hint: {'center_x': 0.30, 'center_y': 0.5}
+        size_hint: 0.65, 0.65
+        pos_hint: {'center_x': 0.30, 'center_y': 0.55}
         source: 'app_data/white.png'
+        keep_ratio: True
 
     Button:
         id: clust_butt
-        size_hint: None, None
-        size: '125dp', '48dp'
+        size_hint: 0.15, 0.1
         pos_hint: {'center_x': 0.6, 'center_y': 0.1}
         text: 'Cluster'
         background_down: 'app_data/butt_down.png'
@@ -292,8 +286,7 @@ Analysis:
             screen6_img.reload()
 
     Button:
-        size_hint: None, None
-        size: '125dp', '48dp'
+        size_hint: 0.15, 0.1
         pos_hint: {'center_x': 0.4, 'center_y': 0.1}
         text: 'Reduce Dim'
         background_down: 'app_data/butt_down.png'
@@ -306,8 +299,7 @@ Analysis:
 
     Button:
         id: prev1_5
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: '< Go Back'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'
@@ -318,8 +310,7 @@ Analysis:
 
     Button:
         id: next1_5
-        size_hint: None, None
-        size: '150dp', '48dp'
+        size_hint: 0.15, 0.1
         text: 'Next >'
         background_normal: 'app_data/transparent.png'
         background_down: 'app_data/transparent.png'
