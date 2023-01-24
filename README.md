@@ -45,6 +45,9 @@ Erin's expertise and helpful mentoring allowed this project to reach its full po
 #### Benoit Roux & Lab - Mentorship/Funding
 Benoit provided consistent feedback throughout the project, providing his expertise and insights for all matters biophyscial. Specifically, his insights into the general biophysics of protein-protein interactions helped guide this project. More information on Benoit's lab can be found at http://thallium.bsd.uchicago.edu/RouxLab/. This project was supported with funding from Benoit's National Science Foundation grant MCB-1517221.
 
+#### Martin Meier-Scherllersheim, LISB, NIAID, NIH - Mentorship/Funding
+Development of AIMS has continued in Martin's group, with support coming from project number ZIA AI001076-15.
+
 #### Martin Flajnik & Lab - MHC Module Collaborators
 The MHC module of this project was started due to a collaboration with the Flajnik lab, and sequences used in the mhc_testData directory were isolated by this research group. More information on the Flajnik lab can be found at: https://www.medschool.umaryland.edu/profiles/Flajnik-Martin/ . If utilizing any of the MHC data provided in the mhc_testData directory, please cite:
 
