@@ -1301,27 +1301,33 @@ def full_AA_freq(seq,norm='num_AA'):
     AA_freq_all = np.zeros((20))
     digram_all = np.zeros((20,20))
     AAs = 0; num_seq = 0
-    for i in seq.values[0]:
-        num_seq = num_seq + 1
-        AAs = AAs + len(i)
-        for loc in np.arange(len(i)):
-            res1 = i[loc]
-            if loc + 1 < len(i):
-                res2 = i[loc+1]
+    datlen,looplen = np.shape(seq.values)
+    for i in np.arange(datlen):
+        for j in np.arange(looplen):
+            if len(seq.values[i][j]) == 1:
+                temp_seq = seq.values[i][j][0]
             else:
-                res2 = -1
-            matched = False
-            for mat_loc1 in np.arange(len(AA_key)):
-                if AA_key[mat_loc1] == res1:
-                    AA_freq_all[mat_loc1] = AA_freq_all[mat_loc1] + 1
-                    matched = True
-                    if res2 != -1:
-                        for mat_loc2 in np.arange(len(AA_key)):
-                            if AA_key[mat_loc2] == res2:
-                                digram_all[mat_loc1,mat_loc2] = digram_all[mat_loc1,mat_loc2] + 1
-                                break
-                if matched:
-                    break
+                temp_seq = seq.values[i][j]
+            num_seq = num_seq + 1
+            AAs = AAs + len(temp_seq)
+            for loc in np.arange(len(temp_seq)):
+                res1 = temp_seq[loc]
+                if loc + 1 < len(temp_seq):
+                    res2 = temp_seq[loc+1]
+                else:
+                    res2 = -1
+                matched = False
+                for mat_loc1 in np.arange(len(AA_key)):
+                    if AA_key[mat_loc1] == res1:
+                        AA_freq_all[mat_loc1] = AA_freq_all[mat_loc1] + 1
+                        matched = True
+                        if res2 != -1:
+                            for mat_loc2 in np.arange(len(AA_key)):
+                                if AA_key[mat_loc2] == res2:
+                                    digram_all[mat_loc1,mat_loc2] = digram_all[mat_loc1,mat_loc2] + 1
+                                    break
+                    if matched:
+                        break
     if norm == 'num_AA':
         AA_freq_all = AA_freq_all/AAs
         digram_all = digram_all/AAs
@@ -1716,7 +1722,7 @@ def decode_mat(matF,num_key_AA,key_AA):
 def pull_cdr_1_2(gene_list,chain='trav',organism='Human'):
     org = organism.lower()
     trv = chain.lower()
-    fin_trv, trv_name_pre = aimsLoad.Ig_loader('germline_data/'+trv+'_'+org+'_cdrs.csv','tcr',loops=3,return_index = True)    
+    fin_trv, trv_name_pre = aimsLoad.Ig_loader('app_data/germline_data/'+trv+'_'+org+'_cdrs.csv','tcr',loops=3,return_index = True)    
     fin_trv.columns = trv_name_pre
     
     fin_cdrs = []
@@ -1781,3 +1787,93 @@ def calc_cluster_purity(final_breakdown,meta_name):
         else:
             cluster_purity = np.vstack((cluster_purity,purity_pre))
     return(cluster_purity)
+
+def get_msa_sub(seqF,loc_start,loc_end):
+    if len(loc_start) != len(loc_end):
+        print("ERROR: Don't have same number of start and end entries")
+        return()
+    all_feat = []
+    for i in np.transpose(seqF).values:
+        pre_feat = []
+        for j in np.arange(len(loc_start)):    
+            s1 = loc_start[j]
+            s2 = loc_end[j]
+            struct = i[0][s1:s2]
+            pre_feat.append(struct)
+        all_feat.append([pre_feat])
+
+    seqNEW = np.transpose(pandas.DataFrame(np.array(all_feat).reshape(len(all_feat),len(loc_start))))
+    seqNEW.columns = seqF.columns
+    return(seqNEW)
+
+# This function is really only in here to make the notebook look a little cleaner
+def get_plotdefs(clust_show,proj_show,chosen_map1,chosen_map2,leg1,leg2):
+    if clust_show.lower() == 'both':
+        if proj_show.lower() == 'both':
+            fig3d = pl.figure(figsize = (25, 20))
+            plotloc = [221,222,223,224]
+            plottype = ['3d','2d','3d','2d']
+            dattype = ['clust','clust','meta','meta']
+            plotem=[chosen_map1,chosen_map1,chosen_map2,chosen_map2]
+            legends = [leg1,leg1,leg2,leg2]
+        elif proj_show.lower() == '2d':
+            fig3d = pl.figure(figsize = (20, 10))
+            plotloc = [121,122]
+            plottype=['2d','2d']
+            dattype = ['clust','meta']
+            plotem = [chosen_map1, chosen_map2]
+            legends = [leg1, leg2]
+        elif proj_show.lower() == '3d':
+            fig3d = pl.figure(figsize = (20, 10))
+            plotloc = [121,122]
+            plottype=['3d','3d']
+            dattype = ['clust','meta']
+            plotem = [chosen_map1, chosen_map2]
+            legends = [leg1, leg2]
+    elif clust_show.lower() == 'clusters':
+        if proj_show.lower() == 'both':
+            fig3d = pl.figure(figsize = (20, 10))
+            plotloc = [121,122]
+            plottype = ['3d','2d']
+            dattype = ['clust','clust']
+            plotem=[chosen_map1,chosen_map1]
+            legends = [leg1,leg1]
+        elif proj_show.lower() == '2d':
+            fig3d = pl.figure(figsize = (10, 10))
+            plotloc = [111]
+            plottype=['2d']
+            dattype = ['clust']
+            plotem = [chosen_map1]
+            legends = [leg1]
+        elif proj_show.lower() == '3d':
+            fig3d = pl.figure(figsize = (10, 10))
+            plotloc = [111]
+            plottype=['3d']
+            dattype = ['clust']
+            plotem = [chosen_map1]
+            legends = [leg1]
+    elif clust_show.lower() == 'metadata':
+        if proj_show.lower() == 'both':
+            fig3d = pl.figure(figsize = (20, 10))
+            plotloc = [121,122]
+            plottype = ['3d','2d']
+            dattype = ['meta','meta']
+            plotem=[chosen_map2,chosen_map2]
+            legends = [leg2,leg2]
+        elif proj_show.lower() == '2d':
+            fig3d = pl.figure(figsize = (10, 10))
+            plotloc = [111]
+            plottype=['2d']
+            dattype = ['meta']
+            plotem = [chosen_map2]
+            legends = [leg2]
+        elif proj_show.lower() == '3d':
+            fig3d = pl.figure(figsize = (10, 10))
+            plotloc = [111]
+            dattype = ['meta']
+            plottype=['3d']
+            plotem = [chosen_map2]
+            legends = [leg2]
+
+    return(fig3d,plotloc,plottype,plotem,legends,dattype)
+

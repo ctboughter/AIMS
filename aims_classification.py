@@ -264,23 +264,32 @@ def apply_pretrained_LDA(bigass_mono,top_names,weights,prop_parse=False):
 # BEST DISCRIMINATE THE DATASET
 # Add in a new module for "if it's a peptide"
 def do_linear_split(test_mono,test_poly,ridCorr = True,giveSize=[],matSize=75,prop_parse=False,
-manuscript_arrange=False,pca_split=False,special = '',align='center'):
-    num_mono = np.shape(test_mono)[1]
-    num_poly = np.shape(test_poly)[1]
+manuscript_arrange=False,pca_split=False,special = '',align='center',got_big = False):
 
-    mat = np.hstack((test_mono,test_poly))
-    if manuscript_arrange:
-        if special == 'peptide':
-            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True, special = 'peptide')
-        else:
-            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True)
+    # Got big is in case you've already calculated your bigass matrix
+    if got_big:
+        # The shape of the bigass matrices is different from that of the input matrices
+        num_mono = np.shape(test_mono)[0]
+        num_poly = np.shape(test_poly)[0]
+        total_mat = pandas.concat([test_mono,test_poly],axis=0)
+        # Need to reset the index
+        total_mat.index = np.arange(len(total_mat))
     else:
-        if special == 'peptide':
-            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False, special = 'peptide')
-        elif special == 'MSA':
-            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False, special = 'MSA')
+        num_mono = np.shape(test_mono)[1]
+        num_poly = np.shape(test_poly)[1]
+        mat = np.hstack((test_mono,test_poly))
+        if manuscript_arrange:
+            if special == 'peptide':
+                total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True, special = 'peptide')
+            else:
+                total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=True)
         else:
-            total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False,alignment=align)
+            if special == 'peptide':
+                total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False, special = 'peptide')
+            elif special == 'MSA':
+                total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False, special = 'MSA')
+            else:
+                total_mat = get_bigass_matrix(mat,giveSize = giveSize,manuscript_arrange=False,alignment=align)
     prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
     prop_list_new = ['Hot'+str(b+1) for b in range(46)]
 

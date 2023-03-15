@@ -7,12 +7,22 @@ import pandas
 
 thing = True
 
-# Using the nomenclature of the GUI explanation, here are some example GUI start/end values
-# As a reminder, it goes S1s, S1e/H1s, H1e/S2s, S2e/H2s, H2e
-# For the ji_cartFish we have: 2,49,93,152,193
-# For the cd1d.fasta we have: 124,167,209,262,303
-# For the hlaA.fasta we have: 170,218,260,306,348
-# For cd1_ufa_genes.fasta: 22,66,105,158,199
+def msa_loader(fastapath,label,drop_dups = False):
+    thing = True; a = 0
+    fin_seq = []; fin_id = []; fin_title=[]
+    for seq_record in SeqIO.parse(fastapath,'fasta'):
+        seqV=str(seq_record.seq)
+        fasta_id = str(seq_record.description)
+        # Keep this as a sort of index to match up
+        titleV = label + '_' + str(a)
+        fin_seq.append(seqV)
+        fin_id.append(fasta_id)
+        fin_title.append(titleV)
+        a+=1
+
+    fin_out = pandas.DataFrame([fin_seq,fin_id])
+    fin_out.columns = fin_title
+    return(fin_out)
 
 def mhc_loader(fastapath,mat_coords,label,drop_dups = False):
 
