@@ -1732,7 +1732,7 @@ def pull_cdr_1_2(gene_list,chain='trav',organism='Human'):
             cdrs = [fin_trv[i].values]
         except:
             # So in dealing with MiSeq data, these may be pseudogenes frequently.
-            print("Gene " +i+" not found")
+            #print("Gene " +i+" not found")
             cdrs = [['','','']]
         
         fin_cdrs = fin_cdrs + cdrs
