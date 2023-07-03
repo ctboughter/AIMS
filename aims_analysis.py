@@ -6,7 +6,9 @@ import matplotlib as mpl
 from matplotlib import cm
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import accuracy_score
+from sklearn.utils import resample
 import aims_loader as aimsLoad
+import aims_classification as classy
 
 # Define some initial stuff and import analysis functions:
 #AA_key_old=['A','G','L','M','F','W','K','Q','E','S','P','V','I','C','Y','H','R','N','D','T']
@@ -89,7 +91,7 @@ alignment = 'center',bulge_pad = 8):
             else:
                 sequence_dim = int(sum(max_lenp))
         else:
-            max_lenp,sequence_dim=get_sequence_dimension(pre_poly)
+            max_lenp,sequence_dim,seqlens=get_sequence_dimension(pre_poly)
     else:
         max_lenp = giveSize
         if type(max_lenp) == int:
@@ -673,7 +675,7 @@ def gen_1Chain_matrix(pre_poly,key=AA_num_key_new,binary=False,pre_mono=[],giveS
 
             sequence_dim = int(sum(max_lenp))
         else:
-            max_lenp,sequence_dim=get_sequence_dimension(pre_poly)
+            max_lenp,sequence_dim,seqlens=get_sequence_dimension(pre_poly)
     else:
         max_lenp = giveSize
         sequence_dim = int(sum(max_lenp))
@@ -982,7 +984,7 @@ pre_mono=[],giveSize=[],return_Size=False):
             else:
                 sequence_dim = int(sum(max_lenp))
         else:
-            max_lenp,sequence_dim=get_sequence_dimension(pre_poly)
+            max_lenp,sequence_dim,seqlens=get_sequence_dimension(pre_poly)
     else:
         max_lenp = giveSize
         if type(max_lenp) == int:
@@ -1752,41 +1754,55 @@ def encode_meta(metadat):
     return(encoded)
 
 # For returning cluster purity of biophysical clusters with metadata
-def calc_cluster_purity(final_breakdown,meta_name):
-    a = 0
-    for i in np.sort(final_breakdown['cluster'].drop_duplicates()):
-        sub_clust = final_breakdown[final_breakdown['cluster'] == i]
-        uniq_ant = ['antigen','num']
-        for ant in np.sort(sub_clust[meta_name]):
-            matched = False
-            if np.shape(uniq_ant) == (2,):
-                uniq_ant  = np.vstack((uniq_ant,[ant,int(1)]))
+# Do it a slightly different way than prev. version and return a matrix of fractions
+# Way more thorough and less complicated than trying to quantify purity.
+def calc_cluster_purity(final_breakdown,meta_name,do_stats = True,num_reps=1000):
+    clusters = np.sort(final_breakdown['cluster'].drop_duplicates())
+    metas = final_breakdown[meta_name].drop_duplicates()
+    temp_mat = np.zeros((len(clusters),len(metas)))
+    pure_df = pandas.DataFrame(temp_mat)
+    pure_df.index = clusters
+    pure_df.columns = metas.values
+    cluster_size = []
+    for i in np.arange(len(clusters)):
+        cluster_order = np.sort(final_breakdown['cluster'].drop_duplicates())[i]
+        sub_clust = final_breakdown[final_breakdown['cluster'] == cluster_order]
+        cluster_size = cluster_size + [len(sub_clust)]
+        for j in np.arange(len(metas)):
+            num_ant = len(sub_clust[sub_clust[meta_name]==metas.values[j]])
+            pure_df.iloc[i,j] = num_ant/len(sub_clust)
+    if do_stats:
+        # Try to do some stats off the pure_df
+        # We're going to stick with the permutation test, 
+        # But should likely look into Fisher's exact test at some point
+        test_mat = pandas.DataFrame(np.zeros((len(clusters),len(metas))))
+        for rep in np.arange(num_reps):
+            permute_temp = final_breakdown[meta_name].values
+            permute_meta = resample(permute_temp,replace=False)
+            
+            # randomly assign "clusters":
+            prev_clustered = 0 
+            for ri in np.arange(len(cluster_size)):
+                permute_clust = permute_meta[prev_clustered:cluster_size[ri]]
+                for rj in np.arange(len(metas)):
+                    num_ant = len(permute_clust[permute_clust==metas.values[rj]])
+                    test_mat.iloc[ri,rj] = num_ant/len(permute_clust)
+
+            test_mat.index = pure_df.index
+            test_mat.columns = pure_df.columns
+
+            z_temp = test_mat >= pure_df
+            z_check = z_temp.astype(int)
+
+            if rep == 0:
+                num_sig = z_check
             else:
-                for uniqs in np.arange(len(uniq_ant)):
-                    if uniq_ant[uniqs,0] == 'antigen':
-                        continue
-                    # IF YOU DO THIS RIGHT, THESE SHOULD ALL BE INTEGERS
-                    # So you should not get an error...
-                    if int(ant) == int(uniq_ant[uniqs,0]):
-                        matched = True
-                        break
-                    else:
-                        matched = False
-                if matched:
-                    uniq_ant[uniqs,1] = int(uniq_ant[uniqs,1]) + 1
-                else:
-                    uniq_ant = np.vstack((uniq_ant,[ant,1]))
-        int_data = [uniq_ant[1:,0],[int(a) for a in uniq_ant[1:,1]]]
-        antigen_quant = pandas.DataFrame(np.transpose(int_data),columns=[uniq_ant[0,:]])
-        # Now FROM this, calculate cluster purity
-        antigen_ints = [int(a) for a in antigen_quant[['num']].values]
-        purity_pre = float(np.max(antigen_ints))/sum(antigen_ints)
-        if a == 0:
-            cluster_purity = purity_pre
-            a+=1
-        else:
-            cluster_purity = np.vstack((cluster_purity,purity_pre))
-    return(cluster_purity)
+                num_sig += z_check
+
+        p_mat = (1+num_sig)/num_reps
+        return(pure_df,p_mat)
+    else:
+        return(pure_df)
 
 def get_msa_sub(seqF,loc_start,loc_end):
     if len(loc_start) != len(loc_end):
@@ -1877,3 +1893,167 @@ def get_plotdefs(clust_show,proj_show,chosen_map1,chosen_map2,leg1,leg2):
 
     return(fig3d,plotloc,plottype,plotem,legends,dattype)
 
+# Finally, a hard-coded in way to calculate the AIMS distances for direct comparison to TCRdist
+def calc_AIMSdist(seqSet1, seqSet2='',matrix='',align='center',normalize=True,special='',pad=6,form = ''):
+    # If the user provides two sequence sets, concatenate them to start
+    if len(seqSet2) == 0:
+        dsetF = seqSet1
+    else:
+        if seqSet1.equals(seqSet2):
+            print("ERROR: If trying to compare internal distances, just do not provide a second dataframe")
+            return()
+        dsetF = pandas.concat([seqSet1,seqSet2],axis=0)
+    
+    if len(matrix) == 0:
+        bigass = classy.get_bigass_matrix(np.transpose(dsetF.values), alignment = align, norm = normalize,special=special,bulge_pad=pad )
+        fin_mat = pandas.DataFrame(bigass,index=dsetF.index)
+    else:
+        # This assumes a user-provided matrix that has matched entries
+        # plus, an index which matches the subset incdices.
+        
+        # You can use this user-supplied matrix to look at different distances
+        # like from the parsed matrix. Cant generate parsed_mat within this
+        # function because it would introduce too much variability
+        fin_mat = matrix.loc[dsetF.index]
+    
+    if len(seqSet2) == 0:
+        seqs1 = seqSet1
+        seqs2 = seqSet1
+    else:
+        seqs1 = seqSet1
+        seqs2 = seqSet2
+        
+    numSeq1 = len(seqs1); numSeq2 = len(seqs2)
+    dist_calc = np.zeros((numSeq1,numSeq2))
+    for i in np.arange(numSeq1):
+        for j in np.arange(numSeq2):
+            vect1 = fin_mat.loc[seqs1.index[i]].values
+            vect2 = fin_mat.loc[seqs2.index[j]].values
+            dist_calc[i,j] = np.sqrt(sum((vect1 - vect2)**2))
+
+    if form == 'tri':
+        if len(seqs1) != len(seqs2):
+            print("ERROR: Cannont return upper triangle of matrix if matrix is not symmetric")
+            return(dist_calc)
+        return(dist_calc[np.triu_indices(len(dist_calc))])
+    else:
+        return(dist_calc)
+
+# Finally, a way to calculate statistics for the AIMS analysis
+# Also note, I was able to very nicely test that the p-value converges as num_rep->inf
+# Typically pretty fast. I think it's supposed to converge as num_rep -> N
+def do_statistics(data1,data2,num_reps = 1000,test='median',multi_test='none',alpha=0.05,test_func = [],func_val=0):
+    # Should probably have a failsafe to make sure that we're looking across the proper axes
+    # prop_axis should include the number of samples. We assume it should be axis 0
+    # Ideally, we wont have many situations where the number of samples is exactly equal...
+    if len(np.shape(data1)) == 1:
+        prop_axis = 0; test_axis = 0
+    elif np.shape(data1)[1] == np.shape(data2)[1]:
+        prop_axis = 0; test_axis = 1
+    elif np.shape(data1)[0] == np.shape(data2)[0]:
+        prop_axis = 1; test_axis = 0
+    elif np.shape(data1) == np.shape(data2):
+        prop_axis = 1; test_axis = 0
+
+
+    # Alright lets finally get around to calculating stats.
+    len1 = np.shape(data1)[prop_axis]
+    preDat = np.concatenate((data1,data2),axis=prop_axis)
+
+    if test.lower()=='average':
+        z0=np.average(data1,axis=prop_axis)-np.average(data2,axis=prop_axis)
+    elif test.lower()=='median':
+        z0=np.median(data1,axis=prop_axis)-np.median(data2,axis=prop_axis)
+    elif test.lower()=='diff':
+        # In some cases (namely MI and Entropy) we might just want to look at a simple difference
+        z0 = data1-data2
+    elif test.lower()=='function':
+        # Allow for custom functions (or MI/Shannon entropy) to calc sigFigs
+        if test_func == full_AA_freq:
+            temp1 = test_func(data1)[func_val]
+            temp2 = test_func(data2)[func_val]
+        else:
+            temp1 = test_func(np.transpose(np.array(data1)))[func_val]
+            temp2 = test_func(np.transpose(np.array(data2)))[func_val]
+        z0 = temp1 - temp2
+    # add more tests in the future?
+
+    if type(z0) == np.float64:
+        num_sig = 0
+
+    for rep in np.arange(num_reps):
+        # Turns out that np.random.shuffle mixes up the entries in place
+        tempAll = preDat
+        if prop_axis == 0:
+            allDat = resample(tempAll,replace=False)
+        else:
+            allDat = resample(np.transpose(tempAll),replace=False)
+
+        re_dat1 = allDat[0:len1]
+        re_dat2 = allDat[len1:]
+
+        if test.lower() == 'average':
+            z = np.average(re_dat1,axis=prop_axis) - np.average(re_dat2,axis=prop_axis)
+        elif test.lower() == 'median':
+            z = np.median(re_dat1,axis=prop_axis) - np.median(re_dat2,axis=prop_axis)
+        elif test.lower() == 'diff':
+            z = re_dat1 - re_dat2
+        elif test.lower() == 'function':
+            if test_func == full_AA_freq:
+                temp1 = test_func(pandas.DataFrame(re_dat1))[func_val]
+                temp2 = test_func(pandas.DataFrame(re_dat2))[func_val]
+            else:
+                temp1 = test_func(re_dat1)[func_val]
+                temp2 = test_func(re_dat2)[func_val]
+            z = temp1 - temp2
+        
+        if type(z0) == np.float64:
+            if z**2 >= z0**2:
+                num_sig += 1
+        else:
+            # It turns out this works pretty nicely, doing
+            # element-wise comparisons of the data
+            z_temp = z**2 >= z0**2
+            z_check = z_temp.astype(int)
+
+            if rep == 0:
+                num_sig = z_check
+            else:
+                num_sig += z_check
+    
+    p = (num_sig+1)/(num_reps+1)
+
+    # Add in a module for multiple test correction.
+    # Multi-test correction isn't about correcting p-values
+    # it is about correcting what is considered stat-sig.
+    if multi_test.lower() == 'none':
+        return(p)
+    # Have a failsafe in case someone mistakenly tries to multi-test correct a float
+    if type(p) == np.float64:
+        return(p)
+    else:
+        stat_sig = []
+        if multi_test.lower() == 'bonferroni' or multi_test == 1:
+            for tester in p:
+                if tester < alpha/np.shape(data1)[test_axis]:
+                    stat_sig = stat_sig + ['*']
+                else:
+                    stat_sig = stat_sig + ['ns']
+            return(p,stat_sig)
+        elif multi_test.lower() == 'benjamini-hochberg' or multi_test == 2:
+            # first, sort the p-values in ascending order:
+            # Need to be a little bit smarter since we're ordering the p-values
+            # Make sure we relate back to the actual order of the data...
+            pre_sort = pandas.DataFrame(p).sort_values(0)
+            p_ordered = pre_sort.sort_valeus(0)
+            p_loc = np.array(pre_sort.sort_values(0).index)
+
+            stat_sig = ['']*len(p_ordered)
+            for k in np.arange(len(p_ordered)):
+                if p_ordered[k] < k/np.shape(data1)[test_axis]*alpha:
+                    stat_sig[p_loc[k]] = ['*']
+                else:
+                    stat_sig[p_loc[k]] = ['ns']
+            return(p,stat_sig)
+        else:
+            return('ERROR: Bad Test Correction Variable')

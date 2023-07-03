@@ -44,3 +44,7 @@ Contents
    AIMS_cluster
    AIMS_notebooks
    
+A Note on Exploration with AIMS
+--------
+
+The AIMS software should be considered as both a means for exploratory searches through data to generate hypotheses and as a tool for rigorous quantification of differences between molecular subsets. In the former application, users can freely explore their data, tuning different AIMS parameters and seeing how these changes alter identified clusters or comparison groups. However, in the latter application, users should carefully record the setting of each tuned parameter. Analysis using AIMS should be considered akin to modern RNAseq analysis, where the rigor of a given analytical tool depends on proper implementation by the user. Reproducibility is key!

@@ -234,7 +234,8 @@ def Ig_loader(fastapath,label,loops=6,drop_degens = False,return_index = False):
         elif loops == 6:
             f_Ig = final_Ig[indices,:].reshape(len(indices),6)
         if return_index:
-            index_f = index_temp_del[indices,:]
+            index_f = np.array(index_temp_del)[indices]
+
     else:
         f_Ig = final_Ig
         if return_index:
@@ -248,7 +249,7 @@ def Ig_loader(fastapath,label,loops=6,drop_degens = False,return_index = False):
     else:
         return(final_Df)
 #####################################################################################
-def pep_loader(fastapath,label, scrape=False, start_label=0):
+def pep_loader(fastapath,label, scrape=False, start_label=0,drop_degens=False,len_cutoff = 12,return_index=False):
 
     thing = True
     xxx1 = fastapath.rfind('/')
@@ -261,13 +262,20 @@ def pep_loader(fastapath,label, scrape=False, start_label=0):
         # Need to do this because not every file calls their "MHC class"
         # the same thing. Some must predict, some must control for it...
         headers = csv_file.columns
-        data = csv_file['search_hit']
+        dataF = csv_file['search_hit']
         # I believe the MHC allele is ALWAYS the last column,
         # but I should probably make sure of that at some point
         allele = csv_file[headers[-1]]
     else:
-        data = pandas.read_csv(fastapath,sep=',',header=0)['sequence']
-    for i in np.arange(len(data)):
+        data_pre = pandas.read_csv(fastapath,sep=',',header=0)['sequence']
+        data = pandas.DataFrame(data_pre[data_pre.str.len() <= len_cutoff])
+        if drop_degens:
+            dataF = data.drop_duplicates()
+        else:
+            dataF = data
+    if return_index:
+        temp_index = dataF.index
+    for i in np.arange(len(dataF)):
         # Replace 
         titleV = label + '_' + str(a+start_label)
         
@@ -278,13 +286,15 @@ def pep_loader(fastapath,label, scrape=False, start_label=0):
             final_title = final_title + [titleV]
         a = a+1
 
-    finalDF = np.transpose(pandas.DataFrame(np.array(data)))
+    finalDF = np.transpose(pandas.DataFrame(np.array(dataF)))
     finalDF.columns=final_title
 
     if scrape:
         finalAllele = np.transpose(pandas.DataFrame(np.array(allele)))
         finalAllele.columns=final_title
         return(finalDF,finalAllele)
+    elif return_index:
+        return(finalDF,temp_index)
     else:
         return(finalDF)
 
