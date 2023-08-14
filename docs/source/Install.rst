@@ -17,11 +17,16 @@ These instructions will help novice programmers install all necessary packages a
 
 .. code-block:: python
 
-    conda create -n aims-env python=3.7
+    conda create -n aims-env python=3.9
 
 If anaconda/miniconda is installed properly, a Y/N prompt should appear. Type "y" then hit the "enter key" and you will create a conda environment.
 
-3. If you haven't already, you should download the code from https://github.com/ctboughter/AIMS.
+3. If you haven't already, you should download the code from https://github.com/ctboughter/AIMS. To download from GitHub, click the green "Code" button, and then "Download Zip". Then, unzip the folder and move the AIMS directory to whichever location you would like to run the analysis from. Alternatively you can also download via terminal using this command:
+
+.. code-block:: python
+
+    git clone https://github.com/ctboughter/AIMS.git
+
 
 4. Next, navigate to the new folder created from this repository. First, open up terminal and enter the environment created earlier by typing:
 
@@ -41,7 +46,7 @@ When I do this, my terminal line reads:
 .. code-block:: python
     cd /Users/boughter/Desktop/AIMS-master
 
-Hopefully you see something similar (replacing my user name with your own), and when you hit enter you can move to the next step.
+Hopefully you see something similar (replacing my user name with your own, and noting that "AIMS-master" may simply be "AIMS" if you cloned the repository rather than downloading the zip), and when you hit enter you can move to the next step.
 
 .. _aims.install:
 
@@ -56,9 +61,6 @@ The above section focused on the installation of the necessary software to run p
 
     ./app/install_packages.sh
 
-.. warning::
-    If you want to use Python 3.9, do not run the above command or install packages in the code block below. Instead, see closed issue #1 on the GitHub page [https://github.com/ctboughter/AIMS/issues/1] for working package versions.
-
 This bash script should run after typing in this command, and you'll be prompted with a bunch of [y]/n prompts, for which you should consistently enter "y" then the "enter key". 
 
 .. note::
@@ -68,16 +70,22 @@ If the install_packages.sh script doesn't work, and you get some kind of an erro
 
 .. code-block:: python
 
-    conda install -c conda-forge biopython=1.76
+    conda install -c conda-forge umap-learn=0.5.3
+    conda install -c conda-forge biopython=1.79
     conda install -c conda-forge scipy=1.4.1
-    conda install pandas=1.0.3
-    conda install numpy=1.18.1
-    conda install matplotlib=3.1.3
-    conda install scikit-learn=0.22.1
-    conda install seaborn=0.10.1
-    conda install -c conda-forge kivy=2.0.0
+    conda install pandas=1.5.3
+    conda install numpy=1.24.1
+    conda install matplotlib=3.7.1
+    conda install scikit-learn=1.3.0
+    conda install seaborn=0.12.2
+    conda install -c conda-forge kivy=2.1.0
 
-2. Everything should now be installed, you should now be able to open up the software! Navigate to the app in terminal by typing:
+.. warning::
+    The versions of these apps have been updated as of AIMS v0.8 to ensure AIMS is not using outdated packages. However, not every function has been tested, so please do not hesitate to raise issues on GitHub if something is non-functional with these new packages.
+
+    Further, if you do not plan on using the GUI, do not install Kivy. It seems to be the source of trouble for most installs, and is only used to run the GUI.
+
+2. Everything should now be installed, you should now be able to open up the software! If you'd like to run the notebook or the command-line interface, please see the :doc:`AIMS_notebooks` or the :doc:`AIMS_CLI` sections. If you would like to run the GUI, navigate to the app in terminal by typing:
 
 .. code-block:: python
 

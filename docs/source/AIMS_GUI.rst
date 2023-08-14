@@ -4,6 +4,9 @@ The AIMS analysis pipeline has been used to analyze a wide range of molecular sp
 
 This section will provide a step-by-step walkthrough outlining how to use the AIMS Graphical User Interface (GUI) through screenshots of the app. The focus will be primarily on how to interface with the GUI, how files are saved when using the GUI, and tips and tricks for a smooth AIMS experience. Before starting the GUI, you may want to check out the :doc:`AIMS_basics` and review the :ref:`formatting` and :ref:`core`.
 
+.. note::
+   Some of the screenshots may differ slightly from the current AIMS GUI, but the walkthrough still captures the core features needed to understand the GUI
+
 When launching the GUI, this screen should be the first thing that you see:
 
 .. figure:: screenshots/0launch.png

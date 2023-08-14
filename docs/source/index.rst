@@ -43,6 +43,7 @@ Contents
    AIMS_basics
    AIMS_cluster
    AIMS_notebooks
+   AIMS_CLI
    
 A Note on Exploration with AIMS
 --------
