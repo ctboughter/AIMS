@@ -31,12 +31,12 @@ build:
 
 sphinx:
 
-  configuration: docs/Makefile
+  configuration: docs/source/conf.py
 
   # You can configure Sphinx to use a different builder, for instance use the dirhtml builder for simpler URLs
 
   # builder: "dirhtml"
 
-  # Fail on all warnings to avoid broken references
+  # Fail on all warnings to ayvoid broken references
 
   # fail_on_warning: true

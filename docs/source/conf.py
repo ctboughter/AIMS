@@ -3,11 +3,11 @@
 # -- Project information
 
 project = 'AIMS'
-copyright = '2022, Boughter'
+copyright = '2023, Boughter'
 author = 'Boughter'
 
-release = '0.6'
-version = 'AIMS_0.6'
+release = '0.8'
+version = 'AIMS_0.8'
 
 # -- General configuration
 
