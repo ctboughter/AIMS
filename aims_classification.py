@@ -28,6 +28,7 @@ import aims_analysis as aims
 # Define some initial stuff and import analysis functions:
 #AA_key_old=['A','G','L','M','F','W','K','Q','E','S','P','V','I','C','Y','H','R','N','D','T']
 AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
+AA_key_dash = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-']
 
 # So we've got 46 orthogonal (or at least not super correlated)
 # dimensions. Add them in to the matrix
@@ -81,27 +82,44 @@ def apply_matrix(mono_PCA,max_diffs,mat_size=100,props=properties[1:],ridZero=Fa
     return(new_mat_mono/win_size)
 
 # CAN WE DO IT WITH ONE MATRIX???
-def get_bigass_matrix(ALL_mono, OneChain = False, giveSize=[], onlyCen = False, bulge_pad=8, prop_parse=False,
+def get_bigass_matrix(ALL_mono,AA_key=AA_key,AA_key_dash=AA_key_dash, OneChain = False, giveSize=[], onlyCen = False, bulge_pad=8, prop_parse=False,
 manuscript_arrange=False,special='', alignment = 'center', norm = True):
-    # THIS TERM IS ACTUALLY IRRELEVANT. NEED TO DEFINE A "GET MASK" function
     
+    AA_num_key_new=properties[1]
+    # Alright so if we DO change our AA_key of the sequences, we also need to 
+    ori_key = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
+    if AA_key != ori_key:
+        cat_ori = ''.join(ori_key)
+        new_key = []
+        for i in np.arange(20):
+            new_key = new_key + [cat_ori.find(AA_key[i])]
+        temp = AA_num_key_new[new_key]
+        AA_num_key_new = temp
+    elif AA_key_dash != ori_key:
+        cat_ori = ''.join(ori_key)
+        new_key = []
+        for i in np.arange(20):
+            new_key = new_key + [cat_ori.find(AA_key_dash[i])]
+        temp = AA_num_key_new[new_key]
+        AA_num_key_new = temp
+
     if OneChain:
-        mono_PCA = aims.gen_1Chain_matrix(ALL_mono,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),binary=False,giveSize=giveSize)
-        mono_MI = aims.gen_1Chain_matrix(ALL_mono,key=AA_num_key,binary=False,giveSize=giveSize)
+        mono_PCA = aims.gen_1Chain_matrix(ALL_mono,AA_key=AA_key,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),binary=False,giveSize=giveSize)
+        mono_MI = aims.gen_1Chain_matrix(ALL_mono,AA_key=AA_key,key=AA_num_key,binary=False,giveSize=giveSize)
     else:
         if special =='peptide':
-            mono_PCA = aims.gen_peptide_matrix(ALL_mono,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),
+            mono_PCA = aims.gen_peptide_matrix(ALL_mono,AA_key=AA_key,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),
             binary=False)
-            mono_MI = aims.gen_peptide_matrix(ALL_mono,key=AA_num_key,binary=False)
+            mono_MI = aims.gen_peptide_matrix(ALL_mono,AA_key=AA_key,key=AA_num_key,binary=False)
         elif special == 'MSA':
             AA_num_key_new_dash = np.hstack((AA_num_key_new,[0]))/np.linalg.norm(np.hstack((AA_num_key_new,[0])))
             AA_num_key_dash = np.hstack((AA_num_key,[0]))
-            mono_PCA = aims.gen_MSA_matrix(np.array(ALL_mono),key = AA_num_key_new_dash, giveSize = giveSize)
-            mono_MI = aims.gen_MSA_matrix(np.array(ALL_mono),key = AA_num_key_dash, giveSize = giveSize)
+            mono_PCA = aims.gen_MSA_matrix(np.array(ALL_mono), AA_key_dash=AA_key_dash, key = AA_num_key_new_dash, giveSize = giveSize)
+            mono_MI = aims.gen_MSA_matrix(np.array(ALL_mono), AA_key_dash=AA_key_dash, key = AA_num_key_dash, giveSize = giveSize)
         else:
-            mono_PCA = aims.gen_tcr_matrix(ALL_mono,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),
+            mono_PCA = aims.gen_tcr_matrix(ALL_mono,AA_key=AA_key,key=AA_num_key_new/np.linalg.norm(AA_num_key_new),
             binary=False,giveSize=giveSize,manuscript_arrange = manuscript_arrange, alignment = alignment,bulge_pad=bulge_pad)
-            mono_MI = aims.gen_tcr_matrix(ALL_mono,key=AA_num_key,binary=False,giveSize=giveSize,
+            mono_MI = aims.gen_tcr_matrix(ALL_mono,AA_key=AA_key,key=AA_num_key,binary=False,giveSize=giveSize,
             manuscript_arrange=manuscript_arrange, alignment = alignment,bulge_pad=bulge_pad)
 
     if onlyCen:
@@ -111,7 +129,7 @@ manuscript_arrange=False,special='', alignment = 'center', norm = True):
         mono_PCAF = mono_PCA
         mono_MIF = mono_MI
 
-    BIG_mono = aims.getBig(mono_MIF, norm = norm,prop_parse=prop_parse)
+    BIG_mono = aims.getBig(mono_MIF,AA_key=AA_key, norm = norm,prop_parse=prop_parse)
     amono,bmono,cmono = np.shape(BIG_mono)
 
     #SO WE CANT JUST USE NP.RESHAPE

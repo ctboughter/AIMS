@@ -69,7 +69,7 @@ def get_sequence_dimension(re_poly):
 # NOTE, manuscript_arrange=False MUST be selected to run MHC analysis
 # I used to re-arrange the CDR loops for a more position-accurate
 # representation. In the current analysis, this isn't necessary.
-def gen_tcr_matrix(pre_poly,key=AA_num_key_new,binary=False,
+def gen_tcr_matrix(pre_poly,AA_key=AA_key,key=AA_num_key_new,binary=False,
 pre_mono=[],giveSize=[],return_Size=False,manuscript_arrange=False,
 alignment = 'center',bulge_pad = 8):
     if int(bulge_pad) != 8 and int(bulge_pad) != 6 and int(bulge_pad) != 4 and int(bulge_pad) != 2:
@@ -636,7 +636,7 @@ def prop_pairing(ALL_mono,ALL_poly,mat_size=100,props=properties[1:],win_size = 
 # What do I mean by this... It means one of the scripts requires each loop to be
 # the same number of entries. New way of making tcr_matrix doesn't do that.
 # So here, we just make 6 loop entries that are of length = max_len
-def gen_tcr_matrixOLD(re_poly,max_len,key=AA_num_key_new):
+def gen_tcr_matrixOLD(re_poly,max_len,AA_key=AA_key,key=AA_num_key_new):
     poly_PCA=np.zeros([len(re_poly[0]),6*max_len])
     for i in range(len(re_poly[:][0])): # For all of our polyreactive sequences...
         loop=0
@@ -662,7 +662,7 @@ def gen_tcr_matrixOLD(re_poly,max_len,key=AA_num_key_new):
 
 # OK SO NOW YOU GOTTA BE ABLE TO DO ALL OF THIS ANALYSIS ON A SINGLE CHAIN
 # Everything else should be able to work downstream of this now... probably.
-def gen_1Chain_matrix(pre_poly,key=AA_num_key_new,binary=False,pre_mono=[],giveSize=[],return_Size=False):
+def gen_1Chain_matrix(pre_poly,AA_key=AA_key,key=AA_num_key_new,binary=False,pre_mono=[],giveSize=[],return_Size=False):
     # Do this so that 
     if giveSize == []:
         if binary:
@@ -717,7 +717,7 @@ def gen_1Chain_matrix(pre_poly,key=AA_num_key_new,binary=False,pre_mono=[],giveS
         return(poly_PCA)
 
 #### K.I.S.S. just make a new script to get the big matrix:
-def getBig(mono_PCA, norm = True,prop_parse=False):
+def getBig(mono_PCA,AA_key=AA_key, norm = True,prop_parse=False):
     # Try to maximize differences across the properties by looking at patterning...
     # Redifine "properties" because I was getting some weird errors...
         # Prop_parse removes the "hotspot" variables for better physical
@@ -732,6 +732,8 @@ def getBig(mono_PCA, norm = True,prop_parse=False):
         properties[0:16,i]=oldold[AA_key[i]]
         properties[16:,i]=newnew[AA_key[i]]
 
+    # Reminder, we skip two here because the old properties have homemade
+    # amino acid keys that may not be physically meaningful.
     props = properties[2:]
 
     # Re-normalize the properties for use in the matrix...
@@ -813,7 +815,7 @@ def parse_props(X_train,y_train,mat_size=100):
 
 ###################################################
 # Peptide stuff:
-def gen_peptide_matrix(pre_pep1,key=AA_num_key_new,binary=False,pre_pep2=[]):
+def gen_peptide_matrix(pre_pep1,AA_key=AA_key,key=AA_num_key_new,binary=False,pre_pep2=[]):
     # How many sequences do we have?
     numClone = len(pre_pep1)
     final_pep1=[] # initialize a variable
@@ -968,7 +970,7 @@ def split_reshape(ID_big, matShape, total_props = 61):
     return(seq1_bigReshape,seq2_bigReshape)
 
 ###### Dpr-DIP Matrix #######
-def gen_MSA_matrix(pre_poly,key=AA_num_key_new,binary=False,
+def gen_MSA_matrix(pre_poly,AA_key_dash=AA_key_dash,key=AA_num_key_new,binary=False,
 pre_mono=[],giveSize=[],return_Size=False):
     # Do this so that 
     if giveSize == []:
