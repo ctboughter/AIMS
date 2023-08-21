@@ -205,6 +205,7 @@ alignment = 'center',bulge_pad = 8):
 def calculate_shannon(poly_PCA):
     clones,aas = np.shape(poly_PCA)
     prob_poly_full=np.zeros((clones,aas,21))
+    coverage = np.zeros(aas)
     # We technically have 21 entries, 20 AAs (1-20) and spaces 0... Take a look at all of that
     # Actually 22 now that we are allowing for '-' in MSA
     AAs=np.arange(0,22)
@@ -213,6 +214,8 @@ def calculate_shannon(poly_PCA):
 
     for i in np.arange(clones):
         for j in np.arange((aas)):
+            if poly_PCA[i,j] == 0:
+                coverage[j] += 1
             for k in AAs:
                 if poly_PCA[i,j]==k:
                     prob_poly_full[i,j,k]=prob_poly_full[i,j,k]+1
@@ -225,10 +228,10 @@ def calculate_shannon(poly_PCA):
             if poly_count[i,j]==0:
                 continue
             shannon_poly[i]=shannon_poly[i]+(-poly_count[i,j]*math.log(poly_count[i,j],2))
-    return(shannon_poly,poly_count)
+    return(shannon_poly,poly_count,coverage/clones)
 
 def calculate_MI(poly_PCA):
-    shannon_poly,poly_count=calculate_shannon(poly_PCA)
+    shannon_poly,poly_count,coverage=calculate_shannon(poly_PCA)
     # Need to start removing explicit "126" sized matrices
     clones,aas = np.shape(poly_PCA)
     AAs=np.arange(0,21)
