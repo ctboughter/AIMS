@@ -1047,6 +1047,8 @@ def get_interaction_score(seq,MSA=True,scorMat='v1'):
         scoring_mat = pandas.read_csv('app_data/AA_interactionV1.csv',sep=',')
     elif scorMat == 'v2':
         scoring_mat = pandas.read_csv('app_data/AA_interactionV2.csv',sep=',')
+    elif scorMat == 'v3':
+        scoring_mat = pandas.read_csv('app_data/AA_interactionV3.csv',sep=',')
     scoring_mat.index = scoring_mat['Residue'].values
     scoring_pre = scoring_mat.drop(labels='Residue',axis=1)
     dash1 = np.transpose(pandas.DataFrame(np.zeros(20)))
@@ -1828,12 +1830,13 @@ def get_msa_sub(seqF,loc_start,loc_end):
     return(seqNEW)
 
 # This function is really only in here to make the notebook look a little cleaner
+# Changing this so that 2D always comes first...
 def get_plotdefs(clust_show,proj_show,chosen_map1,chosen_map2,leg1,leg2):
     if clust_show.lower() == 'both':
         if proj_show.lower() == 'both':
             fig3d = pl.figure(figsize = (25, 20))
             plotloc = [221,222,223,224]
-            plottype = ['3d','2d','3d','2d']
+            plottype = ['2d','3d','2d','3d']
             dattype = ['clust','clust','meta','meta']
             plotem=[chosen_map1,chosen_map1,chosen_map2,chosen_map2]
             legends = [leg1,leg1,leg2,leg2]
@@ -1855,7 +1858,7 @@ def get_plotdefs(clust_show,proj_show,chosen_map1,chosen_map2,leg1,leg2):
         if proj_show.lower() == 'both':
             fig3d = pl.figure(figsize = (20, 10))
             plotloc = [121,122]
-            plottype = ['3d','2d']
+            plottype = ['2d','3d']
             dattype = ['clust','clust']
             plotem=[chosen_map1,chosen_map1]
             legends = [leg1,leg1]
@@ -1877,7 +1880,7 @@ def get_plotdefs(clust_show,proj_show,chosen_map1,chosen_map2,leg1,leg2):
         if proj_show.lower() == 'both':
             fig3d = pl.figure(figsize = (20, 10))
             plotloc = [121,122]
-            plottype = ['3d','2d']
+            plottype = ['2d','3d']
             dattype = ['meta','meta']
             plotem=[chosen_map2,chosen_map2]
             legends = [leg2,leg2]
@@ -1991,11 +1994,12 @@ def do_statistics(data1,data2,num_reps = 1000,test='median',multi_test='none',al
         tempAll = preDat
         if prop_axis == 0:
             allDat = resample(tempAll,replace=False)
+            re_dat1 = allDat[0:len1]
+            re_dat2 = allDat[len1:]
         else:
-            allDat = resample(np.transpose(tempAll),replace=False)
-
-        re_dat1 = allDat[0:len1]
-        re_dat2 = allDat[len1:]
+            allDat = np.transpose(resample(np.transpose(tempAll),replace=False))
+            re_dat1 = allDat[:,0:len1]
+            re_dat2 = allDat[:,len1:]
 
         if test.lower() == 'average':
             z = np.average(re_dat1,axis=prop_axis) - np.average(re_dat2,axis=prop_axis)
@@ -2008,8 +2012,8 @@ def do_statistics(data1,data2,num_reps = 1000,test='median',multi_test='none',al
                 temp1 = test_func(pandas.DataFrame(re_dat1))[func_val]
                 temp2 = test_func(pandas.DataFrame(re_dat2))[func_val]
             else:
-                temp1 = test_func(re_dat1)[func_val]
-                temp2 = test_func(re_dat2)[func_val]
+                temp1 = test_func(np.transpose(np.array(re_dat1)))[func_val]
+                temp2 = test_func(np.transpose(np.array(re_dat2)))[func_val]
             z = temp1 - temp2
         
         if type(z0) == np.float64:
@@ -2062,3 +2066,121 @@ def do_statistics(data1,data2,num_reps = 1000,test='median',multi_test='none',al
             return(p,stat_sig)
         else:
             return('ERROR: Bad Test Correction Variable')
+
+# Generate a simulated repertoire for response to reviewers...
+# order of operations here:
+# First: Select a V- and J- pairing
+# Second: Determine #AAs left
+# Third: Determine constrained combinatorics of added and removed AAs (all possible)
+# Fourth: Only select those options that satisfy length distribution.
+# Fifth: Select added amino acids based upon supplied probabilities, stich sequences
+#### Simulation Assumptions ################################
+#- 3 or 6 nucleotide deletions (remove 1-2 amino acids) randomly from the end of V- and start of J-
+#- So IMGT ALWAYS removes these p-nucleotides from their protein displays... so go off of direct deletion values from Murugan et al.
+#- 3 or 6 nucleotide insertions (add 1-2 amino acids) randomly to the end of V- and start of J-
+#- LASTLY, maybe another 2-3 amino acids added for the D-segment... Although this is also a bit wonky...
+#- Basically the D segments encode 4 AAs, but also get deletions from BOTH ends.
+#- I will NOT be going off of the distribution of D-segments, although you could conceivably do so
+def gen_sim_repertoire(numSeq=100,adic={},lens=14):
+    from sklearn.utils import resample
+    import random
+    import itertools
+
+    trav = pandas.read_csv('app_data/germline_data/trav_human_cdrs.csv')
+    trbv = pandas.read_csv('app_data/germline_data/trbv_human_cdrs.csv')
+    traj = pandas.read_csv('app_data/germline_data/traj_human_cdrs.csv')
+    trbj = pandas.read_csv('app_data/germline_data/trbj_human_cdrs.csv')
+
+    for rep in np.arange(numSeq):
+        selV = random.randrange(0,len(trbv))
+        selJ = random.randrange(0,len(trbj))
+
+        myV = trbv.iloc[selV]['cdr3']
+        myJ = trbj.iloc[selJ]['cdr3']
+
+        del_opts = list(itertools.product([0,1,2],repeat=2))
+        del_sel = del_opts[random.randrange(0,9)]
+
+        if del_sel[0] == 0:
+            finV = myV
+        else:
+            finV = myV[:-del_sel[0]]
+        if del_sel[1] == 0:
+            finJ = myJ
+        else:
+            finJ = myJ[del_sel[1]:]
+
+        germ_len = len(finV) + len(finJ)
+
+        # get the number of AAs needed left depending
+        # on whether you want a range of lengths or just one
+        if type(lens) == int:
+            addAA = lens - germ_len 
+        else:
+            addAA_opts = np.array(lens)-germ_len
+            sel_add = random.randrange(0,len(addAA_opts))
+            addAA = addAA_opts[sel_add]
+
+        # Alright now we need to decide which amino acids we're going to add...
+        # Ok how I should probably do this is have my input be a dictionary, use that to find the 
+        # location of the given weight (i.e. W is position 0), and then use the dict itself to change the
+        # value at this position...
+        rev_altered = 'WFMLIVPYHAGSTDECNQRK'
+        aa_prob_weight = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+
+        for i in adic.keys():
+            aa_loc = rev_altered.find(i)
+            aa_prob_weight[aa_loc] = adic[i]
+
+        fin_AAs = []
+        for i in np.arange(len(aa_prob_weight)):
+            fin_AAs = fin_AAs + [rev_altered[i]*aa_prob_weight[i]]
+
+        added = []
+        for i in np.arange(addAA):
+            added = added + [random.choice(''.join(fin_AAs))]
+
+        final_seq = finV+''.join(added)+finJ
+
+        if rep == 0:
+            repertoire = final_seq
+        else:
+            repertoire = np.vstack((repertoire,final_seq)) 
+
+    return(repertoire)
+
+def prep_distCalc(sorted_seqs,splitSize=1000):
+    import itertools
+    zz = np.arange(0,len(sorted_seqs)+1,1000)
+
+    s1 = np.arange(0,len(sorted_seqs),splitSize)
+    s2 = np.arange(splitSize,len(sorted_seqs),splitSize)
+    if len(s1) != len(s2):
+        if len(s1) > len(s2):
+            s2 = np.hstack((s2,len(sorted_seqs)))
+        else:
+            s1 = np.hstack((s1,len(sorted_seqs)))
+    final = np.transpose(np.vstack((s1,s2)))
+
+    xx = list(itertools.combinations_with_replacement(final,2))
+    return(xx)
+
+def get_distClusts(dists,metadat,max_d=5):
+    # max_d determines where to draw your cutoff for what defines a "cluster"
+    # Might need to tweak a little bit depending on if you're using AIMS or TCRdist
+    from scipy.cluster.hierarchy import dendrogram, linkage
+    from scipy.spatial.distance import squareform
+    from scipy.cluster.hierarchy import fcluster
+    
+    mat = dists
+    square_dist = squareform(mat)
+    linkage_matrix = linkage(square_dist, "single")
+    # This is only for *showing* the last N clusters
+    #dend2 = dendrogram(linkage_matrix,truncate_mode='lastp',p=50)  # show only the last p merged clusters)
+
+    clusters = fcluster(linkage_matrix, max_d, criterion='distance')
+    aimsDist_df = pandas.DataFrame(clusters)
+    aimsDist_final = pandas.concat([metadat,aimsDist_df],axis=1)
+    aimsDist_final.columns = [['meta','Distcluster']]
+
+    return(aimsDist_final)

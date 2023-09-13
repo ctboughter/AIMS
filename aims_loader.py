@@ -303,7 +303,7 @@ def pep_loader(fastapath,label, scrape=False, start_label=0,drop_degens=False,le
 # A Temporary Change Here: Load in HLA A, B, C platform domains for analysis
 def get_HLA():
     from Bio import SeqIO
-    mhc_dir = 'germline_data/'
+    mhc_dir = 'app_data/germline_data/'
     records = list(SeqIO.parse(mhc_dir+'ABC_prot.fasta','fasta'))
 
     full_id = []; concat_seq = []
@@ -374,7 +374,7 @@ def convert_3Let(inp):
 
 # A Temporary Change Here: Load in Class II HLA-DQ, DR, and DP
 def get_classII():
-    mhc_dir = 'germline_data/'
+    mhc_dir = 'app_data/germline_data/'
     classIIa = list(SeqIO.parse(mhc_dir+'classII_alpha.fasta','fasta'))
     classIIb = list(SeqIO.parse(mhc_dir+'classII_beta.fasta','fasta'))
 
@@ -458,8 +458,8 @@ def get_classII():
 #######################################################################
 # So as a note, this script actually loads in ALL MHC. Class I
 def load_multiOrgMHC():
-    records = list(SeqIO.parse('germline_data/MHC_prot.fasta','fasta'))
-    mhc_codes = pandas.read_csv('germline_data/MHCprot_orgCode.csv')
+    records = list(SeqIO.parse('app_data/germline_data/MHC_prot.fasta','fasta'))
+    mhc_codes = pandas.read_csv('app_data/germline_data/MHCprot_orgCode.csv')
 
     first = True
     for tester in records:
@@ -480,7 +480,7 @@ def load_multiOrgMHC():
     pre_final_df.index = np.arange(len(pre_final_df))
 
     # Specifically load in the mouse data
-    records2 = list(SeqIO.parse('germline_data/mouse_classI.fasta','fasta'))
+    records2 = list(SeqIO.parse('app_data/germline_data/mouse_classI.fasta','fasta'))
     mouse_seqF = []
     for tester in records2:
         ID = tester.id
@@ -533,8 +533,8 @@ def load_multiOrgTCR():
     # Define how many CDR loops are in the files you are loading
     num_loop=3
     for i in np.arange(len(tcr_orgs)):
-        trav = Ig_loader('germline_data/Ig_displays/trav_'+tcr_orgs[i]+'_cdrs.csv',label=mhc_orgs[i],loops=num_loop,drop_degens = True)
-        trbv = Ig_loader('germline_data/Ig_displays/trbv_'+tcr_orgs[i]+'_cdrs.csv',label=mhc_orgs[i],loops=num_loop,drop_degens = True)
+        trav = Ig_loader('app_data/germline_data/Ig_displays/trav_'+tcr_orgs[i]+'_cdrs.csv',label=mhc_orgs[i],loops=num_loop,drop_degens = True)
+        trbv = Ig_loader('app_data/germline_data/Ig_displays/trbv_'+tcr_orgs[i]+'_cdrs.csv',label=mhc_orgs[i],loops=num_loop,drop_degens = True)
         if tcr_orgs[i] == 'human':
             fin_trav = trav.loc[0:1]
             fin_trbv = trbv.loc[0:1]
