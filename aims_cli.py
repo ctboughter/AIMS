@@ -1158,7 +1158,13 @@ for dat in np.arange(len(sub_sels)):
 
 ax1.imshow(coverage,aspect='auto',interpolation='nearest',cmap='Greys')
 
-pl.legend(label); pl.xlabel('Sequence Position'); pl.ylabel('Shannon Entropy (Bits)')
+legend_elements=[]
+for j in np.arange(len(sub_sels)):
+    element = [Line2D([0], [0], marker='o', color='w', label=label[j],markerfacecolor=colors[j], markersize=10)]
+    legend_elements = legend_elements+element
+pl.legend(handles=legend_elements,ncol=len(sub_sels))
+
+pl.xlabel('Sequence Position'); pl.ylabel('Shannon Entropy (Bits)')
 
 if type(mat_size) != int:
     for i in np.arange(len(mat_size)-1):
