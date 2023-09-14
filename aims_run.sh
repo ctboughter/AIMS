@@ -6,7 +6,7 @@
 ##############################################################
 # Define the molecule as either ab, tcr, peptide, or msa
 # FOR BASH, CANT HAVE A SPACE BETWEEN "=" signs
-molecule=msa
+molecule=tcr
 ##############################################################
 
 # An example of how to run the CLI for TCR analysis
@@ -33,7 +33,13 @@ then
     --outputDir AIMS_tcr \
     --fileNames siv_tl8.csv siv_cm9.csv \
     --datNames TL8 CM9 \
+    --DOstats True \
+    --DOboot True \
+    --GETdist True \
+    --Plotprops True \
     --numLoop 1 \
+    --REnorm False \
+    --analysisSel metadata \
     --molecule ig > aims_tcr.out
 fi
 
@@ -41,8 +47,14 @@ if [ $molecule = peptide ]
 then
     python aims_cli.py \
     --molecule peptide \
+    --align bulge \
+    --bulgePad 6 \
+    --DOstats True \
+    --DOboot True \
+    --AAorder 'WFMLIVPYHAGSTDECNQRK' \
     --datDir app_data \
     --outputDir AIMS_pep \
+    --analysisSel metadata \
     --fileNames pancreas_hla_atlas.csv kidney_hla_atlas.csv \
     --datNames Pancreas Kidney > aims_pep.out
 fi
@@ -80,6 +92,7 @@ then
     --selDat 0 1 2 \
     --prop1 3 \
     --prop2 4 \
+    --colors purple blue red \
     --matSize 5 > aims_msa.out
 fi
 

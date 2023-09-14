@@ -18,6 +18,8 @@ import os
 import aims_loader as aimsLoad
 import aims_analysis as aims
 import aims_classification as classy
+import matplotlib.gridspec as gridspec
+from sklearn.utils import resample
 import argparse
 
 # This bit is for that figure formatting. Change font and font size if desired
@@ -59,6 +61,7 @@ def main():
     parser.add_argument("-se","--subEnd",help="End points for data subset [list of ints]",required=False,default=[],type=int,nargs='*')
     parser.add_argument("-bp","--bulgePad",help="Padding for bulge format [int]",required=False,default=8,type=int)
     parser.add_argument("-np","--normProp",help="Normalize biophysical properties? [T/F]",required=False,default=True,type=bool)
+    parser.add_argument("-rn","--REnorm",help="Renormalize BPHYS mat by entropy? [T/F]",required=False,default=True,type=bool)
     parser.add_argument("-cd","--clustData",help="Data format for dim. red. and clustering [string]",required=False,default='parse',type=str)
     parser.add_argument("-pa","--projAlg",help="Algorithm for data projection [string]",required=False,default='pca',type=str)
     parser.add_argument("-us","--umapSeed",help="Random seed for UMAP projection [int]",required=False,default=[],type=int)
@@ -67,11 +70,23 @@ def main():
     # Need to come back to the metadata section soon
     parser.add_argument("-mf","--metaForm",help="Format of metadata [string]",required=False,default='category',type=str)
     parser.add_argument("-mn","--metaName",help="Name of the incorporated metadata [string]",required=False,default='meta',type=str)
+    
+    ##################################################
+    # NEW FEATURES!!!! Woohoo
+    parser.add_argument("-ds","--DOstats",help="Run statistics for relevant analysis? [T/F]",required=False,default=False,type=bool)
+    parser.add_argument("-db","--DOboot",help="Run bootstrapping for relevant analysis? [T/F]",required=False,default=False,type=bool)
+    parser.add_argument("-gd","--GETdist",help="Run AIMSdist calculations? [T/F]",required=False,default=False,type=bool)
+    parser.add_argument("-pp","--Plotprops",help="Plot biophysical properties for clusters? [T/F]",required=False,default=False,type=bool)
+    parser.add_argument("-bt","--boots",help="How many bootstrap replicase should run? [int]",required=False,default=1000,type=int)
+    parser.add_argument("-mi","--MIboots",help="How many MI bootstrap replicas should run? [int]",required=False,default=10,type=int)
+    parser.add_argument("-aa","--AAorder",help="Order of amino acids for figures [single string of 20]",required=False,default='',type=str)
+    parser.add_argument("-cc","--colors",help="Color selection for scatter/line plots [list of strings]",required = False,default=['purple','orange'],type=str,nargs='*')
+    ##################################################
     # # # # # # # # # # # # 
     parser.add_argument("-sp","--showProj",help="Show 2D or 3D data projections [string]",required=False,default='both',type=str)
     parser.add_argument("-sc","--showClust",help="Show metadata or clustering [string]",required=False,default='both',type=str)
     parser.add_argument("-nb","--normBar",help="Normalize cluster purity bar plots? [T/F]",required=False,default=True,type=bool, nargs=1)
-    parser.add_argument("-as","--analysisSel",help="Select the data subsets to further analyze [string]",required=False,default='cluster',type=str)
+    parser.add_argument("-as","--analysisSel",help="Select the data subset type to further analyze [cluster or metadata]",required=False,default='cluster',type=str)
     parser.add_argument("-lo","--seqlogo",help = "Want to create seqlogo plots? [T/F]",required=False,default=False,type=bool)
     parser.add_argument("-ln","--logoNum",help = "What sequence length do you want to generate seqlogos for? [int]",required=False,default=14,type=int)
     parser.add_argument("-sv","--saveSeqs",help = "Want to save clustered sequences in separate files? [T/F]",required=False,default=False,type=bool)
@@ -126,7 +141,8 @@ if __name__ == "__main__":
     pad = args.bulgePad #6
 
     # Specifically normalization for the bphys property matrix
-    normalize = args.normProp #True
+    normalize = args.normProp # True
+    renormalize = args.REnorm # True
     # For the clustering
     dchoice = args.clustData #'parse'
     reduce = args.projAlg #'pca'
@@ -139,6 +155,26 @@ if __name__ == "__main__":
     clust_size = args.clustSize #10
     # Incorporating metadata
     meta_form = args.metaForm # 'category'
+
+    ############################################
+    # New features! Woohoo
+    DOstats = args.DOstats # False
+    bootstrap = args.DOboot # False
+    boots = args.boots # 1000
+    MIboots = args.MIboots # 10
+    AAorder = args.AAorder # 'WFMLIVPYHAGSTDECNQRK'
+    if len(AAorder) == 20:
+        custom_key = True
+    elif len(AAorder) == 0:
+        custom_key = False
+    else:
+        print("ERROR: Custom Key Wrong Length!")
+        # Break out early with this error
+        quit()
+    colors = args.colors
+    GETdist= args.GETdist
+    plot_props = args.Plotprops
+    ############################################
 
     ######### Do you want to show 2D projection, 3D, or both?##################
     proj_show = args.showProj # 'both'
@@ -255,18 +291,31 @@ if num_loop != 1:
 # If looking at Ig molecules, you can decide if you would like to align to the center, left, or right of each sequence.
 # There is a 3rd option, "bulge" which aligns the germline regions of CDR3 (and other loops) and then center aligns what is left. 
 # Change the 'align' variable to one of these four. Pretty easy to visualize each time you do so in below matrix
+
+# New little added bit to create a custom amino acid order
+if custom_key:
+    my_AA_key = [a for a in AAorder]
+else:
+    # My AA key here is the "standard" AIMS key that has been used in previous papers
+    # Note changing the key doesn't change anything BUT the ordering of Amino acids in some figures
+    my_AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
+
+# Just in case you want to do MSA analysis, you need to use "my_AA_key_dash"
+my_AA_key_dash = my_AA_key + ['-']
+
 # In[5]:
 if molecule.lower() == 'ig':
-    seq_MIpre = aims.gen_tcr_matrix(np.array(seqF),key = AA_num_key, giveSize = mat_size, alignment = align, bulge_pad=pad)
+    seq_MIpre = aims.gen_tcr_matrix(np.array(seqF),AA_key = my_AA_key,key = AA_num_key, giveSize = mat_size, alignment = align, bulge_pad=pad)
 elif molecule.lower() == 'peptide':
-    seq_MIpre = aims.gen_tcr_matrix(np.array(seqF),key = AA_num_key, giveSize = mat_size, alignment = align, bulge_pad=pad)
+    seq_MIpre = aims.gen_tcr_matrix(np.array(seqF),AA_key = my_AA_key,key = AA_num_key, giveSize = mat_size, alignment = align, bulge_pad=pad)
 elif molecule.lower() == 'msa':
     AA_num_key_dash = np.hstack((AA_num_key,[0]))
-    seq_MIpre = aims.gen_MSA_matrix(np.array(seqF),key = AA_num_key_dash, giveSize = mat_size)
+    seq_MIpre = aims.gen_MSA_matrix(np.array(seqF),AA_key_dash = my_AA_key_dash,key = AA_num_key_dash, giveSize = mat_size)
 
 seq_MIf = pandas.DataFrame(np.transpose(seq_MIpre),columns = seqF.columns)
 fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
-ax[0,0].imshow(np.transpose(seq_MIf), interpolation='nearest', aspect='auto',cmap=cmap)
+x = ax[0,0].imshow(np.transpose(seq_MIf), interpolation='nearest', aspect='auto',cmap=cmap)
+pl.colorbar(x)
 ax[0,0].set_ylabel('Sequence Number')
 ######
 # It will help to have vertical dashed black lines to guide the viewer
@@ -278,6 +327,7 @@ if type(mat_size) != int:
 #######
 ax[0,0].set_xlabel('Sequence Position')
 pl.savefig(outputDir+'/AIMS_mat.pdf',format='pdf')
+pl.close()
 # # Section 3: Calculate our Biophysical Property Matrices
 # Depending on what type of analysis you are doing, this will likely be the slowest step in this entire notebook
 # The only thing that you *might* need to change in the below code is the decision to normalize the biophysical properties or not. Default is to normalize
@@ -298,7 +348,7 @@ elif molecule.lower() == 'msa':
 if parallel_process:
     import multiprocessing as mp
     def boot_it(data):
-        bigass = classy.get_bigass_matrix(dsetF[:,data[0]:data[1]], giveSize = mat_size, alignment = align,special = special, norm=normalize,bulge_pad=pad)
+        bigass = classy.get_bigass_matrix(dsetF[:,data[0]:data[1]],AA_key=my_AA_key,AA_key_dash=my_AA_key_dash, giveSize = mat_size, alignment = align,special = special, norm=normalize,bulge_pad=pad)
         return(bigass)
     def do_boot(data):
         with mp.Pool() as pool:
@@ -311,7 +361,7 @@ if parallel_process:
     total_mat = np.concatenate(big_pre, axis = 0)
 else:
     #################### Or, Don't Parallelize to CREATE BIG MATRIX #######################
-    bigass = classy.get_bigass_matrix(dsetF, giveSize = mat_size, alignment = align, norm = normalize,special=special,bulge_pad=pad )
+    bigass = classy.get_bigass_matrix(dsetF,AA_key=my_AA_key,AA_key_dash=my_AA_key_dash, giveSize = mat_size, alignment = align, norm = normalize,special=special,bulge_pad=pad )
     total_mat = bigass
     
 # Generate a large list of property names and matrix positions so you can pinpoint strong
@@ -325,9 +375,24 @@ for i in prop_names:
     for j in np.arange(num_locs):
         Bigass_names = Bigass_names + [ i + '-' + str(j) ]
 
+########################################################################################
+if renormalize:
+    entropy_pre,freq_pre,cov_pre = aims.calculate_shannon(np.transpose(seq_MIf.values))
+
+    repeat_ent = []
+    for i in np.arange(len(prop_names)):
+        repeat_ent = repeat_ent + [2**entropy_pre]
+
+    refactor = np.array(repeat_ent).reshape(61*len(entropy_pre))
+
+    pp_mat = total_mat*refactor
+else:
+    pp_mat = total_mat
+##########################################################################################
+
 # Drop Highly Correlated Vectors and Vectors where entry=0 for all entries
 ###### Currently drop vectors with over 0.75 corr. coef. ################
-full_big = pandas.DataFrame(total_mat,columns = Bigass_names)
+full_big = pandas.DataFrame(pp_mat,columns = Bigass_names)
 drop_zeros = [column for column in full_big.columns if all(full_big[column] == 0 )]
 y = full_big.drop(full_big[drop_zeros], axis=1)
 z_pre = np.abs(np.corrcoef(np.transpose(y)))
@@ -339,6 +404,10 @@ to_drop = [column for column in upper.columns if ( any(upper[column] > 0.75) ) ]
 
 # Your final product of a parsed matrix
 parsed_mat = y.drop(y[to_drop], axis=1)
+
+# This is a new, important variable to account for the cases where renormalization
+# is used. We need non-renormed data for downstream repertoire characterization
+NonNorm_big = pandas.DataFrame(total_mat,columns = Bigass_names)
 
 # Let's have some default metadata we can pull from later
 tokenized_dset = []
@@ -539,10 +608,8 @@ if show_labels:
         ax[num].annotate(str(plot_labels[a]),xy=(i,j),fontsize=14)
         a+=1
 
-try:
-    pl.savefig(outputDir+'/AIMS_projections.pdf',format='pdf')
-except:
     pl.savefig(outputDir+'/AIMS_projections.png',format='png')
+    pl.close()
 
 # # Section 7: Quantify Cluster Compositions
 # This step might be meaningless if you don't have ANY metadata to go off of, and/or are not comparing/contrasting two datasets. This is fine, you should still run this step to make sure that everything is properly defined
@@ -597,7 +664,23 @@ try:
     pl.savefig(outputDir+'/AIMS_clusterQuant.pdf',format='pdf')
 except:
     pl.savefig(outputDir+'/AIMS_clusterQuant.png',format='png')
+pl.close()
 
+###### CALCULATE CLUSTER SIGNIFICANCE ###########
+fig, ax = pl.subplots(1, 2,squeeze=False,figsize=(16,6))
+
+cluster_purity,purity_pVal = aims.calc_cluster_purity(final_breakdown,meta_name)
+
+x = ax[0,0].imshow(cluster_purity,interpolation='nearest', aspect='auto',vmax = 1,cmap='plasma')
+y = ax[0,1].imshow(purity_pVal,interpolation='nearest', aspect='auto',vmax = 0.05,cmap='Greys_r')
+
+ax[0,0].set_xlabel('MetaData #'); ax[0,1].set_xlabel('MetaData #')
+ax[0,0].set_ylabel('Cluster #'); ax[0,1].set_ylabel('Cluster #')
+ax[0,0].set_title('Cluster Purity'); ax[0,1].set_title('Cluster Significance')
+pl.colorbar(x,ax=ax[0,0]); pl.colorbar(y,ax=ax[0,1])
+
+pl.savefig(outputDir+'/AIMS_clusterPurity.pdf',format='pdf')
+pl.close()
 
 # # Section 8: Defining Data Subsets of Interest to Further Characterize Repertoire
 # VERY IMPORTANT STEP here for all downstream analysis. Define whether you want to compare/contrast clustered sequences or analyze sequences based upon the associated metadata
@@ -607,20 +690,32 @@ except:
 
 # In[13]:
 
+# NEW FEATURE!!!
+# You can view biophysical properties as
+# a function of cluster or metadata here,
+# rather than just the sequence colors
+#########################################
+# Recommend changing colors if showing diff props
+showProp = 1 #1=Charge, 2=phob
+# Show lines separating major groups?
+show_lines = True
+#########################################
+
 if subset_sel.lower() == 'cluster':
     chosen_map = clust_map; chosen_name = clust_name
 elif subset_sel.lower() == 'metadata':
     chosen_map = meta_map; chosen_name = meta_name
-else:
-    # Default to clusters in case someone makes an error
-    print("Default Subset Analysis to Clusters")
-    subset_sel='cluster'
-    chosen_map = clust_map; chosen_name = clust_name
 fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
 for i in np.sort(chosen_map[chosen_name].drop_duplicates()):
     if i == -1:
         continue
-    pre_clust = seq_MIf[seq_MIf.columns[chosen_map[chosen_map[chosen_name] == i].index]]
+    if plot_props:
+        sub_props = seq_bigReshape[:,showProp]
+        subbDF = pandas.DataFrame(np.transpose(sub_props))
+        subbDF.columns = seq_MIf.columns
+        pre_clust = subbDF[subbDF.columns[chosen_map[chosen_map[chosen_name] == i].index]]
+    else:
+        pre_clust = seq_MIf[seq_MIf.columns[chosen_map[chosen_map[chosen_name] == i].index]]
     clustID = np.transpose(pandas.DataFrame(i*np.ones(np.shape(pre_clust)[1])))
     clustID.columns = pre_clust.columns
     pre_clustF = pandas.concat([pre_clust,clustID],axis=0)
@@ -628,13 +723,81 @@ for i in np.sort(chosen_map[chosen_name].drop_duplicates()):
         clustered = pre_clustF
     else:
         clustered = pandas.concat([clustered, pre_clustF],axis = 1)
-    ax[0,0].plot(np.arange(len(seq_MIf)),np.ones(len(seq_MIf))*(np.shape(clustered)[1]),'black',linewidth = 3)
+    if show_lines:
+        ax[0,0].plot(np.arange(len(seq_MIf)),np.ones(len(seq_MIf))*(np.shape(clustered)[1]),'black',linewidth = 3)
 ax[0,0].set_ylabel('Sequence Number')
 if type(mat_size) != int:
     for i in np.arange(len(mat_size)-1):
         ax[0,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(np.shape(clustered)[1]),np.arange(np.shape(clustered)[1]),'k--',linewidth = 3)
-xyz = ax[0,0].imshow(np.transpose(np.array(clustered))[:,:-1], interpolation='nearest', aspect='auto',cmap=cmap)
+if plot_props:
+    ttt = np.transpose(np.array(clustered))[:,:-1]
+    scaledd = np.max([np.abs(np.min(ttt)),np.abs(np.max(ttt))])
+    xyz = ax[0,0].imshow(np.transpose(np.array(clustered))[:,:-1], interpolation='nearest', aspect='auto',cmap='bwr',vmin=-scaledd,vmax=scaledd)
+else:
+    xyz = ax[0,0].imshow(np.transpose(np.array(clustered))[:,:-1], interpolation='nearest', aspect='auto',cmap=cmap)
+pl.colorbar(xyz)
 pl.savefig(outputDir+'/AIMS_'+subset_sel+'_subViz.pdf',format='pdf')
+pl.close()
+
+
+###############################################################
+# NEW: AIMSDIST!
+if GETdist:
+    parallel_dist = True
+    get_distClusts = True
+
+    for i in chosen_map.sort_values(chosen_name).drop_duplicates().values:
+        if i == -1:
+            continue
+        sub_MI_temp = seq_MIf[seq_MIf.columns[chosen_map[chosen_map[chosen_name] == i[0]].index]]
+        sub_seqs_temp = np.transpose(seqF[sub_MI_temp.columns])
+        if i == 0:
+            sorted_seqs = sub_seqs_temp
+        else:
+            sorted_seqs = pandas.concat([sorted_seqs,sub_seqs_temp])
+    ########################################################################################################3
+    if parallel_dist:
+        import multiprocessing as mp
+        def boot_it(data):
+            if data[0][0] == data[1][0]:
+                dist_temp = aims.calc_AIMSdist(sorted_seqs[data[0][0]:data[0][1]])
+            else:
+                dist_temp = aims.calc_AIMSdist(sorted_seqs[data[0][0]:data[0][1]],sorted_seqs[data[1][0]:data[1][1]])
+            return(data,dist_temp)
+        def do_boot(data):
+            with mp.Pool() as pool:
+                results = pool.map(boot_it, data)
+                return(results)
+        if __name__ == "__main__":
+            # Probably a smarter way to calculate #seqs per node, but do 100 for now
+            xx = aims.prep_distCalc(sorted_seqs)
+            dist_pre = do_boot(xx)
+        dist_matF = np.zeros((len(sorted_seqs),len(sorted_seqs)))
+        for i in np.arange(len(dist_pre)):
+            # Set 1 will be our x-axis of the matrix
+            # set 2 will be our y-axis of the matrix
+            set1 = dist_pre[i][0][0]
+            set2 = dist_pre[i][0][1]
+            # Set 3 is then the data that goes in that space
+            set3 = dist_pre[i][1]
+
+            # Need to fill both the matrix entry and the 
+            # transpose of that entry!!!
+            dist_matF[set1[0]:set1[1],set2[0]:set2[1]] = set3
+            dist_matF[set2[0]:set2[1],set1[0]:set1[1]] = np.transpose(set3)
+        dists = dist_matF
+    else:
+        dists = aims.calc_AIMSdist(sorted_seqs)
+    fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(10,8))
+    x = pl.imshow(np.transpose(dists), interpolation='nearest', aspect='auto',vmin=0,vmax=11)
+
+    # Optionally can get back distance clusters:
+    if get_distClusts:
+        distance_clusters = aims.get_distClusts(dists,metadat,max_d=5)
+        distance_clusters.to_csv(outputDir+'/dist_clust.csv',index=False)
+    pl.colorbar(x)
+    pl.savefig(outputDir+'/AIMSdist.pdf',format='pdf')
+    pl.close
 
 # # Section 9: Isolation of Individual Groups for Downstream Characterization
 # Run the next cell to visualize your clusters of choice, and then go through the remainder of the AIMS modules
@@ -681,6 +844,7 @@ for i in sub_sels:
 
 print("Visualizing the subsets: "+str([str(a) for a in label]))
 pl.savefig(outputDir+'/AIMS_'+subset_sel+'_selected.pdf',format='pdf')
+pl.close()
 
 
 # # Leaving This Here in Case You Have Seqlogo Installed
@@ -694,7 +858,7 @@ pl.savefig(outputDir+'/AIMS_'+subset_sel+'_selected.pdf',format='pdf')
 
 
 # define "RE" variables so we don't mess with any variables upstream (in case you want to re-run)
-full_big_re = full_big; full_big_re.index = seq_MIf.columns
+full_big_re = NonNorm_big; full_big_re.index = seq_MIf.columns
 parsed_mat_re = parsed_mat; parsed_mat_re.index = seq_MIf.columns
 # use the transpose of the sub_mat to find the 
 ref_sub = np.transpose(sub_matF)
@@ -738,6 +902,7 @@ for dat in np.arange(len(sub_sels)):
     fig.colorbar(x, ax=axs[0,dat])
 
 pl.savefig(outputDir+'/AIMS_'+subset_sel+'_charge.pdf',format='pdf')
+pl.close()
 
 
 # In[18]:
@@ -766,6 +931,7 @@ for dat in np.arange(len(sub_sels)):
     fig.colorbar(x, ax=axs[0,dat])
 
 pl.savefig(outputDir+'/AIMS_'+subset_sel+'_hydropathy.pdf',format='pdf')
+pl.close()
 
 
 # # Section 12: Averaged Biophysical Properties for Each Group of Interest
@@ -779,33 +945,78 @@ pl.savefig(outputDir+'/AIMS_'+subset_sel+'_hydropathy.pdf',format='pdf')
 fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
 x_axis = np.array([-0.2,0.9,2,3.1])
 # We want to exclude prop0 (the simple 1-21 AA representation entries)
-full_avg = []; full_std = []
+full_avg = []; full_std = []; plot_lab = []
+a=0
 for dat in np.arange(len(sub_sels)):
     sin_avg =[]; sin_std = []
+    b=0
     for prop in np.arange(4):
-        # We don't want to plot prop1, we want to plot the rest of them
         propF = prop+1
         take_sub = ref_sub[ref_sub[len(sub_matF)-1] == dat].index
         take_big = sub_big.loc[take_sub]
         temp_bigReshape = np.array(take_big).reshape(len(take_big),61,posLen)
-        plot_avg = np.average(np.average(temp_bigReshape[:,propF,:],axis=1))
-        plot_std = np.std(np.std(temp_bigReshape[:,propF,:],axis=1))
-        sin_avg.append(plot_avg)
-        sin_std.append(plot_std)
+        if bootstrap:
+            prop_avg = []
+            for i in np.arange(boots):
+                re_big = resample(temp_bigReshape)
+                prop_avg.append(np.average(re_big[:,propF,:]))
+            fin_avg = np.average(prop_avg,axis=0)
+            fin_std = np.std(prop_avg,axis=0)
+            if b == 0:
+                plot_lab.append(pl.bar(x_axis[b]+a/len(sub_sels), fin_avg,yerr=fin_std,width=1/len(sub_sels),alpha=0.5,color=colors[dat]))
+            else:
+                pl.bar(x_axis[b]+a/len(sub_sels), fin_avg,yerr=fin_std,width=1/len(sub_sels),alpha=0.5,color=colors[dat])
         
-    full_avg.append(sin_avg)
-    full_std.append(sin_std)
+        else:
+            # We don't want to plot prop1, we want to plot the rest of them
+            plot_avg = np.average(np.average(temp_bigReshape[:,propF,:],axis=1))
+            plot_std = np.std(np.std(temp_bigReshape[:,propF,:],axis=1))
+            sin_avg.append(plot_avg)
+            sin_std.append(plot_std)
+        b+=1
+    a+=1
 
-for i in np.arange(len(sub_sels)):
-    ax[0,0].bar(x_axis+i/len(sub_sels), full_avg[i],yerr = full_std[i],alpha = 0.5, width = 1/len(sub_sels))
-    #ax[0,0].bar(x_axis+i/len(sub_sels), full_avg[i],alpha = 0.5, width = 1/len(sub_sels))
-        
-ax[0,0].legend(label)
+    if bootstrap == False:
+        full_avg.append(sin_avg)
+        full_std.append(sin_std)
+
+if bootstrap == False:
+    for i in np.arange(len(sub_sels)):
+        ax[0,0].bar(x_axis+i/len(sub_sels), full_avg[i],yerr = full_std[i],alpha = 0.5, width = 1/len(sub_sels),color=colors[i])
+        #ax[0,0].bar(x_axis+i/len(sub_sels), full_avg[i],alpha = 0.5, width = 1/len(sub_sels))
+        ax[0,0].legend(label)
+else:
+    ax[0,0].legend(plot_lab,label)
 ax[0,0].set_xticks([0.2,1.3,2.4,3.5])
 ax[0,0].set_xticklabels(['Charge','Hydrophobicity','Bulkiness','Flexibility'])
 ax[0,0].set_xlabel('Biophysical Property')
 ax[0,0].set_ylabel('Normalized Property Value')
 pl.savefig(outputDir+'/AIMS_'+subset_sel+'_netAvgProp.pdf',format='pdf')
+pl.close()
+
+##########################################################################
+# Calculating statistical significance
+if DOstats:
+    prop_names = ['Charge','Hydrophobicity','Bulkiness','Flexibility']
+    take_sub1 = ref_sub[ref_sub[len(sub_matF)-1] == 0].index
+    take_big1 = sub_big.loc[take_sub1]
+    temp_bigReshape1 = np.array(take_big1).reshape(len(take_big1),61,posLen)
+    take_sub2 = ref_sub[ref_sub[len(sub_matF)-1] == 1].index
+    take_big2 = sub_big.loc[take_sub2]
+    temp_bigReshape2 = np.array(take_big2).reshape(len(take_big2),61,posLen)
+
+    # Significance for Bar plots
+    bar_sig = []; bar_names = []
+    for i in np.arange(4):
+        propF = i+1
+        data1 = np.average(temp_bigReshape1[:,propF,:],axis=1)
+        data2 = np.average(temp_bigReshape2[:,propF,:],axis=1)
+        p = aims.do_statistics(data1,data2,num_reps=10000,test='average')
+        bar_sig = bar_sig + [p]
+        bar_names = bar_names + [prop_names[i]]
+        print('p-value for '+prop_names[i]+' bar plot: '+str(p))
+    BARsigF = np.vstack((bar_names,bar_sig))
+    pandas.DataFrame(BARsigF).to_csv(outputDir+'/bar_sig.csv',index=False)
 
 
 # # Section 13: Position-Sensitive Averaged Biophysical Properties
@@ -820,16 +1031,31 @@ pl.savefig(outputDir+'/AIMS_'+subset_sel+'_netAvgProp.pdf',format='pdf')
 fig, ax = pl.subplots(2, 1,squeeze=False,figsize=(14,10))
 prop_sel = [1,2]
 full_avg = []; full_std = []
+
 for dat in np.arange(len(sub_sels)):
-    a = 0
+    a=0
     for prop in prop_sel:
         take_sub = ref_sub[ref_sub[len(sub_matF)-1] == dat].index
         take_big = sub_big.loc[take_sub]
         temp_bigReshape = np.array(take_big).reshape(len(take_big),61,posLen)
-        plot_avg = np.average(temp_bigReshape[:,prop,:],axis=0)
-        plot_std = np.average(temp_bigReshape[:,prop,:],axis=0)
+        if bootstrap:
+            prop_avg = []
+            for i in np.arange(boots):
+                re_big = resample(temp_bigReshape)
+                prop_avg.append(np.average(re_big[:,prop,:],axis=0))
+            fin_avg = np.average(prop_avg,axis=0)
+            fin_std = np.std(prop_avg,axis=0)
+            ax[a,0].plot(fin_avg,marker='o',linewidth=2.5,color=colors[dat])
+            ax[a,0].fill_between(np.arange(len(fin_avg)),fin_avg+fin_std,fin_avg-fin_std,alpha=0.3,color=colors[dat])
+        else:
+            take_sub = ref_sub[ref_sub[len(sub_matF)-1] == dat].index
+            take_big = sub_big.loc[take_sub]
+            temp_bigReshape = np.array(take_big).reshape(len(take_big),61,posLen)
+            plot_avg = np.average(temp_bigReshape[:,prop,:],axis=0)
+            plot_std = np.std(temp_bigReshape[:,prop,:],axis=0)
 
-        ax[a,0].plot(plot_avg,marker='o',linewidth=2.5)
+            ax[a,0].plot(plot_avg,marker='o',linewidth=2.5,color=colors[dat])
+            ax[a,0].fill_between(np.arange(len(plot_avg)),plot_avg+plot_std,plot_avg-plot_std,alpha=0.3,color=colors[dat])
         a+=1
 
 # Draw some nice lines to guide 
@@ -839,10 +1065,58 @@ if type(mat_size) != int:
         ax[0,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100),np.linspace(y11,y12,100),'black',linewidth = 3)
         ax[1,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100),np.linspace(y21,y22,100),'black',linewidth = 3)
 
-pl.legend(label)
+legend_elements=[]
+for j in np.arange(len(sub_sels)):
+    element = [Line2D([0], [0], marker='o', color='w', label=label[j],markerfacecolor=colors[j], markersize=10)]
+    legend_elements = legend_elements+element
+pl.legend(handles=legend_elements,ncol=len(sub_sels))
+
 ax[0,0].set_ylabel('Normalized Charge')
 ax[1,0].set_ylabel('Normalized Hydropathy')
+if type(mat_size)==int:
+    ax[0,0].set_xlim([-0.5,mat_size-0.5])
+    ax[1,0].set_xlim([-0.5,mat_size-0.5])
+else:
+    ax[0,0].set_xlim([-0.5,sum(mat_size)-0.5])
+    ax[1,0].set_xlim([-0.5,sum(mat_size)-0.5])
+
+pl.xlabel('Sequence Position')
 pl.savefig(outputDir+'/AIMS_posSensAvg.pdf',format='pdf')
+pl.close()
+
+##########################################################################
+# Calculating statistical significance
+if DOstats:
+    fig, ax = pl.subplots(2, 1,squeeze=False,figsize=(16,10))
+    take_sub1 = ref_sub[ref_sub[len(sub_matF)-1] == 0].index
+    take_big1 = sub_big.loc[take_sub1]
+    temp_bigReshape1 = np.array(take_big1).reshape(len(take_big1),61,posLen)
+    take_sub2 = ref_sub[ref_sub[len(sub_matF)-1] == 1].index
+    take_big2 = sub_big.loc[take_sub2]
+    temp_bigReshape2 = np.array(take_big2).reshape(len(take_big2),61,posLen)
+
+    a=0
+    for propF in prop_sel:
+        #Significance for position-sensitive
+        data1 = temp_bigReshape1[:,propF,:]
+        data2 = temp_bigReshape2[:,propF,:]
+
+        p = aims.do_statistics(data1,data2,num_reps=10000,test='average')
+        ax[a,0].plot(p,color='black',marker='o')
+        ax[a,0].plot(np.arange(np.shape(data1)[1]),np.ones(np.shape(data1)[1])*0.05,linewidth=3,color='red')
+        a+=1
+
+    y11, y12 = ax[0,0].get_ylim();y21, y22 = ax[1,0].get_ylim()
+    if type(mat_size) != int:
+        for i in np.arange(len(mat_size)-1):
+            ax[0,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100),np.linspace(y11,y12,100),'black',linewidth = 3,linestyle='--')
+            ax[1,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100),np.linspace(y21,y22,100),'black',linewidth = 3,linestyle='--')
+
+    pl.xlabel('Sequence Position')
+    ax[0,0].set_ylabel('Charge p-value')
+    ax[1,0].set_ylabel('Hydropathy p-value')
+    pl.savefig(outputDir+'/AIMS_PosSens_pval.pdf',format='pdf')
+    pl.close()
 
 
 # # Section 14: Information Theoretic Calculations
@@ -852,23 +1126,61 @@ pl.savefig(outputDir+'/AIMS_posSensAvg.pdf',format='pdf')
 
 # In[21]:
 
-
 # Calculate the Shannon Entropy, a proxy for diversity
-fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
+fig = pl.figure(figsize=(16,8))
+gs = gridspec.GridSpec(2, 1,height_ratios=[1,4])
+
+ax1 = pl.subplot(gs[0])
+ax2 = pl.subplot(gs[1])
+
 poses = len(seq_MIf)
-entropy = []; frequencies = []
+entropy = []; frequencies = []; coverage=[]
 for dat in np.arange(len(sub_sels)):
-    temp_MI = sub_matF[ref_sub[ref_sub[len(sub_matF)-1] == dat].index]
-    entropy_pre,freq_pre = aims.calculate_shannon(np.transpose(np.array(temp_MI)))
-    pl.plot(entropy_pre,marker='o',linewidth=2.5)
-    entropy.append(entropy_pre); frequencies.append(freq_pre)
+    temp_MI = sub_matF[ref_sub[ref_sub[len(sub_matF)-1] == dat].index].iloc[0:-1]
+    if bootstrap:
+        boot_entropy = []; boot_frequencies = []; boot_cov = []
+        for i in np.arange(boots):
+            re_MI = resample(np.transpose(np.array(temp_MI)))
+            entropy_pre,freq_pre,cov_pre = aims.calculate_shannon(re_MI)
+            boot_entropy.append(entropy_pre); boot_frequencies.append(freq_pre)
+            boot_cov.append(cov_pre)
+        ent_avg = np.average(boot_entropy,axis=0)
+        ent_std = np.std(boot_entropy,axis=0)
+        freq_avg = np.average(boot_frequencies,axis=0)
+        cov_avg = np.average(boot_cov,axis=0)
+        ax2.plot(ent_avg,marker='o',linewidth=2.5,color=colors[dat])
+        pl.fill_between(np.arange(len(ent_avg)),ent_avg+ent_std,ent_avg-ent_std,alpha=0.3,color=colors[dat])
+        entropy.append(ent_avg); frequencies.append(freq_avg); coverage.append(1-cov_avg)
+    else:
+        entropy_pre,freq_pre,cov_pre = aims.calculate_shannon(np.transpose(np.array(temp_MI)))
+        ax2.plot(entropy_pre,marker='o',linewidth=2.5,color=colors[dat])
+        entropy.append(entropy_pre); frequencies.append(freq_pre); coverage.append(1-cov_pre)
+
+ax1.imshow(coverage,aspect='auto',interpolation='nearest',cmap='Greys')
 
 pl.legend(label); pl.xlabel('Sequence Position'); pl.ylabel('Shannon Entropy (Bits)')
 
 if type(mat_size) != int:
     for i in np.arange(len(mat_size)-1):
-        ax[0,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100),np.linspace(0,4.2,100),'black',linewidth = 3)
+        ax2.plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100),np.linspace(0,4.2,100),'black',linewidth = 3)
 pl.savefig(outputDir+'/AIMS_entropy.pdf',format='pdf')
+pl.close()
+
+############# Do stats? #############
+if DOstats:
+    data1 = sub_matF[ref_sub[ref_sub[len(sub_matF)-1] == 0].index].iloc[0:-1]
+    data2 = sub_matF[ref_sub[ref_sub[len(sub_matF)-1] == 1].index].iloc[0:-1]
+    p_ent = aims.do_statistics(data1,data2,num_reps=1000,test='function',test_func=aims.calculate_shannon,func_val = 0)
+
+    fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(10,8))
+    pl.plot(p_ent,color='black',marker='o',linewidth=2.5)
+    pl.plot(np.arange(len(p_ent)),np.ones(len(p_ent))*0.05,color='red',linewidth=3)
+
+    pl.xlabel('Sequence Position')
+    pl.ylabel('p-value')
+
+    pl.savefig(outputDir+'/aims_entropy_pval.pdf',format='pdf')
+    pl.close()
 
 
 # # NOTE: The Mutual Information Calculation Can Be Quite Slow
@@ -901,7 +1213,54 @@ if type(mat_size) != int:
             ax[0,j].plot( np.linspace(0,poses,100), (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100) ,'black',linewidth = 3)
 
 pl.savefig(outputDir+'/AIMS_MI.pdf',format='pdf')
+pl.close()
 
+
+#####################################################
+# Amino acid frequency comparison for each individual dataset
+
+# Calculate the probabilities of seeing each amino acid at each position
+fig, ax = pl.subplots(1, 2,squeeze=False,figsize=(18,10))
+#pl.title(str(label[0])+ ' AA Frequency - ' + str(label[1]) + ' AA Frequency')
+
+AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
+
+freq1 = pandas.DataFrame(frequencies[0][:,1:])
+freq2 = pandas.DataFrame(frequencies[1][:,1:])
+# Remember that the "frequencies" are calculated with your custom
+# key in mind! So you need to carry that down here
+if custom_key:
+    freq1.columns = my_AA_key
+    freq2.columns = my_AA_key 
+    fin_key = my_AA_key
+else:
+    freq1.columns = AA_key
+    freq2.columns = AA_key
+    fin_key = AA_key
+
+x=ax[0,0].pcolormesh(freq1,vmin=0,vmax=0.25,cmap=cm.Greys)
+x=ax[0,1].pcolormesh(freq2,vmin=0,vmax=0.25,cmap=cm.Greys)
+
+#pl.colorbar(x); pl.ylabel('Sequence Position')
+xax=pl.setp(ax,xticks=np.arange(20)+0.5,xticklabels=fin_key)
+
+place=0
+if type(mat_size) == int:
+    pl.plot(np.arange(21),place*np.ones(21),'black')
+else:
+    for i in mat_size:
+        place += i
+        ax[0,0].plot(np.arange(21),place*np.ones(21),'black')
+        ax[0,1].plot(np.arange(21),place*np.ones(21),'black')
+
+ax[0,0].set_xlabel("Amino Acid")
+ax[0,1].set_xlabel("Amino Acid")
+ax[0,0].set_ylabel("Sequence Position")
+ax[0,1].set_ylabel("Sequence Position")
+
+#pl.colorbar(x)
+pl.savefig(outputDir+'/AIMS_freq_sides.pdf',format='pdf')
+pl.close()
 
 # # Section 15: Binary Comparisons Between Datasets
 # Anything from here on requires a comparison between only two datasets. This can be two clusters, two loaded in files, two metadata subsets, whatever.
@@ -923,9 +1282,8 @@ elif abs(max_temp) > abs(min_temp):
 else:
     propMin = min_temp
     propMax = max_temp
-x = pl.imshow(MI[0] - MI[1], cmap=cm.PiYG, vmin = propMin, vmax = propMax)
+x = pl.imshow(MI[0] - MI[1], cmap=cm.PuOr, vmin = propMin, vmax = propMax)
 pl.colorbar(x); pl.title(str(label[0])+ ' MI - ' + str(label[1]) + ' MI')
-
 # Help Guide the eyes a bit
 if type(mat_size) != int:
     for i in np.arange(len(mat_size)-1):
@@ -934,6 +1292,32 @@ if type(mat_size) != int:
 
 pl.xlabel('Sequence Position'); pl.ylabel('Sequence Position')
 pl.savefig(outputDir+'/AIMS_MIdiff.pdf',format='pdf')
+pl.close()
+
+###############################################################
+# Do stats?
+if DOstats:
+    data1 = sub_matF[ref_sub[ref_sub[len(sub_matF)-1] == 0].index].iloc[0:-1]
+    data2 = sub_matF[ref_sub[ref_sub[len(sub_matF)-1] == 1].index].iloc[0:-1]
+    p_MI = aims.do_statistics(data1,data2,num_reps=MIboots,test='function',test_func=aims.calculate_MI,func_val = 0)
+
+    dim1, dim2 = np.shape(p_MI)
+    alpha = 0.05
+
+    empty_mat_mi = np.zeros((dim1,dim2))
+    for a in np.arange(dim1):
+        for b in np.arange(dim2):
+            if p_MI[a,b] < alpha:
+                empty_mat_mi[a,b] = 1
+
+    fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(10,8))
+
+    x= pl.imshow(empty_mat_mi,cmap=cm.Greys)
+    pl.xlabel('Sequence Position')
+    pl.ylabel('Sequence Position')
+
+    pl.savefig(outputDir+'/AIMS_MIdiff_sig.pdf',format='pdf')
+    pl.close()
 
 
 # In[24]:
@@ -942,12 +1326,13 @@ pl.savefig(outputDir+'/AIMS_MIdiff.pdf',format='pdf')
 # Calculate the probabilities of seeing each amino acid at each position
 fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
 pl.title(str(label[0])+ ' AA Frequency - ' + str(label[1]) + ' AA Frequency')
-freqMax = np.max(frequencies[0][:,1:]-frequencies[1][:,1:]); freqMin = np.min(frequencies[0][:,1:]-frequencies[1][:,1:])
+freqMax = np.max(freq1.values-freq2.values); freqMin = np.min(freq1.values-freq2.values)
 freqBound = max(abs(freqMax),abs(freqMin))
-x=ax[0,0].pcolormesh(frequencies[0][:,1:]-frequencies[1][:,1:],vmin=-freqBound,vmax=freqBound,cmap=cm.PiYG)
+
+x=ax[0,0].pcolormesh(freq1-freq2,vmin=-freqBound,vmax=freqBound,cmap=cm.PuOr)
 AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
 pl.colorbar(x); pl.ylabel('Sequence Position')
-xax=pl.setp(ax,xticks=np.arange(20)+0.5,xticklabels=AA_key)
+xax=pl.setp(ax,xticks=np.arange(20)+0.5,xticklabels=fin_key)
 
 place=0
 if type(mat_size) == int:
@@ -958,6 +1343,38 @@ else:
         pl.plot(np.arange(21),place*np.ones(21),'black')
 
 pl.savefig(outputDir+'/AIMS_freqDiff.pdf',format='pdf')
+pl.close()
+
+if DOstats:
+    data1 = sub_matF[ref_sub[ref_sub[len(sub_matF)-1] == 0].index].iloc[0:-1]
+    data2 = sub_matF[ref_sub[ref_sub[len(sub_matF)-1] == 1].index].iloc[0:-1]
+    p_freq = aims.do_statistics(data1,data2,num_reps=1000,test='function',test_func=aims.calculate_shannon,func_val = 1)
+
+    dim1, dim2 = np.shape(p_freq)
+    alpha = 0.05
+
+    AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
+
+    empty_mat = np.zeros((dim1,dim2))
+    for a in np.arange(dim1):
+        for b in np.arange(dim2):
+            if p_freq[a,b] < alpha:
+                empty_mat[a,b] = 1
+
+    # Need stuff to optionally shift around the x-axis:
+    empty_frame = pandas.DataFrame(empty_mat[:,1:])
+    if custom_key:
+        empty_frame.columns = my_AA_key
+    else:
+        empty_frame.columns = AA_key
+
+    fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(10,8))
+    x = pl.pcolormesh(empty_frame,cmap=cm.Greys)
+    xax=pl.setp(ax,xticks=np.arange(20)+0.5,xticklabels=fin_key)
+    pl.ylabel('Sequence Position')
+    pl.xlabel('Amino Acid')
+    pl.savefig(outputDir+'/aa_diff_statSig.pdf',format='pdf')
+    pl.close()
 
 
 # # Alright Now We Need to Bring Back in Linear Discriminant Analysis
@@ -990,6 +1407,7 @@ sns.swarmplot(x="Dataset", y="Linear Discriminant 1", data=df1, hue = 'Reactivit
 print("Classification Accuracy")
 print(acc_all)
 pl.savefig(outputDir+'/AIMS_LDA.pdf',format='pdf')
+pl.close()
 
 
 # In[26]:
@@ -1010,6 +1428,7 @@ bigass_parse_dset = pandas.concat([dset_parse,dset_ID],axis = 1)
 try:
     sns.pairplot(bigass_parse_dset,hue = 'ID')
     pl.savefig(outputDir+'/AIMS_pairplot.pdf',format='pdf')
+    pl.close()
 except:
     print("Pairplot failed")
 
@@ -1021,6 +1440,7 @@ except:
 
 
 # Need to get back just our sequences of interest.
+# Need to get back just our sequences of interest.
 seq1 = sub_seqF.loc[ref_sub[ref_sub[len(sub_matF)-1] == 0].index]
 seq2 = sub_seqF.loc[ref_sub[ref_sub[len(sub_matF)-1] == 1].index]
 # Calculate both position-insensitive amino acid frequency and digram frequencies
@@ -1028,15 +1448,41 @@ seq2 = sub_seqF.loc[ref_sub[ref_sub[len(sub_matF)-1] == 1].index]
 AA_freq_all1, digram_all1 = aims.full_AA_freq(seq1,norm='num_AA')
 AA_freq_all2, digram_all2 = aims.full_AA_freq(seq2,norm='num_AA')
 
+freqAll1 = np.transpose(pandas.DataFrame(AA_freq_all1))
+freqAll1.columns = AA_key
+freqAll2 = np.transpose(pandas.DataFrame(AA_freq_all2))
+freqAll2.columns = AA_key
+
+freqAll1_df = freqAll1[fin_key]
+freqAll2_df = freqAll2[fin_key]
+
 fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
-ax[0,0].bar(np.arange(len(AA_freq_all1)),AA_freq_all1, color='blue',alpha=0.5)
-ax[0,0].bar(np.arange(len(AA_freq_all2)),AA_freq_all2,color='red',alpha=0.5)
-xax=pl.setp(ax,xticks=np.arange(20),xticklabels=AA_key)
+ax[0,0].bar(np.arange(len(AA_freq_all1)),freqAll1_df.values[0], color=colors[0],alpha=0.5)
+ax[0,0].bar(np.arange(len(AA_freq_all2)),freqAll2_df.values[0],color=colors[1],alpha=0.5)
+xax=pl.setp(ax,xticks=np.arange(20),xticklabels=fin_key)
 ax[0,0].legend([label[0],label[1]])
-#ax[1,0].legend([label[2],label[3]])
 pl.ylabel('Frequency')
 pl.xlabel('Amino Acid')
 pl.savefig(outputDir+'/AIMS_AAnetProb.pdf',format='pdf')
+pl.close()
+
+#########################################################
+if DOstats:
+    data1 = seqF[ref_sub[ref_sub[len(sub_matF)-1] == 0].index]
+    data2 = seqF[ref_sub[ref_sub[len(sub_matF)-1] == 1].index]
+
+    p_freq = aims.do_statistics(data1,data2,num_reps=boots,test='function',test_func=aims.full_AA_freq,func_val = 0)
+
+    p_df = np.transpose(pandas.DataFrame(p_freq))
+    p_df.columns = AA_key
+    p_df_fin = p_df[fin_key]
+
+    fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
+    pl.plot(p_df_fin.values[0],marker='o',linewidth=3,color='black')
+    pl.plot(np.arange(20),np.ones(20)*0.05,linewidth=3,color='red')
+    xax=pl.setp(ax,xticks=np.arange(20),xticklabels=fin_key)
+    pl.savefig(outputDir+'/AIMS_AAnetProb_pval.pdf',format='pdf')
+    pl.close()
 
 
 # # Plot the Digram Frequencies Per Sequence (or per AA)
@@ -1046,27 +1492,36 @@ pl.savefig(outputDir+'/AIMS_AAnetProb.pdf',format='pdf')
 
 # In[28]:
 
-
 fig, ax = pl.subplots(int(len(label)/2), 2,squeeze=False,figsize=(16,12))
 plot_max = np.max([np.max(digram_all1),np.max(digram_all2)])
 
 ax[0,0].set_title(str(label[0])+ ' Digram Frequency')
 ax[0,1].set_title(str(label[1])+ ' Digram Frequency')
-x1 = ax[0,0].imshow(digram_all1,  cmap = cm.Greys,vmin=0,vmax=plot_max)
-x2 = ax[0,1].imshow(digram_all2,  cmap = cm.Greys,vmin=0,vmax=plot_max)
 
-xax=pl.setp(ax[0,0],xticks=np.arange(20),xticklabels=AA_key)
-yax=pl.setp(ax[0,0],yticks=np.arange(20),yticklabels=AA_key)
-xax=pl.setp(ax[0,1],xticks=np.arange(20),xticklabels=AA_key)
-yax=pl.setp(ax[0,1],yticks=np.arange(20),yticklabels=AA_key)
+# Again for potentially altering the AA axis how you want:
+digAll1 = pandas.DataFrame(digram_all1)
+digAll1.columns = AA_key; digAll1.index = AA_key
+digAll2 = pandas.DataFrame(digram_all2)
+digAll2.columns = AA_key; digAll2.index = AA_key
+
+digF1 = digAll1[fin_key].loc[fin_key]
+digF2 = digAll2[fin_key].loc[fin_key]
+
+x1 = ax[0,0].imshow(digF1,  cmap = cm.Greys,vmin=0,vmax=plot_max)
+x2 = ax[0,1].imshow(digF2,  cmap = cm.Greys,vmin=0,vmax=plot_max)
+
+xax=pl.setp(ax[0,0],xticks=np.arange(20),xticklabels=fin_key)
+yax=pl.setp(ax[0,0],yticks=np.arange(20),yticklabels=fin_key)
+xax=pl.setp(ax[0,1],xticks=np.arange(20),xticklabels=fin_key)
+yax=pl.setp(ax[0,1],yticks=np.arange(20),yticklabels=fin_key)
 
 fig.colorbar(x1, ax=ax[0, 0], shrink=0.5)
 fig.colorbar(x2, ax=ax[0, 1], shrink=0.5)
-pl.savefig(outputDir+'/AIMS_digram.pdf',format='pdf')
+pl.savefig(outputDir+'/AIMS_digram_sep.pdf',format='pdf')
+pl.close()
 
 
 # In[29]:
-
 
 # Look at the difference in these digram frequencies
 # For now, hard to say if these are necessarily significant, 
@@ -1084,11 +1539,44 @@ elif abs(max_temp) > abs(min_temp):
 else:
     propMin = min_temp
     propMax = max_temp
-zzz = pl.imshow(digram_all2-digram_all1, vmin = propMin, vmax = propMax, cmap = cm.bwr)
-xax=pl.setp(ax,xticks=np.arange(20),xticklabels=AA_key)
-yax=pl.setp(ax,yticks=np.arange(20),yticklabels=AA_key)
+zzz = pl.imshow(digF1-digF2, vmin = propMin, vmax = propMax, cmap = cm.PuOr)
+xax=pl.setp(ax,xticks=np.arange(20),xticklabels=fin_key)
+yax=pl.setp(ax,yticks=np.arange(20),yticklabels=fin_key)
 ax[0,0].set_ylabel('First Amino Acid')
 ax[0,0].set_xlabel('Second Amino Acid')
 pl.colorbar(zzz)
 pl.savefig(outputDir+'/AIMS_digramDiff.pdf',format='pdf')
+pl.close()
 
+##################################################
+# Do statistics?
+if DOstats:
+    data1 = seqF[ref_sub[ref_sub[len(sub_matF)-1] == 0].index]
+    data2 = seqF[ref_sub[ref_sub[len(sub_matF)-1] == 1].index]
+
+    p_digram = aims.do_statistics(data1,data2,num_reps=1000,test='function',test_func=aims.full_AA_freq,func_val = 1)
+
+    dim1, dim2 = np.shape(p_digram)
+    alpha = 0.05
+
+    empty_mat_digram = np.zeros((dim1,dim2))
+    for a in np.arange(dim1):
+        for b in np.arange(dim2):
+            if p_digram[a,b] < alpha:
+                empty_mat_digram[a,b] = 1
+
+    fin_key = my_AA_key
+
+    empty_dig = pandas.DataFrame(empty_mat_digram)
+    empty_dig.columns = AA_key; empty_dig.index = AA_key
+    empty_digF = empty_dig[fin_key].loc[fin_key]
+
+    fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(10,8))
+    pl.title('Peptide Digram Difference Stat. Sig.')
+    x= pl.imshow(empty_digF,cmap=cm.Greys)
+    xax=pl.setp(ax,xticks=np.arange(20),xticklabels=fin_key)
+    xax=pl.setp(ax,yticks=np.arange(20),yticklabels=fin_key)
+    ax[0,0].set_ylabel('First Amino Acid')
+    ax[0,0].set_xlabel('Second Amino Acid')
+    pl.savefig(outputDir+'/digram_diff_sig.pdf',format='pdf')
+    pl.close()
