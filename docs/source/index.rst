@@ -32,6 +32,10 @@ AIMS is a python package distributed in both a notebook and GUI format. Those wi
 
    Boughter CT, Borowska MT, Guthmiller JJ, Bendelac A, Wilson PC, Roux B, Adams EJ. Biochemical Patterns of Antibody Polyreactivity Revealed Through a Bioinformatics-Based Analysis of CDR Loops. eLife. 2020. DOI: 10.7554/eLife.61393
 
+   &
+
+   Boughter CT, Meier-Schellersheim M. An Integrated Approach to the Characterization of Immune Repertoires Using AIMS\: An Automated Immune Molecule Separator. BioRxiv. 2022. DOI: 10.1101/2022.12.07.519510
+
 Contents
 --------
 
