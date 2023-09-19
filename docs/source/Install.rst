@@ -44,6 +44,7 @@ Use terminal to navigate into the newly downloaded folder. If you've never used 
 When I do this, my terminal line reads: 
 
 .. code-block:: python
+    
     cd /Users/boughter/Desktop/AIMS-master
 
 Hopefully you see something similar (replacing my user name with your own, and noting that "AIMS-master" may simply be "AIMS" if you cloned the repository rather than downloading the zip), and when you hit enter you can move to the next step.
