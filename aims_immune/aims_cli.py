@@ -21,6 +21,7 @@ from aims_immune import aims_classification as classy
 import matplotlib.gridspec as gridspec
 from sklearn.utils import resample
 import argparse
+import distutils
 
 # This bit is for that figure formatting. Change font and font size if desired
 font = {'family' : 'Arial',
@@ -54,14 +55,14 @@ def main():
     parser.add_argument("-a","--align",help="Sequence alignment scheme [string]",required=False,default='center',type=str)
     # Need to fix this so the default is the shape of the input file
     parser.add_argument("-nl","--numLoop",help="Number of loops for Ig [int]",required=False,default=1,type=int)
-    parser.add_argument("-dp","--dropDup",help="Drop duplicate sequences? [T/F]",required=False,default=False,type=bool)
-    parser.add_argument("-p","--parallel",help="Turn on Parallel Processing? [T/F]",required=False,default=False,type=bool)
-    parser.add_argument("-s","--subset",help="Take a subset of input data? [T/F]",required=False,default=False,type=bool)
+    parser.add_argument("-dp","--dropDup",help="Drop duplicate sequences? [T/F]",required=False,default=False,type=distutils.util.strtobool)
+    parser.add_argument("-p","--parallel",help="Turn on Parallel Processing? [T/F]",required=False,default=False,type=distutils.util.strtobool)
+    parser.add_argument("-s","--subset",help="Take a subset of input data? [T/F]",required=False,default=False,type=distutils.util.strtobool)
     parser.add_argument("-ss","--subStart",help="Start points for data subset [list of ints]",required=False,default=[],type=int,nargs='*')
     parser.add_argument("-se","--subEnd",help="End points for data subset [list of ints]",required=False,default=[],type=int,nargs='*')
     parser.add_argument("-bp","--bulgePad",help="Padding for bulge format [int]",required=False,default=8,type=int)
-    parser.add_argument("-np","--normProp",help="Normalize biophysical properties? [T/F]",required=False,default=True,type=bool)
-    parser.add_argument("-rn","--REnorm",help="Renormalize BPHYS mat by entropy? [T/F]",required=False,default=True,type=bool)
+    parser.add_argument("-np","--normProp",help="Normalize biophysical properties? [T/F]",required=False,default=True,type=distutils.util.strtobool)
+    parser.add_argument("-rn","--REnorm",help="Renormalize BPHYS mat by entropy? [T/F]",required=False,default=True,type=distutils.util.strtobool)
     parser.add_argument("-cd","--clustData",help="Data format for dim. red. and clustering [string]",required=False,default='parse',type=str)
     parser.add_argument("-pa","--projAlg",help="Algorithm for data projection [string]",required=False,default='pca',type=str)
     parser.add_argument("-us","--umapSeed",help="Random seed for UMAP projection [int]",required=False,default=[],type=int)
@@ -73,10 +74,11 @@ def main():
     
     ##################################################
     # NEW FEATURES!!!! Woohoo
-    parser.add_argument("-ds","--DOstats",help="Run statistics for relevant analysis? [T/F]",required=False,default=False,type=bool)
-    parser.add_argument("-db","--DOboot",help="Run bootstrapping for relevant analysis? [T/F]",required=False,default=False,type=bool)
-    parser.add_argument("-gd","--GETdist",help="Run AIMSdist calculations? [T/F]",required=False,default=False,type=bool)
-    parser.add_argument("-pp","--Plotprops",help="Plot biophysical properties for clusters? [T/F]",required=False,default=False,type=bool)
+    parser.add_argument("-ds","--DOstats",help="Run statistics for relevant analysis? [T/F]",required=False,default=False,type=distutils.util.strtobool)
+    parser.add_argument("-db","--DOboot",help="Run bootstrapping for relevant analysis? [T/F]",required=False,default=False,type=distutils.util.strtobool)
+    parser.add_argument("-gd","--GETdist",help="Run AIMSdist calculations? [T/F]",required=False,default=False,type=distutils.util.strtobool)
+    parser.add_argument("-gd","--PARdist",help="Make AIMSdist calc parallel? [T/F] (must specify --GETdist True)",required=False,default=False,type=distutils.util.strtobool)
+    parser.add_argument("-pp","--Plotprops",help="Plot biophysical properties for clusters? [T/F]",required=False,default=False,type=distutils.util.strtobool)
     parser.add_argument("-bt","--boots",help="How many bootstrap replicase should run? [int]",required=False,default=1000,type=int)
     parser.add_argument("-mi","--MIboots",help="How many MI bootstrap replicas should run? [int]",required=False,default=10,type=int)
     parser.add_argument("-aa","--AAorder",help="Order of amino acids for figures [single string of 20]",required=False,default='',type=str)
@@ -85,18 +87,18 @@ def main():
     # # # # # # # # # # # # 
     parser.add_argument("-sp","--showProj",help="Show 2D or 3D data projections [string]",required=False,default='both',type=str)
     parser.add_argument("-sc","--showClust",help="Show metadata or clustering [string]",required=False,default='both',type=str)
-    parser.add_argument("-nb","--normBar",help="Normalize cluster purity bar plots? [T/F]",required=False,default=True,type=bool, nargs=1)
+    parser.add_argument("-nb","--normBar",help="Normalize cluster purity bar plots? [T/F]",required=False,default=True,type=distutils.util.strtobool, nargs=1)
     parser.add_argument("-as","--analysisSel",help="Select the data subset type to further analyze [cluster or metadata]",required=False,default='cluster',type=str)
-    parser.add_argument("-lo","--seqlogo",help = "Want to create seqlogo plots? [T/F]",required=False,default=False,type=bool)
+    parser.add_argument("-lo","--seqlogo",help = "Want to create seqlogo plots? [T/F]",required=False,default=False,type=distutils.util.strtobool)
     parser.add_argument("-ln","--logoNum",help = "What sequence length do you want to generate seqlogos for? [int]",required=False,default=14,type=int)
-    parser.add_argument("-sv","--saveSeqs",help = "Want to save clustered sequences in separate files? [T/F]",required=False,default=False,type=bool)
+    parser.add_argument("-sv","--saveSeqs",help = "Want to save clustered sequences in separate files? [T/F]",required=False,default=False,type=distutils.util.strtobool)
     parser.add_argument("-sd","--selDat",help="Specify which precisely which data subsets you want to further analyze [list of ints]",
                         required=False, type=int, nargs='*', default=[0,1])
     parser.add_argument("-p1","--prop1",help="Biophysical property of choice to analyze [int]", required=False,default=1,type=int)
     parser.add_argument("-p2","--prop2",help="Biophysical property of choice to analyze [int]", required=False,default=2,type=int)
     parser.add_argument("-ms","--matSize",help="Matrix size for linear discriminant analysis [int]", required=False,default=10,type=int)
     # Debugging functions:
-    parser.add_argument("-sl","--showLabel",help="Show on projections? [T/F]",required=False,default=False,type=bool)
+    parser.add_argument("-sl","--showLabel",help="Show on projections? [T/F]",required=False,default=False,type=distutils.util.strtobool)
 
     args = parser.parse_args()
     return(args)
@@ -173,6 +175,7 @@ def run():
         quit()
     colors = args.colors
     GETdist= args.GETdist
+    parallel_dist = args.PARdist
     plot_props = args.Plotprops
     ############################################
 
@@ -608,8 +611,8 @@ def run():
             ax[num].annotate(str(plot_labels[a]),xy=(i,j),fontsize=14)
             a+=1
 
-        pl.savefig(outputDir+'/AIMS_projections.png',format='png')
-        pl.close()
+    pl.savefig(outputDir+'/AIMS_projections.png',format='png')
+    pl.close()
 
     # # Section 7: Quantify Cluster Compositions
     # This step might be meaningless if you don't have ANY metadata to go off of, and/or are not comparing/contrasting two datasets. This is fine, you should still run this step to make sure that everything is properly defined
@@ -742,9 +745,7 @@ def run():
 
     ###############################################################
     # NEW: AIMSDIST!
-    # Currently having a weird issue where "False" is being interpreted as true...
     if GETdist:
-        parallel_dist = True
         get_distClusts = True
 
         for i in chosen_map.sort_values(chosen_name).drop_duplicates().values:

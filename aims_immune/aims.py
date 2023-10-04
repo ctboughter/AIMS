@@ -1233,9 +1233,9 @@ class Analysis(Screen):
 
         # Let users define their own colormaps. This should also allow for an easy reset (I hope)
         if len(user_cmap1) != 1:
-            cmap_discrete_fin[0] = user_cmap1
+            cmap_discrete_fin[sel1] = user_cmap1
         if len(user_cmap2) != 1:
-            cmap_discrete_fin[1] = user_cmap2
+            cmap_discrete_fin[sel2] = user_cmap2
 
         # Also let users define the properties
         prop_dict = {'Charge':1,'Hydropathy':2, 'Flexibility':4, 'Bulk':3}
