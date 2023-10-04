@@ -7,6 +7,12 @@ This section will provide a step-by-step walkthrough outlining how to use the AI
 .. note::
    Some of the screenshots may differ slightly from the current AIMS GUI, but the walkthrough still captures the core features needed to understand the GUI
 
+As a reminder, in the new pip-based installation of AIMS, the GUI is called from your current directory simply using:
+
+.. code-block:: python
+
+   aims-gui
+
 When launching the GUI, this screen should be the first thing that you see:
 
 .. figure:: screenshots/0launch.png
@@ -30,7 +36,7 @@ Assuming the input data is already properly formatted, everything should easily 
 Once you click one of those light gray “Load File” buttons, you should get a screen that looks like the image in the second panel. From this, you can click through your directories and select the file you want to load in. If the file has been properly loaded, the File Path should be updated to reflect the file location.
 
 .. note::
-   If following along with this walkthrough, select the "ab_testData" directory and load in flu_mono.csv and flu_poly.csv
+   If following along with this walkthrough, select the "test_data/abs" directory and load in flu_mono.csv and flu_poly.csv
 
 If you would like to analyze only one dataset using AIMS, change the "ON/OFF" switch in the top right-hand corner to "ON". Otherwise, the AIMS GUI will require at least two datasets to be loaded into the analysis. Additionally, if the data of interest is spread across more than four files, click the "add more files" option to increase the number of file slots on the screen. As of AIMS_0.5.5, a max of 9 files may be analyzed at once.
 

@@ -1,0 +1,254 @@
+#:kivy 1.8.0
+Analysis:
+    img14: screen14_img
+    aname1: An1
+    aname2: An2
+    aname3: An3
+    aname4: An4
+    aname5: An5
+    aname6: An6
+    aname7: An7
+    aname8: An8
+    aname9: An9
+    aname10: An10
+    aweight1: Aw1   
+    aweight2: Aw2
+    aweight3: Aw3
+    aweight4: Aw4
+    aweight5: Aw5
+    aweight6: Aw6   
+    aweight7: Aw7
+    aweight8: Aw8
+    aweight9: Aw9
+    aweight10: Aw10
+    inputLDA:inputLDA
+
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.4, 0.9
+        pos_hint: {'center_x': 0.81, 'center_y': 0.53}
+        keep_ratio: False
+        allow_stretch: True
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size_hint: 0.5, 0.075
+        pos_hint: {'center_x': 0.32, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.32, 'center_y': 0.95}
+        height: '32dp'
+        text: 'Step14 - Linear Discriminant Analysis'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.875}
+        height: '32dp'
+        text:'LD1 Name'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.875}
+        height: '32dp'
+        text:'LD1 Weight'
+        font_name: 'app_data/Poppins-Medium.ttf'
+    # Now lets have our placeholders for our top 5 props
+    Label:
+        id: An1
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.775}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw1
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.775}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An2
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.725}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw2
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.725}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An3
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.675}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw3
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.675}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An4
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.625}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw4
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.625}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An5
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.575}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw5
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.575}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An6
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.525}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw6
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.525}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An7
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.475}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw7
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.475}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An8
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.425}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw8
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.425}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An9
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.375}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw9
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.375}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: An10
+        size_hint: None , None
+        pos_hint: {'center_x': 0.7, 'center_y': 0.325}
+        height: '32dp'
+        text:''
+
+    Label:
+        id: Aw10
+        size_hint: None , None
+        pos_hint: {'center_x': 0.9, 'center_y': 0.325}
+        height: '32dp'
+        text:''
+    # Then into the last bits of it...
+
+    Image:
+        id: screen14_img
+        size_hint: 0.5, 0.75
+        pos_hint: {'center_x': 0.30, 'center_y': 0.55}
+        source: 'app_data/white.png'
+        keep_ratio: True
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.1}
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        text: 'Do LDA'
+        on_release:
+            root.do_lda()
+            screen14_img.reload()
+
+    Button:
+        id: next1.3
+        size_hint: 0.15, 0.1
+        text: '< Go Back'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        on_release: app.go_prev_screen( num = 13 )
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.825, 'center_y': 0.235}
+        height: '32dp'
+        text:'Number of Input Vectors'
+
+    CTextInput:
+        id: inputLDA
+        size_hint: 0.05,0.05
+        write_tab: False
+        pos_hint: {'center_x': 0.825, 'center_y': 0.185}
+        height: '32dp'
+        width: '42dp'
+        multiline: False
+        text: '5'

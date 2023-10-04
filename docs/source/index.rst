@@ -25,7 +25,7 @@ AIMS, an Automated Immune Molecule Separator, was originally developed to identi
 
 - **Build off the AIMS analysis with your own custom features** by taking advantage of the :doc:`AIMS_notebooks`.
 
-AIMS is a python package distributed in both a notebook and GUI format. Those wishing to use the GUI, particularly those relatively new to programming, can follow the installation instructions. Example data is provided in AIMS/app/ab_testData and AIMS/app/mhc_testData, and an example of an application of AIMS can be seen in this peer-reviewed article: https://elifesciences.org/articles/61393
+AIMS is a python package distributed in a notebook, CLI, and GUI format. Those wishing to use the GUI, particularly those relatively new to programming, can follow the installation instructions. Example data is provided in the test_data directories, and an example of an application of AIMS can be seen in this peer-reviewed article: https://elifesciences.org/articles/61393
    
 .. note::
    When publishing analysis from this software, please cite:
@@ -48,6 +48,8 @@ Contents
    AIMS_cluster
    AIMS_notebooks
    AIMS_CLI
+   Testing
+   Acknowledgements
    
 A Note on Exploration with AIMS
 --------

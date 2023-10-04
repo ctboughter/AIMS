@@ -1,0 +1,188 @@
+#:kivy 1.8.0
+aligner_ab:
+    name: 'ab_2'
+    cdr1: cdr1
+    cdr2: cdr2
+    cdr3: cdr3
+    cdr6: cdr6
+    input1: input1
+    degen_drop: degen_drop
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size_hint: 0.5, 0.075
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+    
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.95, 0.325
+        pos_hint: {'center_x': 0.505, 'center_y': 0.76}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        height: '32dp'
+        text:'Step2 - Identify the CDR loops of the Antibody/TCR.'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
+        height: '32dp'
+        text:'Currently, you must have your 6 (or 3,2,1) CDR loops predefined in a CSV file.'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.80}
+        height: '32dp'
+        text:'Check tutorial files (ab_testData) for examples of proper formatting.'
+        font_name: 'app_data/Poppins-Medium.ttf'
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.2, 'center_y': 0.725}
+        height: '32dp'
+        text:'Output Folder Name:'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CTextInput:
+        id: input1
+        size_hint: 0.5,None
+        write_tab: False
+        pos_hint: {'center_x': 0.6, 'center_y': 0.725}
+        height: '32dp'
+        multiline: False
+        text: 'new_folder'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+        height: '32dp'
+        color: 0.341, 0.392, 1, 1
+        text:'Below, input labels for the data loaded in on the previous screen:'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.3}
+        height: '32dp'
+        text:'Select number of loops in files:'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.2, 'center_y': 0.25}
+        height: '32dp'
+        text:'6 Loops'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+
+    CheckBox:
+        id: cdr6
+        size_hint: 0.15, 0.1
+        group: 'g101'
+        state: 'down'
+        pos_hint: {'center_x': 0.2, 'center_y': 0.2}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.4, 'center_y': 0.25}
+        height: '32dp'
+        text:'3 Loops'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+
+    CheckBox:
+        id: cdr3
+        size_hint: 0.15, 0.1
+        group: 'g101'
+        pos_hint: {'center_x': 0.4, 'center_y': 0.2}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.6, 'center_y': 0.25}
+        height: '32dp'
+        text:'2 Loops'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+
+    CheckBox:
+        id: cdr2
+        size_hint: 0.15, 0.1
+        group: 'g101'
+        pos_hint: {'center_x': 0.6, 'center_y': 0.2}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.8, 'center_y': 0.25}
+        height: '32dp'
+        text:'1 Loop'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+
+    CheckBox:
+        id: cdr1
+        size_hint: 0.15, 0.1
+        group: 'g101'
+        pos_hint: {'center_x': 0.8, 'center_y': 0.2}
+        allow_no_selection: False
+
+    # Need to have an extra section to drop degenerate loops:
+    CheckBox:
+        id: degen_drop
+        size_hint: 0.15, 0.1
+        state: 'down'
+        pos_hint: {'center_x': 0.65, 'center_y': 0.1}
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.45, 'center_y': 0.1}
+        height: '32dp'
+        text:'Remove Expanded Clones:'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+
+
+    ####################### END FASTA DESIGNATIONS ############################
+    Button:
+        id: next1.3
+        size_hint: 0.15, 0.1
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        on_release: 
+            root.make_path()
+            root.check_aligns()
+            app.go_next_screen(num = 3)
+
+    Button:
+        id: next1.3
+        size_hint: 0.15, 0.1
+        text: '< Go Back'
+        color: (0.341, 0.392, 1, 1)
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        background_color: (0.773, 0.784, 0.796, 1)
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: 
+            app.go_prev_screen(num = 1)

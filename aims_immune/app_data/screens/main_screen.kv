@@ -1,0 +1,53 @@
+#:kivy 1.8.0
+intro:
+    ig: ig
+    mhc: mhc
+
+    Image:
+        source: 'app_data/butt_down.png'
+        size_hint: 0.7,0.4
+        pos_hint: {'center_x': 0.5, 'center_y': 0.7}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+
+    Label:
+        size_hint: 1,1
+        color: 1, 1, 1, 1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.7}
+        text:'Please select a molecule type to analyze'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Button:
+        id: ig
+        size_hint: 0.3, 0.2
+        border: (0, 0, 0, 0)
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        text: 'Immunoglobulins (Ab/TCR)'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        pos_hint: {'center_x': 0.3, 'center_y': 0.33}
+        on_press:
+            color: (1.0, 1.0, 1.0, 1)
+        on_release: 
+            app.go_Ig()
+
+    Button:
+        id: mhc
+        size_hint: 0.3, 0.2
+        border: (0, 0, 0, 0)
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        text: 'MHC & MHC-Likes'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        pos_hint: {'center_x': 0.7, 'center_y': 0.33}
+        on_release: 
+            app.go_mhc()

@@ -1,0 +1,4 @@
+So thankfully I was actually able to figure out how to load separate screens.
+This makes life a LOT easier for editing the code. Was a mess of 
+~1000 lines of code before this. Hopefully we're still able to pass variables
+back and forth.

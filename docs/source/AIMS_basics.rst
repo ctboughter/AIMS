@@ -1,7 +1,7 @@
 AIMS Basics
 =====
 
-In this section, we will focus on the absolute basics that you need to know about while running AIMS. This includes the :ref:`formatting` of the files used for the analysis, the :ref:`core` of the software, and the :ref:`bphysProp` that are the central pillars of the analysis. This information is key whether users are interested in working with the AIMS GUI or with the AIMS Jupyter Notebooks. The hope is that if there are any fundamental questions with the meaning of a given output, or necessary troubleshooting with inputs, the users can find them here. While details are provided here, users can also search through the "app_data" directory for example data formatting.
+In this section, we will focus on the absolute basics that you need to know about while running AIMS. This includes the :ref:`formatting` of the files used for the analysis, the :ref:`core` of the software, and the :ref:`bphysProp` that are the central pillars of the analysis. This information is key whether you're using the GUI, the CLI, or the Jupyter notebook. The hope is that if there are any fundamental questions with the meaning of a given output, or necessary troubleshooting with inputs, the users can find them here. While details are provided here, users can also check out the :doc:`Testing` section to learn how to download example data and use this to compare formatting.
 
 .. _formatting:
 
@@ -25,12 +25,16 @@ The immunoglobulin (Ig) input file formatting is the most flexible of the three,
     .
     .
 
-The key features are that 1. the general format must follow that of a comma separated value (csv) file. In this csv file each row represents a unique sequence, each column represents a given CDR loop, and each column is separated by a comma. 2. Each column must have a header with no sequence information in it. The contents of this header are not critical, as the standard AIMS Ig file loader disregards this header and replaces it. Descriptive headers are preferred, if only for downstream transparency of the data. 3. Single letter amino acid codes should be used, with only capitalized letters. The defined function "aimsLoad.convert_3let" can convert three letter codes to single letter codes [see API for more details... once I make this section]. 4. The sequences do not have any extranneous characters or spaces. Currently AIMS is capable of identifying an "X" in a sequence and by default removes these sequences. Any other non-amino acid single letter characters will result in an error, and spaces will be encoded into the AIMS matrix, which could confound analysis.
+The key features are that 
+1. the general format must follow that of a comma separated value (csv) file. In this csv file each row represents a unique sequence, each column represents a given CDR loop, and each column is separated by a comma. 
+2. Each column must have a header with no sequence information in it. The contents of this header are not critical, as the standard AIMS Ig file loader disregards this header and replaces it. Descriptive headers are preferred, if only for downstream transparency of the data. 
+3. Single letter amino acid codes should be used, with only capitalized letters. The defined function "aimsLoad.convert_3let" can convert three letter codes to single letter codes [see API for more details... once I make this section]. 
+4. The sequences do not have any extranneous characters or spaces. Currently AIMS is capable of identifying an "X" in a sequence and by default removes these sequences. Any other non-amino acid single letter characters will result in an error, and spaces will be encoded into the AIMS matrix, which could confound analysis.
 
 At present, AIMS does NOT identify other issues with sequences. Missing CDR loops in a sequence, spaces included in a sequence, or other miscellaneous mistakes will not result in an error, and could lead to inaccuracies in the downstream analysis. Either visual inspection or other quality control steps should be taken to ensure proper analysis. If analyzing multiple files at once, all input files must have the same number of loops.
 
 .. note::
-    Currently, AIMS cannot analyze TCR/Ab inputs of 4 or 5 loops. For most repertoire analysis, the requirement to analyze such a dataset would be unexpected. Users should submit an issue on the GitHub if this analysis is needed for some reason.
+    Currently, the AIMS GUI cannot analyze TCR/Ab inputs of 4 or 5 loops. For most repertoire analysis, the requirement to analyze such a dataset would be unexpected. Users should submit an issue on the GitHub if this analysis is needed for some reason.
 
 **MHC/MHC-Like Formatting**
 
@@ -61,7 +65,7 @@ Importantly, each FASTA entry must be pre-aligned using BLAST or a similar align
 
 .. code-block:: python
     
-    [Example file from AIMS/app/mhc_testData/ex_cd1_hla_uda_uaa.csv]
+    [Example file from aims_immune/app_data/test_data/mhcs/ex_cd1_hla_uda_uaa.csv]
     Name,S1s,S1e/H1s,H1e/S2s,S2e/H2s,H2e
     cd1,124,167,209,262,303
     hla,170,210,260,306,348
@@ -74,11 +78,11 @@ Currently, the Phyre server (http://www.sbg.bio.ic.ac.uk/phyre2/html/page.cgi?id
 
 **Immunopeptidomics Formatting**
 
-This is the first of two sections that are not yet implemented in the AIMS GUI, but can be analyzed using the AIMS notebooks. Specifically, the AIMS_peptide.ipynb file can be used to analyze immunopeptidomics data. Again the input is simply a comma separated value (csv) formatted file. However, since the input should only have one column, the precise format is a little less important. An example can be seen below:
+This is the first of two sections that are not yet implemented in the AIMS GUI, but can be analyzed using the AIMS notebook or CLI. Specifically, AIMS can be used to analyze immunopeptidomics data. Again the input is simply a comma separated value (csv) formatted file. However, since the input should only have one column, the precise format is a little less important. An example can be seen below:
 
 .. code-block:: python
     
-    [Example file from AIMS/app_data/pancreas_hla_atlas.csv]
+    [Example file from aims_immune/app_data/test_data/peptides/pancreas_hla_atlas.csv]
     sequence
     ALVSGNNTVPF
     TYRGVDLDQLL
@@ -89,24 +93,11 @@ This is the first of two sections that are not yet implemented in the AIMS GUI, 
     .
     .
 
-Example data provided from the HLA Ligand Atlas (https://hla-ligand-atlas.org/welcome). In future releases, data related to mass spectrometry approaches used for the identification of these peptides will be included in the analysis. Metadata will be included in additional columns of the csv.
+Example data provided from the HLA Ligand Atlas (https://hla-ligand-atlas.org/welcome). In future releases, data related to mass spectrometry approaches used for the identification of these peptides will be included in the analysis. Metadata can be included in additional columns of a separate csv.
 
 **Multi-Sequence Alignment Formatting**
 
-Again, this multi-sequence alignment input is not yet available in the AIMS GUI, is available in the notebook. Unlike the MHC input formatting described above, structural features should be identified before being loaded into AIMS. Each entry should have the exact same number of characters, and an associated sequence name, as seen below: 
-
-.. code-block:: python
-    
-    [Example file from AIMS/app/MSA_testData/Dpr_interface.csv]
-    Dpr,Sequence
-    Dpr1,DKDVSWIRKRDLHILTAGGTTYTSD-----QINTEPKMSLSYTFNVVEL
-    Dpr2,DKSVSWIRKRDLHILTAGILTYTSD-----QVNTEPKISMAFRLNVIVT
-    Dpr3,DKSVSWIRKRDLHILTVGTATYTSD-----QVNTEPKMSMAFQLNIIEI
-    .
-    .
-    .
-
-The required sequence name is used in the downstream analysis in this case, to help identify potential clusters of biophysically similar sequences. Unlike in the analysis of TCR, MHC, or peptide sequences, the associated names or identifiers for each sequence are more likely to be clinically or evolutionarily important. 
+Again, this multi-sequence alignment input is not yet available in the AIMS GUI, but is available in the notebook and CLI. As it turns out, the same file formatting that is used for loading MHC molecules works for the more general MSA input. The difference is that the old MHC module (and by extension, the GUI) required a subset of the MSA to be selected. This step is now optional, so if you'd like to pre-select certain regions of an MSA or input the entire MSA, you can do so! Careful though, very large sequences will likely process quite slowly in AIMS.
 
 .. _core:
 

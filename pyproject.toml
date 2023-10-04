@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aims_immune"
+version = "0.7.9"
+authors = [
+  { name="Chris Boughter", email="ctboughter@gmail.com" },
+]
+description = "A software for the analysis of immune repertoires"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests",
+    'importlib-metadata; python_version<"3.9"',
+    'kivy>=2.1.0',
+    'umap-learn>=0.5.3',
+    'biopython>=1.79',
+    'scipy>=1.4.1',
+    'pandas>=1.5.3',
+    'numpy>=1.24.1',
+    'matplotlib>=3.7.1',
+    'scikit-learn>=1.3.0',
+    'seaborn>=0.12.2',
+    'jupyterlab>=4.0.4',
+    'ipython>=8.14.0',
+    'ipykernel>=6.25.1'
+]
+
+[project.urls]
+"Homepage" = "https://github.com/ctboughter/aims"
+"Bug Tracker" = "https://github.com/ctboughter/aims/issues"
+
+[project.scripts]
+aims-cli = "aims_immune.aims_cli:run"
+aims-notebook = "aims_immune.launch_notebook:launchit"
+aims-tests = "aims_immune.get_tests:getit"
+
+[project.gui-scripts]
+aims-gui = "aims_immune.aims:main"
