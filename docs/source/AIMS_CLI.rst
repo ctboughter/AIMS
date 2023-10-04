@@ -12,6 +12,7 @@ As of AIMS v0.8, there *is* a functioning CLI, and some example use cases. AIMSv
 With AIMS v0.9 and the pip-based installation, the CLI now runs directly from the terminal rather than needing to call the python script explicitly. The examples that were in the aims_run.sh script can now be found below using the data discussed in the :doc:`Testing` section:
 
 **Antibody Analysis**
+
 .. code-block:: python
     
     aims-cli \
@@ -23,6 +24,7 @@ With AIMS v0.9 and the pip-based installation, the CLI now runs directly from th
     --molecule ig > aims_ab.out
 
 **TCR Analysis**
+
 .. code-block:: python
     
     aims-cli \
@@ -39,6 +41,7 @@ With AIMS v0.9 and the pip-based installation, the CLI now runs directly from th
     --molecule ig > aims_tcr.out
 
 **Peptide Analysis**
+
 .. code-block:: python
     aims-cli \
     --molecule peptide \
@@ -54,6 +57,7 @@ With AIMS v0.9 and the pip-based installation, the CLI now runs directly from th
     --datNames Pancreas Kidney > aims_pep.out
 
 **MSA Analysis**
+
 .. code-block:: python
     aims-cli \
     --datDir test_data/mhcs \
