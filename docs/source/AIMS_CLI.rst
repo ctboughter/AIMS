@@ -43,6 +43,7 @@ With AIMS v0.9 and the pip-based installation, the CLI now runs directly from th
 **Peptide Analysis**
 
 .. code-block:: python
+
     aims-cli \
     --molecule peptide \
     --align bulge \
@@ -59,6 +60,7 @@ With AIMS v0.9 and the pip-based installation, the CLI now runs directly from th
 **MSA Analysis**
 
 .. code-block:: python
+    
     aims-cli \
     --datDir test_data/mhcs \
     --outputDir AIMS_mhc \
