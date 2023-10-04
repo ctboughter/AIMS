@@ -6,8 +6,8 @@ project = 'AIMS'
 copyright = '2023, Boughter'
 author = 'Boughter'
 
-release = '0.8'
-version = 'AIMS_0.8'
+release = '0.9'
+version = 'AIMS_0.9'
 
 # -- General configuration
 
@@ -37,7 +37,7 @@ html_css_files = [
 
 # -- Options for HTML output
 
-#html_theme = 'sphinx_rtd_theme'
+html_theme = 'sphinx_rtd_theme'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
