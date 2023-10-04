@@ -75,7 +75,9 @@ alignment = 'center',bulge_pad = 8):
         print('Default to bulge_pad = 8')
         bulge_pad = 8
     # Do this so that 
-    if giveSize == []:
+    if type(giveSize) == int:
+        giveSize = [giveSize]
+    if len(giveSize) == 0:
         if binary:
             # NEW ADDITION TO CLEAN THINGS UP A BIT #
             max_len1 = get_sequence_dimension(pre_poly)[0]
@@ -98,7 +100,7 @@ alignment = 'center',bulge_pad = 8):
     final_poly=[] # initialize a variable
     # RE-ORGANIZE EVERYTHING SO IT LOOKS NICE IN MATRIX
     # But presumably, if you give a size, it's the size you want...
-    if manuscript_arrange and giveSize == []:
+    if manuscript_arrange and len(giveSize) == 0:
         max_lenp = [max_lenp[0],max_lenp[1],max_lenp[2],max_lenp[5],max_lenp[4],max_lenp[3]]
     max_len = max_lenp
     
@@ -661,7 +663,9 @@ def gen_tcr_matrixOLD(re_poly,max_len,key=AA_num_key_new):
 # Everything else should be able to work downstream of this now... probably.
 def gen_1Chain_matrix(pre_poly,key=AA_num_key_new,binary=False,pre_mono=[],giveSize=[],return_Size=False):
     # Do this so that 
-    if giveSize == []:
+    if type(giveSize) == int:
+        giveSize = [giveSize]
+    if len(giveSize) == 0:
         if binary:
             # NEW ADDITION TO CLEAN THINGS UP A BIT #
             max_len1=get_sequence_dimension(pre_poly)[0]
@@ -968,7 +972,9 @@ def split_reshape(ID_big, matShape, total_props = 61):
 def gen_MSA_matrix(pre_poly,key=AA_num_key_new,binary=False,
 pre_mono=[],giveSize=[],return_Size=False):
     # Do this so that 
-    if giveSize == []:
+    if type(giveSize) == int:
+        giveSize = [giveSize]
+    if len(giveSize) == 0:
         if binary:
             # NEW ADDITION TO CLEAN THINGS UP A BIT #
             max_len1 = get_sequence_dimension(pre_poly)[0]
