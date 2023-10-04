@@ -77,7 +77,7 @@ def main():
     parser.add_argument("-ds","--DOstats",help="Run statistics for relevant analysis? [T/F]",required=False,default=False,type=distutils.util.strtobool)
     parser.add_argument("-db","--DOboot",help="Run bootstrapping for relevant analysis? [T/F]",required=False,default=False,type=distutils.util.strtobool)
     parser.add_argument("-gd","--GETdist",help="Run AIMSdist calculations? [T/F]",required=False,default=False,type=distutils.util.strtobool)
-    parser.add_argument("-gd","--PARdist",help="Make AIMSdist calc parallel? [T/F] (must specify --GETdist True)",required=False,default=False,type=distutils.util.strtobool)
+    parser.add_argument("-pd","--PARdist",help="Make AIMSdist calc parallel? [T/F] (must specify --GETdist True)",required=False,default=False,type=distutils.util.strtobool)
     parser.add_argument("-pp","--Plotprops",help="Plot biophysical properties for clusters? [T/F]",required=False,default=False,type=distutils.util.strtobool)
     parser.add_argument("-bt","--boots",help="How many bootstrap replicase should run? [int]",required=False,default=1000,type=int)
     parser.add_argument("-mi","--MIboots",help="How many MI bootstrap replicas should run? [int]",required=False,default=10,type=int)

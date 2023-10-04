@@ -3,6 +3,7 @@ include aims_immune/app_data/screens/*
 include aims_immune/app_data/germline_data/*
 include aims_immune/app_data/test_data/abs/*
 include aims_immune/app_data/test_data/mhcs/*
+include aims_immune/app_data/test_data/peptides/*
 include aims_immune/app_data/test_data/tcrs/*
 include aims_immune/*.py
 include aims_immune/*.kv
