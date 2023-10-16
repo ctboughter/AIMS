@@ -7,6 +7,26 @@ As of AIMS v0.9, everything should be nicely wrapped up as an installable pypi p
 pip install aims-immune
 ```
 
+You can then launch the GUI, the CLI, or the notebook from the terminal in the directory your data is located using one of:
+
+```
+aims-gui
+```
+
+```
+aims-cli
+```
+
+```
+aims-notebook
+```
+
+Lastly, you can optionally copy test data into your current directory using:
+
+```
+aims-tests
+```
+
 Whether you are a new or returning AIMS user, it is strongly recommended you check out the documentation (see below) to learn details about formatting and usage. For returning users especially, the way AIMS is called has changed completely.
 
 # Description

@@ -1,4 +1,4 @@
-Installation Instructions
+Installation & Startup Instructions
 =====
 
 .. _new.install:

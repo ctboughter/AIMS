@@ -4,6 +4,8 @@ Analysis:
     next1_8: next1_8
     prop1_sel: prop1_sel
     prop2_sel: prop2_sel
+    boot_pos_sen: boot_pos_sen
+    vis_indi: vis_indi
 
     Image:
         source: 'app_data/butt_up.png'
@@ -84,6 +86,50 @@ Analysis:
         pos_hint: {'center_x': 0.50, 'center_y': 0.45}
         source: 'app_data/white.png'
         keep_ratio: True
+
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.21, 0.15
+        pos_hint: {'center_x': 0.33, 'center_y': 0.115}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.33, 'center_y': 0.14}
+        height: '32dp'
+        text: 'Bootstrap stdev?'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    CheckBox:
+        id: boot_pos_sen
+        size_hint: None,None
+        height: '48dp'
+        pos_hint: {'center_x': 0.33, 'center_y': 0.1}
+        color: 1, 1, 1, 1
+    
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.21, 0.15
+        pos_hint: {'center_x': 0.675, 'center_y': 0.115}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.675, 'center_y': 0.14}
+        height: '32dp'
+        text: 'Vis. indi. seqs.?'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    CheckBox:
+        id: vis_indi
+        size_hint: None,None
+        height: '48dp'
+        pos_hint: {'center_x': 0.675, 'center_y': 0.1}
+        color: 1, 1, 1, 1
 
     Button:
         size_hint: 0.15, 0.1

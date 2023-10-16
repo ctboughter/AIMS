@@ -31,6 +31,8 @@ import pandas
 import scipy
 from time import time
 from matplotlib.colors import LinearSegmentedColormap
+from sklearn.utils import resample
+from matplotlib.lines import Line2D
 
 from aims_immune import aims_loader as aimsLoad
 from aims_immune import aims_analysis as aims
@@ -793,10 +795,10 @@ class Analysis(Screen):
                 else:
                     pre_loc = sum(mat_size[:i])
                     xtick_loc = xtick_loc + [mat_size[i]/2 + pre_loc]
-            ax[0,0].set_xticks(xtick_loc)
+            ax[0,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
         else:
             xtick_loc = [mat_size/2]
-            ax[0,0].set_xticks(xtick_loc)
+            ax[0,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
         if molecule == 'mhc':
             ax[0,0].set_xticklabels(['Strand 1','Helix 1','Strand 2','Helix 2'])
         else:
@@ -1171,6 +1173,7 @@ class Analysis(Screen):
         self.next1_8.disabled = False
         property1 = str(self.prop1_sel.text)
         property2 = str(self.prop2_sel.text)
+        global sel1; global sel2
 
         #this_dir = os.getcwd()
         this_dir = startDir
@@ -1208,9 +1211,11 @@ class Analysis(Screen):
             cmap_discrete_fin = cmap2(np.linspace(0, 1, len(seqNameF)))
             # try to sort of cheat in creating the labels here...
             labels_new = [''] * len(group_a_id)
-            first = True
+            first = True; second = False
             for i in np.arange(len(group_a_id)):
                 # lda_checked is now a "dump this data" variable
+                # This madness with first and second has to do with 
+                # the color selection options... will need to clean up eventually...
                 if len(group_a_id) > 2:
                     if lda_checked[i]:
                         continue
@@ -1219,6 +1224,17 @@ class Analysis(Screen):
                     ID_vect = [int(group_a_id[i][0])] * len(sel_pre)
                     labels_new[int(group_a_id[i][0])] = seqNameF[i][0]
                     first = False
+                    second = True
+                    continue
+                if second:
+                    temp_sel = [column for column in seq_MIf.columns if seqNameF[i][0] in column]
+                    sel_pre = np.hstack((sel_pre,temp_sel))
+                    ID_vect = ID_vect + [int(group_a_id[i][0])] * len(temp_sel)
+                    if labels_new[int(group_a_id[i][0])] == '':
+                        labels_new[int(group_a_id[i][0])] = seqNameF[i][0]
+                    else:
+                        labels_new[int(group_a_id[i][0])] = labels_new[int(group_a_id[i][0])] + ' + ' + seqNameF[i][0]
+                    second = False
                 else:
                     temp_sel = [column for column in seq_MIf.columns if seqNameF[i][0] in column]
                     sel_pre = np.hstack((sel_pre,temp_sel))
@@ -1259,33 +1275,80 @@ class Analysis(Screen):
             seq_bigF = pre_array.reshape(dat_size,61,len(seq_MIf))
             # If we need the sequences, we can call them this same way but
             # with the variable seq_final rather than full_big
-            plotProp1 = np.average(seq_bigF[:,prop1,:],axis = 0)
-            ax[0,0].plot(plotProp1,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
-            plotProp2 = np.average(seq_bigF[:,prop2,:],axis = 0)
-            ax[1,0].plot(plotProp2,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
+            if self.boot_pos_sen.active and self.vis_indi.active:
+                popup = Popup(title='ERROR (Click Anywhere to Dismiss)',
+                    content=Label(text='Can only click one of the boxes on this page'),
+                    size_hint=(None, None), size=(600, 600))
+                popup.open()
+                return()
+            elif self.boot_pos_sen.active:
+                # For now just make everyone do 1000 bootstrap replicates...
+                # Should eventually make this tunable...
+                boots = 1000
+                prop_avg1 = []; prop_avg2 = []
+                for i in np.arange(boots):
+                    re_big = resample(seq_bigF)
+                    prop_avg1.append(np.average(re_big[:,prop1,:],axis=0))
+                    prop_avg2.append(np.average(re_big[:,prop2,:],axis=0))
+                fin_avg1 = np.average(prop_avg1,axis=0); fin_std1 = np.std(prop_avg1,axis=0)
+                fin_avg2 = np.average(prop_avg2,axis=0); fin_std2 = np.std(prop_avg2,axis=0)
+                ax[0,0].plot(fin_avg1,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
+                ax[0,0].fill_between(np.arange(len(fin_avg1)),fin_avg1+fin_std1,fin_avg1-fin_std1,alpha=0.3,color=cmap_discrete_fin[j])
+                ax[1,0].plot(fin_avg2,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
+                ax[1,0].fill_between(np.arange(len(fin_avg2)),fin_avg2+fin_std2,fin_avg2-fin_std2,alpha=0.3,color=cmap_discrete_fin[j])
+            elif self.vis_indi.active:
+                for oneLine in np.arange(len(seq_bigF[:,prop1,:])):
+                    ax[0,0].plot(seq_bigF[oneLine,prop1,:],linewidth=2.5,color=cmap_discrete_fin[j],alpha=0.3)
+                    ax[1,0].plot(seq_bigF[oneLine,prop2,:],linewidth=2.5,color=cmap_discrete_fin[j],alpha=0.3)
+                plotProp1 = np.average(seq_bigF[:,prop1,:],axis = 0)
+                ax[0,0].plot(plotProp1,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
+                plotProp2 = np.average(seq_bigF[:,prop2,:],axis = 0)
+                ax[1,0].plot(plotProp2,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
+            else:
+                plotProp1 = np.average(seq_bigF[:,prop1,:],axis = 0)
+                ax[0,0].plot(plotProp1,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
+                plotProp2 = np.average(seq_bigF[:,prop2,:],axis = 0)
+                ax[1,0].plot(plotProp2,marker='o',linewidth=2.5,color=cmap_discrete_fin[j])
             np.savetxt(this_dir + '/' + dir_name + '/position_sensitive_mat_clust'+str(j)+'.dat',pre_array,fmt='%.3f')
 
         ax[0,0].set_ylabel(property1)
         ax[1,0].set_ylabel(property2)
         ax[1,0].set_xlabel('Sequence Position')
-        pl.legend(labels_new)
+        if self.vis_indi.active or self.boot_pos_sen.active:
+            legend_elements=[]
+            for j in np.arange(len(labels_new)):
+                element = [Line2D([0], [0], marker='o', color='w', label=labels_new[j],markerfacecolor=cmap_discrete_fin[j], markersize=10)]
+                legend_elements = legend_elements+element
+            pl.legend(handles=legend_elements,ncol=len(labels_new))
+        else:
+            pl.legend(labels_new)
 
         if molecule == 'mhc':
-            ax[0,0].set_xticks(xtick_loc)
+            ax[0,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
             ax[0,0].set_xticklabels(['Strand 1','Helix 1','Strand 2','Helix 2'])
+            ax[1,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
+            ax[1,0].set_xticklabels(['Strand 1','Helix 1','Strand 2','Helix 2'])
         else:
             if LOOPnum == 6:
-                ax[0,0].set_xticks(xtick_loc)
+                ax[0,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
                 ax[0,0].set_xticklabels(['CDR1L','CDR2L','CDR3L','CDR1H','CDR2H','CDR3H'])
+                ax[1,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
+                ax[1,0].set_xticklabels(['CDR1L','CDR2L','CDR3L','CDR1H','CDR2H','CDR3H'])
             elif LOOPnum == 3:
-                ax[0,0].set_xticks(xtick_loc)
+                ax[0,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
                 ax[0,0].set_xticklabels(['CDR1','CDR2','CDR3'])
+                ax[1,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
+                ax[1,0].set_xticklabels(['CDR1','CDR2','CDR3'])
             elif LOOPnum == 2:
-                ax[0,0].set_xticks(xtick_loc)
+                ax[0,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
                 ax[0,0].set_xticklabels(['CDR3H','CDR3L'])
+                ax[1,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
+                ax[1,0].set_xticklabels(['CDR3H','CDR3L'])
             elif LOOPnum == 1:
-                ax[0,0].set_xticks(xtick_loc)
+                ax[0,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
                 ax[0,0].set_xticklabels(['CDR Loop'])
+                ax[1,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
+                ax[1,0].set_xticklabels(['CDR Loop'])
 
         fig.savefig(this_dir + '/' + dir_name + '/pos_prop'+str(prop1)+str(prop2)+'.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/pos_prop'+str(prop1)+str(prop2)+'.png',format='png',dpi=500)
@@ -1383,14 +1446,31 @@ class Analysis(Screen):
             seq_bigF = pre_array.reshape(dat_size,61,len(seq_MIf))
             # If we need the sequences, we can call them this same way but
             # with the variable seq_final rather than full_big
-            plotProp1 = np.average(np.average(seq_bigF[:,1,:],axis = 1))
-            plotProp2 = np.average(np.average(seq_bigF[:,2,:],axis = 1))
-            plotProp3 = np.average(np.average(seq_bigF[:,3,:],axis = 1))
-            plotProp4 = np.average(np.average(seq_bigF[:,4,:],axis = 1))
-            stdProp1 = np.std(np.average(seq_bigF[:,1,:],axis = 1))
-            stdProp2 = np.std(np.average(seq_bigF[:,2,:],axis = 1))
-            stdProp3 = np.std(np.average(seq_bigF[:,3,:],axis = 1))
-            stdProp4 = np.std(np.average(seq_bigF[:,4,:],axis = 1))
+            if self.boot_prop.active:
+                # For now just make everyone do 1000 bootstrap replicates...
+                # Should eventually make this tunable...
+                boots = 1000
+                prop_avg1 = []; prop_avg2 = []
+                prop_avg3 = []; prop_avg4 = []
+                for i in np.arange(boots):
+                    re_big = resample(seq_bigF)
+                    prop_avg1.append(np.average(re_big[:,1,:]))
+                    prop_avg2.append(np.average(re_big[:,2,:]))
+                    prop_avg3.append(np.average(re_big[:,3,:]))
+                    prop_avg4.append(np.average(re_big[:,4,:]))
+                plotProp1 = np.average(prop_avg1,axis=0); stdProp1 = np.std(prop_avg1,axis=0)
+                plotProp2 = np.average(prop_avg2,axis=0); stdProp2 = np.std(prop_avg2,axis=0)
+                plotProp3 = np.average(prop_avg3,axis=0); stdProp3 = np.std(prop_avg3,axis=0)
+                plotProp4 = np.average(prop_avg4,axis=0); stdProp4 = np.std(prop_avg4,axis=0)
+            else:
+                plotProp1 = np.average(np.average(seq_bigF[:,1,:],axis = 1))
+                plotProp2 = np.average(np.average(seq_bigF[:,2,:],axis = 1))
+                plotProp3 = np.average(np.average(seq_bigF[:,3,:],axis = 1))
+                plotProp4 = np.average(np.average(seq_bigF[:,4,:],axis = 1))
+                stdProp1 = np.std(np.average(seq_bigF[:,1,:],axis = 1))
+                stdProp2 = np.std(np.average(seq_bigF[:,2,:],axis = 1))
+                stdProp3 = np.std(np.average(seq_bigF[:,3,:],axis = 1))
+                stdProp4 = np.std(np.average(seq_bigF[:,4,:],axis = 1))
             compile_avg = [plotProp1,plotProp2,plotProp3,plotProp4]
             compile_std = [stdProp1,stdProp2,stdProp3,stdProp4]
             if aa == 0:
@@ -1989,6 +2069,7 @@ class lda_binary(Screen):
     def check_checks(self):
         global lda_checked
         global group_a_id
+        global sel1; global sel2
         # Convert our weird little kivy objects into a numpy array
         x,y = np.shape(lda_status)
         for row in np.arange(x):
@@ -2002,9 +2083,15 @@ class lda_binary(Screen):
                 else:
                     check_pre_l = lda_status[row][column].active
             if row == 0:
+                sel1 = int(text_pre_l)
                 group_a_id = text_pre_l
                 if column > 1:
                     lda_checked = check_pre_l
+            elif row == 1:
+                sel2 = int(text_pre_l)
+                group_a_id = np.vstack((group_a_id,text_pre_l))
+                if column > 1:
+                    lda_checked = np.vstack((lda_checked,check_pre_l))
             else:
                 group_a_id = np.vstack((group_a_id,text_pre_l))
                 if column > 1:

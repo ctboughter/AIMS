@@ -2,6 +2,7 @@
 Analysis:
     img10: screen10_img
     next1_10: next1_10
+    boot_prop: boot_prop
 
     Image:
         source: 'app_data/butt_up.png'
@@ -31,6 +32,28 @@ Analysis:
         pos_hint: {'center_x': 0.50, 'center_y': 0.5}
         source: 'app_data/white.png'
         keep_ratio: True
+
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.21, 0.15
+        pos_hint: {'center_x': 0.33, 'center_y': 0.115}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.33, 'center_y': 0.14}
+        height: '32dp'
+        text: 'Bootstrap stdev?'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    CheckBox:
+        id: boot_prop
+        size_hint: None,None
+        height: '48dp'
+        pos_hint: {'center_x': 0.33, 'center_y': 0.1}
+        color: 1, 1, 1, 1
 
     Button:
         size_hint: 0.15, 0.1
