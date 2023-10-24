@@ -34,7 +34,7 @@ AIMS is a python package distributed in a notebook, CLI, and GUI format. Those w
 
    &
 
-   Boughter CT, Meier-Schellersheim M. An Integrated Approach to the Characterization of Immune Repertoires Using AIMS\: An Automated Immune Molecule Separator. BioRxiv. 2022. DOI: 10.1101/2022.12.07.519510
+   Boughter CT, Meier-Schellersheim M. An Integrated Approach to the Characterization of Immune Repertoires Using AIMS\: An Automated Immune Molecule Separator. PLoS Computational Biology. 2023. DOI: 10.1371/journal.pcbi.1011577
 
 Contents
 --------
@@ -55,3 +55,15 @@ A Note on Exploration with AIMS
 --------
 
 The AIMS software should be considered as both a means for exploratory searches through data to generate hypotheses and as a tool for rigorous quantification of differences between molecular subsets. In the former application, users can freely explore their data, tuning different AIMS parameters and seeing how these changes alter identified clusters or comparison groups. However, in the latter application, users should carefully record the setting of each tuned parameter. Analysis using AIMS should be considered akin to modern RNAseq analysis, where the rigor of a given analytical tool depends on proper implementation by the user. Reproducibility is key!
+
+Further Reading
+--------
+
+Now that AIMS has been out and in the wild for around two years, there have been additional published peer-reviewed manuscripts or posted preprints that highlight the capabilities of AIMS! I'll try to keep this list relatively up to date. Manuscripts thus far include:
+
+- The manuscript that started it all, using AIMS to assess antibody polyreactivity: https://elifesciences.org/articles/61393 
+- An application of AIMS to non-immune molecules using multi-sequence alignment (MSA) encoding: https://pubs.acs.org/doi/abs/10.1021/acs.jpcb.2c02173
+- A unique paper highlighting the flexiblity of AIMS, with an application to an analysis of SARS-CoV-2 binding epitopes: https://www.nature.com/articles/s42003-023-05332-w 
+- Technically a paper that doesn't use AIMS, but does provide experimental validation of AIMS-based predictions: https://www.cell.com/cell-reports/fulltext/S2211-1247(23)01202-0
+- The AIMS bible, with a thorough explanation of the rationale behind the AIMS analysis: https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1011577
+- An investigation of the nature of the germline interactions between TCR CDR loops and MHC: https://elifesciences.org/articles/90681
