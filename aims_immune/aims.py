@@ -693,6 +693,7 @@ class Analysis(Screen):
         #################### DEBUG VERSION ONLY #########################
 
         AA_num_key = aims.get_props()[1]
+        AA_key=['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
         # Labels will always be predefined for Abs
         # Predefined, but poorly formatted... reformat here
         global align
@@ -825,6 +826,15 @@ class Analysis(Screen):
         fig.savefig(this_dir + '/' + dir_name + '/matrix.png',format='png',dpi=500)
         # save raw data at all steps now...
         np.savetxt(this_dir + '/' + dir_name + '/raw_matrix.dat',seq_MIf,fmt='%.3f')
+        # Received an explicit request to copy the encoding BACK into sequences...
+        # I think I have a script for this, just need to save it into a file
+        seqT = np.transpose(seq_MIf)
+        fin_convert = []
+        for i in np.arange(len(seqT)):
+            tt = aims.decode_mat(seqT.iloc[i],num_key_AA=AA_num_key,key_AA=AA_key)
+            fin_convert = fin_convert + [*tt]
+        fff = np.array(fin_convert).reshape(len(seqT),len(tt))
+        pandas.DataFrame(fff).to_csv(this_dir + '/' + dir_name + '/AIMS_encodedSeqs.csv')
         if molecule == 'mhc':
             np.savetxt(this_dir + '/' + dir_name + '/sequence_key.txt',seq_keyF,fmt='%s')
 
