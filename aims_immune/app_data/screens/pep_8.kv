@@ -1,0 +1,168 @@
+#:kivy 1.8.0
+Analysis:
+    img8: screen8_img
+    next1_8: next1_8
+    prop1_sel: prop1_sel
+    prop2_sel: prop2_sel
+    boot_pos_sen: boot_pos_sen
+    vis_indi: vis_indi
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size_hint: 0.65, 0.075
+        pos_hint: {'center_x': 0.50, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        height: '32dp'
+        text: 'Step8 - Plotting Position-Sensitive Biophysical Properties'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
+
+    Spinner:
+        id: prop1_sel
+        size_hint: 0.15, 0.1
+        text: 'Property1'
+        values: 'Charge','Hydropathy', 'Flexibility', 'Bulk'
+        pos_hint: {'center_x': 0.1, 'center_y': 0.8}
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+
+    Spinner:
+        id: prop2_sel
+        size_hint: 0.15, 0.1
+        text: 'Property2'
+        values: 'Charge','Hydropathy', 'Flexibility', 'Bulk'
+        pos_hint: {'center_x': 0.3, 'center_y': 0.8}
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.8}
+        text: 'Choose Color 1'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release:
+            root.show_colorWheel1()
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.7, 'center_y': 0.8}
+        text: 'Choose Color 2'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release:
+            root.show_colorWheel2()
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.9, 'center_y': 0.8}
+        text: 'Default Colors'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release:
+            root.reset_userColor()
+    
+    Image:
+        id: screen8_img
+        size_hint: 0.7, 0.6
+        pos_hint: {'center_x': 0.50, 'center_y': 0.45}
+        source: 'app_data/white.png'
+        keep_ratio: True
+
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.21, 0.15
+        pos_hint: {'center_x': 0.33, 'center_y': 0.115}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.33, 'center_y': 0.14}
+        height: '32dp'
+        text: 'Bootstrap stdev?'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    CheckBox:
+        id: boot_pos_sen
+        size_hint: None,None
+        height: '48dp'
+        pos_hint: {'center_x': 0.33, 'center_y': 0.1}
+        color: 1, 1, 1, 1
+    
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.21, 0.15
+        pos_hint: {'center_x': 0.675, 'center_y': 0.115}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.675, 'center_y': 0.14}
+        height: '32dp'
+        text: 'Vis. indi. seqs.?'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    CheckBox:
+        id: vis_indi
+        size_hint: None,None
+        height: '48dp'
+        pos_hint: {'center_x': 0.675, 'center_y': 0.1}
+        color: 1, 1, 1, 1
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.1}
+        text: 'Get Properties'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release:
+            root.get_pos_props()
+            screen8_img.reload()
+
+    Button:
+        id: prev1_8
+        size_hint: 0.15, 0.1
+        text: '< Go Back'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        on_release: app.go_prev_screen( num = 7 )
+
+    Button:
+        id: next1_8
+        size_hint: 0.15, 0.1
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        disabled: True
+        on_release: 
+            app.go_next_screen( num = 9 )

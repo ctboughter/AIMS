@@ -1,0 +1,107 @@
+#:kivy 1.8.0
+aligner_gen:
+    name: 'msa_2'
+    
+    degen_drop: degen_drop
+    input1: input1
+    next1_2: next1_2
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size_hint: 0.5, 0.075
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+    
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 1.1, 0.3
+        pos_hint: {'center_x': 0.505, 'center_y': 0.76}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        height: '32dp'
+        text:'Step2 - Parse and Annotate Dataset'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.85}
+        height: '32dp'
+        text:'The MSA module assumes you want to analyze your data as-is.'
+        font_name: 'app_data/Poppins-Light.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.80}
+        height: '32dp'
+        text:'See documentation for other potential modes of use.'
+        font_name: 'app_data/Poppins-Light.ttf'
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.15, 'center_y': 0.725}
+        height: '32dp'
+        text:'New Folder Name:'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CTextInput:
+        id: input1
+        size_hint: 0.4,None
+        write_tab: False
+        pos_hint: {'center_x': 0.45, 'center_y': 0.725}
+        height: '32dp'
+        multiline: False
+        text: 'new_folder'
+
+    # Need to have an extra section to drop degenerate loops:
+    CheckBox:
+        id: degen_drop
+        size_hint: None,None
+        height: '48dp'
+        state: 'down'
+        pos_hint: {'center_x': 0.9, 'center_y': 0.725}
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.8, 'center_y': 0.725}
+        height: '32dp'
+        text:'Drop Duplicates:'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    ####################### END FASTA DESIGNATIONS ############################
+    Button:
+        id: prev1_2
+        size_hint: 0.15, 0.1
+        text: '< Go Back'
+        color: (0.341, 0.392, 1, 1)
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        background_color: (0.773, 0.784, 0.796, 1)
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: app.go_prev_screen( num = 1 )
+
+    Button:
+        id: next1_2
+        size_hint: 0.15, 0.1
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        on_release: 
+            root.check_aligns()
+            root.make_path()
+            app.go_next_screen( num = 3 )

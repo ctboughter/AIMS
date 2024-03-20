@@ -1,0 +1,322 @@
+#:kivy 1.8.0
+Analysis:
+    img6: screen6_img
+    umap2: umap2
+    umap3: umap3
+    pca2: pca2
+    pca3: pca3
+    dat1: dat1
+    dat2: dat2
+    dbscan: dbscan
+    optics: optics
+    kmean: kmean
+    dbrad: dbrad
+    opticnum: opticnum
+    kclust: kclust
+    next1_5: next1_5
+    clust_butt: clust_butt
+
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: .425,.8
+        pos_hint: {'center_x': 0.82, 'center_y': 0.55}
+        keep_ratio: False
+        allow_stretch: True
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size_hint: .4,0.075
+        pos_hint: {'center_x': 0.30, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.30, 'center_y': 0.95}
+        height: '32dp'
+        text: 'Step5 - Dimensionality Reduction'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.825, 'center_y': 0.875}
+        height: '32dp'
+        text:'Select Input Data'
+        font_name: 'app_data/Poppins-Medium.ttf'
+    
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.775, 'center_y': 0.825}
+        height: '32dp'
+        text:'Net Average Properties'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.775, 'center_y': 0.775}
+        height: '32dp'
+        text:'Position Sensitive Properties'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CheckBox:
+        id: dat1
+        size_hint: None,None
+        height: '48dp'
+        group: 'g6969'
+        pos_hint: {'center_x': 0.95, 'center_y': 0.825}
+        allow_no_selection: False
+
+    CheckBox:
+        id: dat2
+        size_hint: None,None
+        state: 'down'
+        height: '48dp'
+        group: 'g6969'
+        pos_hint: {'center_x': 0.95, 'center_y': 0.775}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.825, 'center_y': 0.68}
+        height: '32dp'
+        text:'Select Dimensionality Reduction'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.825, 'center_y': 0.65}
+        height: '32dp'
+        text:'Method of Choice'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.725, 'center_y': 0.575}
+        height: '32dp'
+        text:'Reduce Dim Only'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.875, 'center_y': 0.575}
+        height: '32dp'
+        text:'2D'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.95, 'center_y': 0.575}
+        height: '32dp'
+        text:'3D'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CheckBox:
+        id: pca2
+        size_hint: None,None
+        state: 'down'
+        height: '48dp'
+        group: 'g555'
+        pos_hint: {'center_x': 0.875, 'center_y': 0.525}
+        allow_no_selection: False
+
+    CheckBox:
+        id: pca3
+        size_hint: None,None
+        height: '48dp'
+        group: 'g555'
+        pos_hint: {'center_x': 0.95, 'center_y': 0.525}
+        allow_no_selection: False
+
+    CheckBox:
+        id: umap2
+        size_hint: None,None
+        height: '48dp'
+        group: 'g555'
+        pos_hint: {'center_x': 0.875, 'center_y': 0.475}
+        allow_no_selection: False
+
+    CheckBox:
+        id: umap3
+        size_hint: None,None
+        height: '48dp'
+        group: 'g555'
+        pos_hint: {'center_x': 0.95, 'center_y': 0.475}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.725, 'center_y': 0.525}
+        height: '32dp'
+        text:'Reduce Via PCA'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.725, 'center_y': 0.475}
+        height: '32dp'
+        text:'Reduce Via UMAP'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CheckBox:
+        id: kmean
+        size_hint: None,None
+        height: '48dp'
+        state: 'down'
+        group: 'g222'
+        pos_hint: {'center_x': 0.73, 'center_y': 0.35}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.675, 'center_y': 0.35}
+        height: '32dp'
+        text:'KMeans'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CTextInput:
+        id: kclust
+        size_hint: 0.05,0.04
+        write_tab: False
+        pos_hint: {'center_x': 0.96, 'center_y': 0.35}
+        multiline: False
+        text: '5'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.85, 'center_y': 0.35}
+        height: '32dp'
+        text:'# Clusters:'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CheckBox:
+        id: optics
+        size_hint: None,None
+        height: '48dp'
+        group: 'g222'
+        pos_hint: {'center_x': 0.73, 'center_y': 0.30}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.675, 'center_y': 0.30}
+        height: '32dp'
+        text:'OPTICS'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CTextInput:
+        id: opticnum
+        size_hint: 0.05,0.04
+        write_tab: False
+        pos_hint: {'center_x': 0.96, 'center_y': 0.30}
+        multiline: False
+        text: '10'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.85, 'center_y': 0.30}
+        height: '32dp'
+        text:'Min Cluster Size:'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CheckBox:
+        id: dbscan
+        size_hint: None,None
+        height: '48dp'
+        group: 'g222'
+        pos_hint: {'center_x': 0.73, 'center_y': 0.25}
+        allow_no_selection: False
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.675, 'center_y': 0.25}
+        height: '32dp'
+        text:'DBSCAN'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.85, 'center_y': 0.25}
+        height: '32dp'
+        text:'Scan Radius:'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    CTextInput:
+        id: dbrad
+        size_hint: 0.05,0.04
+        write_tab: False
+        pos_hint: {'center_x': 0.96, 'center_y': 0.25}
+        multiline: False
+        text: '0.5'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.825, 'center_y': 0.41}
+        height: '32dp'
+        text:'Select Clustering Algorithm'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    # Then into the last bits of it...
+    Image:
+        id: screen6_img
+        size_hint: 0.65, 0.65
+        pos_hint: {'center_x': 0.30, 'center_y': 0.55}
+        source: 'app_data/white.png'
+        keep_ratio: True
+
+    Button:
+        id: clust_butt
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.6, 'center_y': 0.1}
+        text: 'Cluster'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        disabled: True
+        on_release:
+            root.cluster_seqs()
+            screen6_img.reload()
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.4, 'center_y': 0.1}
+        text: 'Reduce Dim'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release:
+            root.reduce_dim()
+            screen6_img.reload()
+
+    Button:
+        id: prev1_5
+        size_hint: 0.15, 0.1
+        text: '< Go Back'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        on_release: app.go_prev_screen( num = 4 )
+
+    Button:
+        id: next1_5
+        size_hint: 0.15, 0.1
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        disabled: True
+        on_release: 
+            app.go_next_screen( num = 6 )

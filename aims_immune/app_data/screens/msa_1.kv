@@ -1,0 +1,128 @@
+#:kivy 1.8.0
+Root:
+    name: 'msa_1'
+    next1_1: next1_1
+    lessF: lessF
+    tbutt1: tbutt1
+    tbutt2: tbutt2
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size_hint: 0.4, 0.075
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        markup: True
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        keep_ratio: True
+        text:'A I M S'
+
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.99, 0.8
+        pos_hint: {'center_x': 0.505, 'center_y': 0.55}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        markup: True
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        text:'Step1 - Loading Files (MSA Version)'
+        color: 0, 0.033, 0.329, 1
+        font_name: 'app_data/Poppins-Medium.ttf'
+        keep_ratio: True
+
+    Label:
+        markup: True
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.875}
+        text:'Standard analysis is to compare two data files'
+        font_name: 'app_data/Poppins-Medium.ttf'
+    
+    Label:
+        markup: True
+        size_hint: None , None
+        pos_hint: {'center_x': 0.45, 'center_y': 0.825}
+        text:'If you want to analyze only one data file, set this switch to "on":'
+        font_name: 'app_data/Poppins-Medium.ttf'
+
+    ToggleButton:
+        group: 't1'
+        id: tbutt1
+        pos_hint: {'center_x': 0.80, 'center_y': 0.825}
+        size_hint: 0.075, 0.05
+        text: 'ON'
+        active: True
+        color: (1, 1, 1, 1)
+        allow_no_selection: False
+        on_release:
+            root.check_one()
+    
+    ToggleButton:
+        group: 't1'
+        id: tbutt2
+        pos_hint: {'center_x': 0.875, 'center_y': 0.825}
+        size_hint: 0.075, 0.05
+        text: 'OFF'
+        active: False
+        color: (1, 1, 1, 1)
+        state: 'down'
+        allow_no_selection: False
+        on_release:
+            root.check_one()
+
+    ################## K now to the next page. This is not great, but it is pretty
+    Button:
+        id: next1_1
+        size_hint: 0.15, 0.1
+        text: 'Next >'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        disabled: True
+        color: (0.341, 0.392, 1, 1)
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        background_color: (0.773, 0.784, 0.796, 1)
+        on_release: 
+            app.go_next_screen(num = 2)
+
+    Button:
+        id: prev_1
+        size_hint: 0.15, 0.1
+        text: '< Go Back'
+        color: (0.341, 0.392, 1, 1)
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        background_color: (0.773, 0.784, 0.796, 1)
+        on_release: 
+            root.reset_loadScrn()
+            app.go_main_screen(num = 0)
+
+    Button:
+        id: moreF
+        size_hint: 0.15, 0.1
+        text: 'Add More MSAs'
+        pos_hint: {'center_x': 0.4, 'center_y': 0.1}
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release: root.more_fastas()
+
+    Button:
+        id: lessF
+        size_hint: 0.15, 0.1
+        text: 'Remove MSAs'
+        pos_hint: {'center_x': 0.6, 'center_y': 0.1}
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color:  (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        disabled: True
+        on_release: root.less_fastas()

@@ -50,6 +50,15 @@ from kivy.properties import NumericProperty, StringProperty, BooleanProperty,\
 
 import re
 
+# DEFINE A CUSTOM COLORMAP FOR OUR NICE encode_mats:
+import matplotlib as mpl
+upper = mpl.cm.jet(np.arange(256))
+lower = np.ones((int(256/4),4))
+for i in range(3):
+    lower[:,i] = np.linspace(1, upper[0,i], lower.shape[0])
+encode_cmap = np.vstack(( lower, upper ))
+encode_cmap = mpl.colors.ListedColormap(encode_cmap, name='myColorMap', N=encode_cmap.shape[0])
+
 # Before we do some special stuff, save the directory the user is calling the
 # command from... need them to be able to easily find their files if they want
 startDir = os.getcwd()
@@ -103,7 +112,7 @@ class Root(Screen):
             for j in np.arange(int(N)):
                 
                 # No idea what this lambda function does, but it lets us bind show load to the button
-                if molecule == 'ig':
+                if molecule == 'ig' or molecule == 'pep':
                     xxname = 'File '
                     xname = ''
                 else:
@@ -283,7 +292,7 @@ class Root(Screen):
         for j in np.arange(int(N)):
 
             # No idea what this lambda function does, but it lets us bind show load to the button
-            if molecule == 'ig':
+            if molecule == 'ig' or molecule == 'pep':
                 xxname = 'File '
                 xname = ''
             else:
@@ -360,7 +369,7 @@ class Root(Screen):
         for j in np.arange(int(N)):
 
             # No idea what this lambda function does, but it lets us bind show load to the button
-            if molecule == 'ig':
+            if molecule == 'ig' or molecule == 'pep':
                 xxname = 'File '
                 xname = ''
             else:
@@ -720,7 +729,7 @@ class Analysis(Screen):
                 else:
                     int_dat = [int(x) for x in data[i]]
                     seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i],drop_dups = exp_drop)
-            else:
+            elif molecule == 'ig':
                 # My first ever error handling! Works pretty well (for now)
                 # Probably need more "exceptions" here for formatting errors
                 try:
@@ -732,6 +741,15 @@ class Analysis(Screen):
                     size_hint=(None, None), size=(600, 600))
                     popup.open()
                     return
+            elif molecule == 'msa':
+                # ADD IN MSA LOADING
+                seq = aimsLoad.msa_loader(paths[i],label=labels[i],drop_dups = exp_drop)
+            elif molecule == 'pep':
+                # Add in pep loading
+                # Should probably throw in an option for a length cutoff...
+                # DONT have a cutoff for now...
+                seq = aimsLoad.pep_loader(paths[i],label=labels[i],
+                                                         drop_degens = exp_drop,len_cutoff=cutoff)
             ID_pre = np.ones(np.shape(seq)[1])
             if i == 0:
                 seq_final = seq
@@ -759,7 +777,7 @@ class Analysis(Screen):
         # Alright if we have gotten this far, bring the "next" button back online
         self.next1_3.disabled = False
         # Obviously need to define this somewhere in the software
-        if molecule == 'ig':
+        if molecule == 'ig' or molecule == 'pep':
             if self.alnc.active:
                 align = 'center'
             elif self.alnb.active:
@@ -770,11 +788,19 @@ class Analysis(Screen):
                 align = 'right'
         else:
             align = 'center'
-        seq_MI = aims.gen_tcr_matrix(np.array(seq_final),key = AA_num_key, giveSize = mat_size, alignment = align)
+
+        if molecule == 'msa':
+            AA_key_dash = AA_key + ['-']
+            AA_num_key_dash = np.hstack((AA_num_key,[0]))
+            seq_MI = aims.gen_MSA_matrix(np.array(seq_final),AA_key_dash = AA_key_dash, key = AA_num_key_dash, giveSize = mat_size)
+        if molecule == 'pep':
+            seq_MI = aims.gen_tcr_matrix(np.array(seq_final),key = AA_num_key, giveSize = mat_size, alignment = align, bulge_pad = bulge_pad)
+        else:
+            seq_MI = aims.gen_tcr_matrix(np.array(seq_final),key = AA_num_key, giveSize = mat_size, alignment = align)
         # Convert our MI matrix to a pandas dataframe
         seq_MIf = pandas.DataFrame(np.transpose(seq_MI),columns = seq_final.columns)
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
-        ax[0,0].imshow(seq_MI, interpolation='nearest', aspect='auto',cmap=cm.jet)
+        ax[0,0].imshow(seq_MI, interpolation='nearest', aspect='auto',cmap=encode_cmap)
         pl.close()
 
         # Need to try to draw lines separating the distinct groups...
@@ -784,7 +810,7 @@ class Analysis(Screen):
         else:
             for i in np.arange(len(seq_size)-1):
                 seq_locs = seq_locs + seq_size[i]
-                ax[0,0].plot(np.arange(len(np.transpose(seq_MI))),np.ones(len(np.transpose(seq_MI)))*seq_locs,'white',linewidth = 3)
+                ax[0,0].plot(np.arange(len(np.transpose(seq_MI))),np.ones(len(np.transpose(seq_MI)))*seq_locs,'black',linewidth = 3)
 
         # Alright now we want to change xlabel to actually talk about the features...
         ax[0,0].set_ylabel('Sequence Number')
@@ -802,7 +828,7 @@ class Analysis(Screen):
             ax[0,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
         if molecule == 'mhc':
             ax[0,0].set_xticklabels(['Strand 1','Helix 1','Strand 2','Helix 2'])
-        else:
+        if molecule == 'ig':
             if LOOPnum == 6:
                 ax[0,0].set_xticklabels(['CDR1L','CDR2L','CDR3L','CDR1H','CDR2H','CDR3H'])
             elif LOOPnum == 2:
@@ -815,7 +841,7 @@ class Analysis(Screen):
             Numclones = np.shape(seq_MIf)[1]
             if type(mat_size) != int:
                 for i in np.arange(len(mat_size)-1):
-                    ax[0,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(Numclones),np.arange(Numclones),'white',linewidth = 3)
+                    ax[0,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(Numclones),np.arange(Numclones),'black',linewidth = 3)
 
         # NOTE need to make sure that I do something so that files are not overwritten...
         if os.path.exists(this_dir +'/' + dir_name):
@@ -1064,9 +1090,9 @@ class Analysis(Screen):
                 clustered = pre_clustF
             else:
                 clustered = pandas.concat([clustered, pre_clustF],axis = 1)
-            ax[0,0].plot(np.arange(len(seq_MIf)),np.ones(len(seq_MIf))*(np.shape(clustered)[1]),'white',linewidth = 3)
+            ax[0,0].plot(np.arange(len(seq_MIf)),np.ones(len(seq_MIf))*(np.shape(clustered)[1]),'black',linewidth = 3)
 
-        ax[0,0].imshow(np.transpose(np.array(clustered))[:,:-1], interpolation='nearest', aspect='auto',cmap=cm.jet)
+        ax[0,0].imshow(np.transpose(np.array(clustered))[:,:-1], interpolation='nearest', aspect='auto',cmap=encode_cmap)
         ax[0,0].set_ylabel('Sequence Number')
         #this_dir = os.getcwd()
         this_dir = startDir
@@ -1338,7 +1364,7 @@ class Analysis(Screen):
             ax[0,0].set_xticklabels(['Strand 1','Helix 1','Strand 2','Helix 2'])
             ax[1,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
             ax[1,0].set_xticklabels(['Strand 1','Helix 1','Strand 2','Helix 2'])
-        else:
+        elif molecule == 'ig':
             if LOOPnum == 6:
                 ax[0,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
                 ax[0,0].set_xticklabels(['CDR1L','CDR2L','CDR3L','CDR1H','CDR2H','CDR3H'])
@@ -1359,6 +1385,8 @@ class Analysis(Screen):
                 ax[0,0].set_xticklabels(['CDR Loop'])
                 ax[1,0].set_xticks(np.array(xtick_loc).reshape(len(xtick_loc)))
                 ax[1,0].set_xticklabels(['CDR Loop'])
+        # NOTE NOTE: For now lets not annotate any of the peptide/MSA axes
+        # Maybe at some point in the future I want to change that, but not now.
 
         fig.savefig(this_dir + '/' + dir_name + '/pos_prop'+str(prop1)+str(prop2)+'.pdf',format='pdf',dpi=500)
         fig.savefig(this_dir + '/' + dir_name + '/pos_prop'+str(prop1)+str(prop2)+'.png',format='png',dpi=500)
@@ -2022,6 +2050,100 @@ class aligner_ab(Screen):
         global exp_drop
         exp_drop = self.degen_drop.active
 
+# Try to make a general aligner screen for MSA/Peptide
+# Since we won't need to do all that much extra for these...
+class aligner_gen(Screen):
+    
+    def make_path(self):
+        global dir_name
+        self.text1 = self.input1.text
+        dir_name = self.text1
+    
+    def on_pre_enter(self, *args):
+        global gen_check
+        global alignGen
+        global labels
+        if 'gen_check' not in globals():
+            for j in np.arange(len(LFile)):
+                name = 'File '+str(j)
+                y_val = float(0.50 - 0.1*np.floor(int(j)/5))
+                x_val = float(0.1 + int(j)%5*0.9/(5))
+
+                textinputGen = TextInput(text=name, multiline=False, size_hint = (None, None),write_tab =False,
+                    pos_hint = {'center_x': x_val, 'center_y': y_val}, height = '32dp',width='125dp')
+                
+                if int(j) == 0:    
+                    alignGen = [textinputGen]
+                else:
+                    alignGen = alignGen + [textinputGen]
+
+            # Before adding in all of the new ones
+            for entry in alignGen:
+                    FloatLayout.add_widget(self, entry)
+        else:
+            for entry in alignGen:
+                    FloatLayout.remove_widget(self, entry)
+            # HERE, why are we going back to "File" when clearly this page
+            # has already been run? change this to read in "labels" or something
+            for j in np.arange(len(LFile)):
+                if 'labels' in globals():
+                    if len(labels) > j:
+                        name = labels[j]
+                    else:
+                        name = 'File '+str(j)
+                else:
+                    name = 'File '+str(j)
+                y_val = float(0.50 - 0.1*np.floor(int(j)/5))
+                x_val = float(0.1 + int(j)%5*0.9/(5))
+
+                textinputGen = TextInput(text=name, multiline=False, size_hint = (None, None),write_tab =False,
+                    pos_hint = {'center_x': x_val, 'center_y': y_val }, height = '32dp',width='125dp')
+
+                if int(j) == 0:    
+                    alignGen = [textinputGen]
+                else:
+                    alignGen = alignGen + [textinputGen]
+
+            # Before adding in all of the new ones
+            for entry in alignGen:
+                    FloatLayout.add_widget(self, entry)
+            # Make sure these boxes are deleted and recreated...
+        global gen_check
+        gen_check = True
+
+    def check_aligns(self):
+        global labels
+        global gen_check
+        x = len(alignGen)
+        for row in np.arange(x):
+            if row == 0:
+                labels = alignGen[row].text
+            else:
+                labels = np.vstack((labels,alignGen[row].text))
+        # Get labels out of the GD weird format.
+        if onlyONE:
+            pass
+        else:
+            labels = [i[0] for i in labels]
+            # All of this here is to fix issues in naming
+            # this fix will also break if users for some reason end filenames
+            # with "___". Better hope they don't do that
+            dum_len = len(labels)
+            for i in np.arange(dum_len):
+                for j in np.arange(dum_len):
+                    if i == j:
+                        continue
+                    if labels[i].find(labels[j]) == 0:
+                        labels[j] = labels[j]+'___'
+        # Figure out what number of loops we are doing
+        global cutoff
+        global bulge_pad
+        if molecule == 'pep':
+            cutoff = int(self.lenCut.text)
+            bulge_pad = int(self.bulger.text)
+        global exp_drop
+        exp_drop = self.degen_drop.active
+
 ################## NOW WE MOVE INTO THE LDA/BINARY COMPARISON SECTION ###############
 class lda_binary(Screen):
     # Need to redefine a different type of loading from the wild one above.
@@ -2142,7 +2264,17 @@ class AIMSApp(App):
         'app_data/screens/ab_4.kv','app_data/screens/ab_5.kv','app_data/screens/ab_6.kv',
         'app_data/screens/ab_7.kv','app_data/screens/ab_8.kv','app_data/screens/ab_9.kv',
         'app_data/screens/ab_10.kv','app_data/screens/ab_11.kv','app_data/screens/ab_12.kv',
-        'app_data/screens/ab_13.kv','app_data/screens/ab_14.kv']
+        'app_data/screens/ab_13.kv','app_data/screens/ab_14.kv',
+        'app_data/screens/msa_1.kv','app_data/screens/msa_2.kv','app_data/screens/msa_3.kv',
+        'app_data/screens/msa_4.kv','app_data/screens/msa_5.kv','app_data/screens/msa_6.kv',
+        'app_data/screens/msa_7.kv','app_data/screens/msa_8.kv','app_data/screens/msa_9.kv',
+        'app_data/screens/msa_10.kv','app_data/screens/msa_11.kv','app_data/screens/msa_12.kv',
+        'app_data/screens/msa_13.kv','app_data/screens/msa_14.kv',
+        'app_data/screens/pep_1.kv','app_data/screens/pep_2.kv','app_data/screens/pep_3.kv',
+        'app_data/screens/pep_4.kv','app_data/screens/pep_5.kv','app_data/screens/pep_6.kv',
+        'app_data/screens/pep_7.kv','app_data/screens/pep_8.kv','app_data/screens/pep_9.kv',
+        'app_data/screens/pep_10.kv','app_data/screens/pep_11.kv','app_data/screens/pep_12.kv',
+        'app_data/screens/pep_13.kv','app_data/screens/pep_14.kv']
         global molecule
         molecule = ''
         self.go_next_screen(num = 0)
@@ -2162,6 +2294,10 @@ class AIMSApp(App):
             # somewhat janky way to do this, but should work.
             # Basically "skip" the mhc screens
             num = num + 14
+        if molecule == 'msa':
+            num = num + 28
+        if molecule == 'pep':
+            num = num + 42
         self.index = num
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm
@@ -2196,6 +2332,34 @@ class AIMSApp(App):
         sm.switch_to(screen, direction='left')
         self.current_title = screen.name
 
+    def go_msa(self):
+        # Need to make and delete lots of shit when
+        # we get back to this main screen. HARD restart
+        global N; N = 4
+        global LFile; LFile = ['']
+        global LFile_cut; LFile_cut = ['']
+        # Delete some global variables so we have a HARD reset.
+        global check_run
+        if 'check_run' in globals():
+            # So intelligently, if you define something as a global variable
+            # but don't "fill" it, it won't register as being in globals.
+            del check_run
+        global check_lda
+        if 'check_lda' in globals():
+            del check_lda
+        global loadLabel
+        if 'loadLabel' in globals():
+            del loadLabel
+        
+        # Needed to delete and define everything BEFORE loading screen
+        global molecule
+        molecule = 'msa'
+        self.index = 29
+        screen = self.load_screen(self.index)
+        sm = self.root.ids.sm
+        sm.switch_to(screen, direction='left')
+        self.current_title = screen.name
+
     def go_Ig(self):
         # Need to make and delete lots of shit when
         # we get back to this main screen. HARD restart
@@ -2224,6 +2388,34 @@ class AIMSApp(App):
         sm.switch_to(screen, direction='left')
         self.current_title = screen.name
 
+    def go_pep(self):
+        # Need to make and delete lots of shit when
+        # we get back to this main screen. HARD restart
+        global N; N = 4
+        global LFile; LFile = ['']
+        global LFile_cut; LFile_cut = ['']
+        # Delete some global variables so we have a HARD reset.
+        global check_run
+        if 'check_run' in globals():
+            # So intelligently, if you define something as a global variable
+            # but don't "fill" it, it won't register as being in globals.
+            del check_run
+        global check_lda
+        if 'check_lda' in globals():
+            del check_lda
+        global loadLabel
+        if 'loadLabel' in globals():
+            del loadLabel
+
+         # Needed to delete and define everything BEFORE loading screen
+        global molecule
+        molecule = 'pep'
+        self.index = 43
+        screen = self.load_screen(self.index)
+        sm = self.root.ids.sm
+        sm.switch_to(screen, direction='left')
+        self.current_title = screen.name
+
     def go_prev_screen(self,num = 0):
         global molecule
         if skip7 and num == 7:
@@ -2232,6 +2424,10 @@ class AIMSApp(App):
             # somewhat janky way to do this, but should work.
             # Basically "skip" the mhc screens
             num = num + 14
+        if molecule == 'msa':
+            num = num + 28
+        if molecule == 'pep':
+            num = num + 42
         self.index = num
         screen = self.load_screen(self.index)
         sm = self.root.ids.sm
@@ -2252,6 +2448,7 @@ Factory.register('Root', cls=Root)
 Factory.register('intro', cls=intro)
 Factory.register('aligner', cls=aligner)
 Factory.register('aligner_ab', cls=aligner_ab)
+Factory.register('aligner_gen', cls=aligner_gen)
 Factory.register('Analysis', cls=Analysis)
 Factory.register('checker', cls=checker)
 

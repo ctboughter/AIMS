@@ -1,0 +1,211 @@
+#:kivy 1.8.0
+Analysis:
+    name: 'ab_6'
+    img7: screen7_img
+    img7_5: screen7_5_img
+    ori_binary: ori_binary
+    clust1: clust1
+    clust2: clust2
+    next1_6: next1_6
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size_hint: 0.4, 0.075
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    # Then into the last bits of it...
+    Image:
+        id: screen7_img
+        size_hint: 0.45, 0.45
+        pos_hint: {'center_x': 0.25, 'center_y': 0.65}
+        source: 'app_data/white.png'
+        keep_ratio: True
+
+    Image:
+        id: screen7_5_img
+        size_hint: 0.45, 0.45
+        pos_hint: {'center_x': 0.75, 'center_y': 0.65}
+        source: 'app_data/white.png'
+        keep_ratio: True
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.50, 'center_y': 0.95}
+        height: '32dp'
+        text: 'Step6 - Begin Group Analysis'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+    
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.6, 0.075
+        pos_hint: {'center_x': 0.5, 'center_y': 0.875}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.50, 'center_y': 0.875}
+        height: '32dp'
+        text: 'Visualize the Clusters from the Last Window'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.45, 0.3
+        pos_hint: {'center_x': 0.20, 'center_y': 0.30}
+        keep_ratio: False
+        allow_stretch: True
+
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.45, 0.3
+        pos_hint: {'center_x': 0.80, 'center_y': 0.30}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.40}
+        height: '32dp'
+        text:'Comparison Cluster 1'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
+
+    CTextInput:
+        id: clust1
+        size_hint: 0.05,None
+        write_tab: False
+        pos_hint: {'center_x': 0.5, 'center_y': 0.35}
+        height: '32dp'
+        multiline: False
+        text: '0'
+
+    Label:
+        size_hint: None , None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.275}
+        height: '32dp'
+        text:'Comparison Cluster 2'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
+
+    CTextInput:
+        id: clust2
+        size_hint: 0.05,None
+        write_tab: False
+        pos_hint: {'center_x': 0.5, 'center_y': 0.225}
+        height: '32dp'
+        multiline: False
+        text: '1'
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.20, 'center_y': 0.40}
+        height: '32dp'
+        text: 'First, hit the Visualize Clusters button.'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.20, 'center_y': 0.35}
+        height: '32dp'
+        text: 'Then, choose which two clusters to'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.20, 'center_y': 0.30}
+        height: '32dp'
+        text: 'compare further in binary analysis.'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.20, 'center_y': 0.20}
+        height: '32dp'
+        text: 'NOTE: Cluster count starts at 0'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.80, 'center_y': 0.40}
+        height: '32dp'
+        text: 'OR choose to compare original'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.80, 'center_y': 0.35}
+        height: '32dp'
+        text: 'groups loaded in to AIMS'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    CheckBox:
+        id: ori_binary
+        size_hint: None,None
+        height: '48dp'
+        pos_hint: {'center_x': 0.8, 'center_y': 0.275}
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.80, 'center_y': 0.20}
+        height: '32dp'
+        text: '[If checked, cluster numbers ignored]'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    ####################### END FASTA DESIGNATIONS ############################
+    Button:
+        id: next1_6
+        size_hint: 0.15, 0.1
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        disabled: True
+        on_release: 
+            root.prep7()
+            app.go_next_screen(num = 7)
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.1}
+        text: 'Visualize Clusters'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release:
+            root.analyze_clusts()
+            screen7_img.reload()
+            screen7_5_img.reload()
+
+    Button:
+        id: prev1_6
+        size_hint: 0.15, 0.1
+        text: '< Go Back'
+        color: (0.341, 0.392, 1, 1)
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        background_color: (0.773, 0.784, 0.796, 1)
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        on_release: 
+            app.go_prev_screen(num = 5)

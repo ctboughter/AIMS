@@ -1,0 +1,92 @@
+#:kivy 1.8.0
+Analysis:
+    img10: screen10_img
+    next1_10: next1_10
+    boot_prop: boot_prop
+
+    Image:
+        source: 'app_data/butt_up.png'
+        size_hint: 0.6, 0.075
+        pos_hint: {'center_x': 0.50, 'center_y': 0.95}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0.341, 0.392, 1, 1
+        size_hint: .1, .1
+        pos_hint: {'center_x': 0.95, 'center_y': 0.95}
+        text:'A I M S'
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.5, 'center_y': 0.95}
+        height: '32dp'
+        text: 'Step10 - Plotting Average Properties'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 0, 0.033, 0.329, 1
+    
+    Image:
+        id: screen10_img
+        size_hint: 0.8, 0.8
+        pos_hint: {'center_x': 0.50, 'center_y': 0.5}
+        source: 'app_data/white.png'
+        keep_ratio: True
+
+    Image:
+        source: 'app_data/square_background.png'
+        size_hint: 0.21, 0.15
+        pos_hint: {'center_x': 0.33, 'center_y': 0.115}
+        keep_ratio: False
+        allow_stretch: True
+
+    Label:
+        size_hint_y: None
+        pos_hint: {'center_x': 0.33, 'center_y': 0.14}
+        height: '32dp'
+        text: 'Bootstrap stdev?'
+        font_name: 'app_data/Poppins-Medium.ttf'
+        color: 1, 1, 1, 1
+
+    CheckBox:
+        id: boot_prop
+        size_hint: None,None
+        height: '48dp'
+        pos_hint: {'center_x': 0.33, 'center_y': 0.1}
+        color: 1, 1, 1, 1
+
+    Button:
+        size_hint: 0.15, 0.1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.1}
+        text: 'Get Properties'
+        background_down: 'app_data/butt_down.png'
+        background_normal: 'app_data/butt_up.png'
+        color: (0, 0.033, 0.329, 1)
+        border: (0, 0, 0, 0)
+        on_release:
+            root.get_props()
+            screen10_img.reload()
+
+    Button:
+        id: prev1_10
+        size_hint: 0.15, 0.1
+        text: '< Go Back'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.15, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        on_release: app.go_prev_screen( num = 9 )
+
+    Button:
+        id: next1_10
+        size_hint: 0.15, 0.1
+        text: 'Next >'
+        background_normal: 'app_data/transparent.png'
+        background_down: 'app_data/transparent.png'
+        pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+        color: (0.341, 0.392, 1, 1)
+        background_color: (0.773, 0.784, 0.796, 1)
+        disabled: True
+        on_release: 
+            app.go_next_screen( num = 11 )
