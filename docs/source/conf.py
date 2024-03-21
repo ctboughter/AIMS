@@ -3,7 +3,7 @@
 # -- Project information
 
 project = 'AIMS'
-copyright = '2023, Boughter'
+copyright = '2024, Boughter'
 author = 'Boughter'
 
 release = '0.9'

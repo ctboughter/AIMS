@@ -8,7 +8,9 @@
 
 version: 2
 
-
+formats:
+  - epub
+  - pdf
 # Set the OS, Python version and other tools you might need
 
 build:
@@ -17,7 +19,7 @@ build:
 
   tools:
 
-    python: "3.9"
+    python: "3.7"
 
     # You can also specify other tool versions:
 

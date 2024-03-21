@@ -58,7 +58,7 @@ While users can simply use pip to install AIMS directly, it is best practice to 
 
 .. code-block:: python
 
-    conda create -n aims-env python=3.9
+    conda create -n aims-env python=3.7
 
 If anaconda/miniconda is installed properly, a Y/N prompt should appear. Type "y" then hit the "enter key" and you will create a conda environment.
 
