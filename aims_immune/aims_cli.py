@@ -61,7 +61,7 @@ def main():
     parser.add_argument("-ss","--subStart",help="Start points for data subset [list of ints]",required=False,default=[],type=int,nargs='*')
     parser.add_argument("-se","--subEnd",help="End points for data subset [list of ints]",required=False,default=[],type=int,nargs='*')
     parser.add_argument("-bp","--bulgePad",help="Padding for bulge format [int]",required=False,default=8,type=int)
-    parser.add_argument("-np","--normProp",help="Normalize biophysical properties? [T/F]",required=False,default=True,type=distutils.util.strtobool)
+    parser.add_argument("-np","--normProp",help="Normalize biophysical properties? [msuv,zscore, or 0to1]",required=False,default='msuv',type=str)
     parser.add_argument("-rn","--REnorm",help="Renormalize BPHYS mat by entropy? [T/F]",required=False,default=True,type=distutils.util.strtobool)
     parser.add_argument("-cd","--clustData",help="Data format for dim. red. and clustering [string]",required=False,default='parse',type=str)
     parser.add_argument("-pa","--projAlg",help="Algorithm for data projection [string]",required=False,default='pca',type=str)

@@ -1929,7 +1929,7 @@ class checker(Screen):
         global parsed_mat
         global full_big
         global prop_names
-        bigass = classy.get_bigass_matrix(dsetF, giveSize = mat_size, alignment = align, norm = True )
+        bigass = classy.get_bigass_matrix(dsetF, giveSize = mat_size, alignment = align )
         # This definition will be important if I get parallel processing into the app... see notebook for EX
         total_mat = bigass
         prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']

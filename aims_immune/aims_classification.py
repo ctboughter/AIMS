@@ -89,7 +89,7 @@ def apply_matrix(mono_PCA,max_diffs,mat_size=100,props=properties[1:],ridZero=Fa
 
 # CAN WE DO IT WITH ONE MATRIX???
 def get_bigass_matrix(ALL_mono,AA_key=AA_key,AA_key_dash=AA_key_dash, OneChain = False, giveSize=[], onlyCen = False, bulge_pad=8, prop_parse=False,
-manuscript_arrange=False,special='', alignment = 'center', norm = True):
+manuscript_arrange=False,special='', alignment = 'center', norm = 'msuv'):
     
     AA_num_key_new=properties[1]
     # Alright so if we DO change our AA_key of the sequences, we also need to 
