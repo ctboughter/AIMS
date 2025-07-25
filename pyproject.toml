@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aims_immune"
-version = "0.9.3"
+version = "0.9.4"
 authors = [
   { name="Chris Boughter", email="ctboughter@gmail.com" },
 ]
 description = "A software for the analysis of immune repertoires"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = "<=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",

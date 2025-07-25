@@ -129,15 +129,29 @@ def mhc_loader(fastapath,mat_coords,label,drop_dups = False):
         return(finalDF,title_key)
 # So in the main version of the script, we have a special loader for each data subset
 # Can we make just a generalizable one? Let's give it a try...
-def Ig_loader(fastapath,label,loops=6,drop_degens = False,return_index = False):
-    if loops == 6:
-        total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdrL1_aa','cdrL2_aa','cdrL3_aa','cdrH1_aa','cdrH2_aa','cdrH3_aa'])
-    elif loops == 3:
-        total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdr1_aa','cdr2_aa','cdr3_aa'])
-    elif loops == 2:
-        total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdrH3_aa','cdrL3_aa'])
-    elif loops == 1:
-        total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdr_aa'])
+def Ig_loader(fastapath,label,loops=6,drop_degens = False,return_index = False,dataLoc = ''):
+    # Try to be a little more flexible about the data inputs we are accepting.
+    if len(dataLoc) != 0:
+        tempAbs = pandas.read_csv(fastapath,sep=',',header=0)
+        selCols = tempAbs.columns[dataLoc]
+        total_Abs = tempAbs[selCols]
+        if loops == 6:
+            total_Abs.columns = ['cdrL1_aa','cdrL2_aa','cdrL3_aa','cdrH1_aa','cdrH2_aa','cdrH3_aa']
+        elif loops == 3:
+            total_Abs.columns = ['cdr1_aa','cdr2_aa','cdr3_aa']
+        elif loops == 2:
+            total_Abs.columns = ['cdrH3_aa','cdrL3_aa']
+        elif loops == 1:
+            total_Abs.columns = ['cdr_aa']
+    else:
+        if loops == 6:
+            total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdrL1_aa','cdrL2_aa','cdrL3_aa','cdrH1_aa','cdrH2_aa','cdrH3_aa'])
+        elif loops == 3:
+            total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdr1_aa','cdr2_aa','cdr3_aa'])
+        elif loops == 2:
+            total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdrH3_aa','cdrL3_aa'])
+        elif loops == 1:
+            total_Abs=pandas.read_csv(fastapath,sep=',',header=0,names=['cdr_aa'])
     # Remove empty entries
     total_abs1 = total_Abs.where((pandas.notnull(total_Abs)), '')
     if return_index:

@@ -58,9 +58,13 @@ https://github.com/ctboughter/AIMS_manuscripts
 The underlying code remains the same, and will continue to be updated. This has been done to keep the AIMS analysis software more streamlined and less cluttered with manuscript-specific analysis.
 
 # Further Reading
-Now that AIMS has been out and in the wild for around two years, there have been additional published peer-reviewed manuscripts or posted preprints that highlight the capabilities of AIMS! I'll try to keep this list relatively up to date, and if it ever gets lengthy will likely move it to the ReadTheDocs page. Manuscripts thus far include:
+Now that AIMS has been out and in the wild for around five years, there have been additional published peer-reviewed manuscripts or posted preprints that highlight the capabilities of AIMS! I'll try to keep this list relatively up to date, and if it ever gets lengthy will likely move it to the ReadTheDocs page. Manuscripts thus far include:
 
+- The manuscript that started it all, using AIMS to assess antibody polyreactivity: https://elifesciences.org/articles/61393 
+- A targeted application of AIMS to identify a clonally expanded, phenotypically homogenous T cell population: https://www.nature.com/articles/s41590-025-02198-4
+- A [preprint] textbook chapter giving step-by-step instructions for running the analysis on peptides: https://www.biorxiv.org/content/10.1101/2024.09.05.611486v1 
 - An application of AIMS to non-immune molecules using multi-sequence alignment (MSA) encoding: https://pubs.acs.org/doi/abs/10.1021/acs.jpcb.2c02173
 - A unique paper highlighting the flexiblity of AIMS, with an application to an analysis of SARS-CoV-2 binding epitopes: https://www.nature.com/articles/s42003-023-05332-w 
+- Technically a paper that doesn't use AIMS, but does provide experimental validation of AIMS-based predictions: https://www.cell.com/cell-reports/fulltext/S2211-1247(23)01202-0
 - The AIMS bible, with a thorough explanation of the rationale behind the AIMS analysis: https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1011577
 - An investigation of the nature of the germline interactions between TCR CDR loops and MHC: https://elifesciences.org/articles/90681

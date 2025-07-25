@@ -100,6 +100,13 @@ def main():
     # Debugging functions:
     parser.add_argument("-sl","--showLabel",help="Show on projections? [T/F]",required=False,default=False,type=distutils.util.strtobool)
 
+    ############################################
+    # More new features, gotta do what we gotta do:
+    parser.add_argument("-co","--clustOnly",help="Stop running the script after clustering? [T/F]",required=False,default=False,type=distutils.util.strtobool)
+    parser.add_argument("-sf","--saveFmt",help="Which format do you want figures saved as? [png or pdf]",required=False,default='pdf',type=str)
+    parser.add_argument("-sac","--saveAllClusts",help="Save the sequences for all clusters generated? [T/F]",required=False,default=False,type=distutils.util.strtobool)
+    ############################################
+
     args = parser.parse_args()
     return(args)
 ###############################################################################################
@@ -112,7 +119,7 @@ def run():
     #    print("Error, check yourself (more error handling to come)")
 
     # A few of the argparse options don't have default entries
-    # because we are dependent on them being 
+    # because we are dependent on them being defined
     ###############################################################################################
     #### Definition of ALL variables used in this notebook: Need to let users add them in with flags
     # For now the defaults are commented out so we can compare/contrast any issues
@@ -177,6 +184,11 @@ def run():
     GETdist= args.GETdist
     parallel_dist = args.PARdist
     plot_props = args.Plotprops
+    ############################################
+    # More new features, gotta do what we gotta do:
+    clustOnly = args.clustOnly # False
+    saveFmt = args.saveFmt # pdf
+    saveAllClusts = args.saveAllClusts
     ############################################
 
     ######### Do you want to show 2D projection, 3D, or both?##################
@@ -329,7 +341,10 @@ def run():
             ax[0,0].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(Numclones),np.arange(Numclones),'k--',linewidth = 3)
     #######
     ax[0,0].set_xlabel('Sequence Position')
-    pl.savefig(outputDir+'/AIMS_mat.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_mat.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_mat.pdf',format='pdf')
     pl.close()
     # # Section 3: Calculate our Biophysical Property Matrices
     # Depending on what type of analysis you are doing, this will likely be the slowest step in this entire notebook
@@ -481,7 +496,7 @@ def run():
     elif clust == 'optics':
         clusts = cluster.OPTICS(min_samples=clust_size).fit_predict(clust_input)
     elif clust == 'dbscan':
-        clusts = cluster.DBSCAN(eps=clust_size).fit_predict(clust_input)
+        clusts = cluster.DBSCAN(min_samples=clust_size).fit_predict(clust_input)
 
     cluster_dset = pandas.DataFrame(clusts,columns=['cluster'])
     # # SECTION 5: Metadata Incorporation
@@ -543,7 +558,7 @@ def run():
     # Now plot the actual stuff, and save the object handles in a list
     colorhandle= []; ax=[]
     for i in np.arange(len(plotloc)):
-        print(dattype[i])
+        #print(dattype[i])
         if dattype[i] == 'clust':
             if clust == 'kmean':
                 cmap_use = pl.get_cmap('rainbow')
@@ -611,7 +626,8 @@ def run():
             ax[num].annotate(str(plot_labels[a]),xy=(i,j),fontsize=14)
             a+=1
 
-    pl.savefig(outputDir+'/AIMS_projections.png',format='png')
+    # Note, we never save these as a PDF because explicitly drawing a vector for each point is very slow/unwieldy
+    pl.savefig(outputDir+'/AIMS_projections.png',format='png',dpi=600)
     pl.close()
 
     # # Section 7: Quantify Cluster Compositions
@@ -662,12 +678,14 @@ def run():
 
     # Really not sure why *just* this file is mad being saved as a pdf. 
     # Had to put this line in to try to fix it though.
-
-    try:
-        pl.savefig(outputDir+'/AIMS_clusterQuant.pdf',format='pdf')
-    except:
-        pl.savefig(outputDir+'/AIMS_clusterQuant.png',format='png')
-    pl.close()
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_clusterQuant.png',format='png',dpi=600)
+    else:
+        try:
+            pl.savefig(outputDir+'/AIMS_clusterQuant.pdf',format='pdf')
+        except:
+            pl.savefig(outputDir+'/AIMS_clusterQuant.png',format='png',dpi=600)
+        pl.close()
 
     ###### CALCULATE CLUSTER SIGNIFICANCE ###########
     fig, ax = pl.subplots(1, 2,squeeze=False,figsize=(16,6))
@@ -682,7 +700,10 @@ def run():
     ax[0,0].set_title('Cluster Purity'); ax[0,1].set_title('Cluster Significance')
     pl.colorbar(x,ax=ax[0,0]); pl.colorbar(y,ax=ax[0,1])
 
-    pl.savefig(outputDir+'/AIMS_clusterPurity.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_clusterPurity.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_clusterPurity.pdf',format='pdf')
     pl.close()
 
     # # Section 8: Defining Data Subsets of Interest to Further Characterize Repertoire
@@ -739,9 +760,34 @@ def run():
     else:
         xyz = ax[0,0].imshow(np.transpose(np.array(clustered))[:,:-1], interpolation='nearest', aspect='auto',cmap=cmap)
     pl.colorbar(xyz)
-    pl.savefig(outputDir+'/AIMS_'+subset_sel+'_subViz.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_'+subset_sel+'_subViz.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_'+subset_sel+'_subViz.pdf',format='pdf')
     pl.close()
 
+    if saveAllClusts:
+        dset = seqF
+        # Stole this code from further down, but we don't want to deal with all
+        # of the plotting stuff. Redefine chosen map in case users picked "metadata"
+        chosen_map = clust_map; chosen_name = clust_name
+        # Have this as a debug step to make sure we're printing enough textfiles.
+        #print(np.shape(chosen_map.drop_duplicates().values))
+        sub_sels = chosen_map.drop_duplicates().values
+        for i in sub_sels:
+            # Look at umap dset or pca dset
+            # !!!!! NOTE: THIS MIGHT BE AN ERROR IN SOME LATER VERSIONS OF PYTHON
+            # !!!! I THINK THEY CHANGE HOW THEY HANDLE DATAFRAMES -> values
+            sub_MI = seq_MIf[seq_MIf.columns[chosen_map[chosen_map[chosen_name] == i[0]].index]]
+            sub_seqs = np.transpose(dset[sub_MI.columns])
+
+            sub_seqs.to_csv(outputDir+'/cluster'+str(i[0])+'_all.txt',header=None,index=None)
+
+    # Stop running the code early for just the clustering aspect
+    # Could probably add another of these to stop other analysis as well.
+    if clustOnly:
+        print('Stopping code after clustering per user definition')
+        quit()
 
     ###############################################################
     # NEW: AIMSDIST!
@@ -798,7 +844,10 @@ def run():
             distance_clusters = aims.get_distClusts(dists,metadat,max_d=5)
             distance_clusters.to_csv(outputDir+'/dist_clust.csv',index=False)
         pl.colorbar(x)
-        pl.savefig(outputDir+'/AIMSdist.pdf',format='pdf')
+        if saveFmt.lower() == 'png':
+            pl.savefig(outputDir+'/AIMSdist.png',format='png',dpi=600)
+        else:
+            pl.savefig(outputDir+'/AIMSdist.pdf',format='pdf')
         pl.close
 
     # # Section 9: Isolation of Individual Groups for Downstream Characterization
@@ -845,7 +894,10 @@ def run():
             seqlogo1.to_csv(outputDir+'/'+label[i]+'_logo.txt',header=None,index=None)
 
     print("Visualizing the subsets: "+str([str(a) for a in label]))
-    pl.savefig(outputDir+'/AIMS_'+subset_sel+'_selected.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_'+subset_sel+'_selected.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_'+subset_sel+'_selected.pdf',format='pdf')
     pl.close()
 
 
@@ -903,7 +955,10 @@ def run():
         axs[0,dat].set_title(str(label[sub_sels[dat]]) + ' - Charge')
         fig.colorbar(x, ax=axs[0,dat])
 
-    pl.savefig(outputDir+'/AIMS_'+subset_sel+'_charge.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_'+subset_sel+'_charge.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_'+subset_sel+'_charge.pdf',format='pdf')
     pl.close()
 
 
@@ -932,7 +987,10 @@ def run():
         axs[0,dat].set_title(str(label[sub_sels[dat]]) + ' - Hydropathy')
         fig.colorbar(x, ax=axs[0,dat])
 
-    pl.savefig(outputDir+'/AIMS_'+subset_sel+'_hydropathy.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_'+subset_sel+'_hydropathy.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_'+subset_sel+'_hydropathy.pdf',format='pdf')
     pl.close()
 
 
@@ -993,7 +1051,10 @@ def run():
     ax[0,0].set_xticklabels(['Charge','Hydrophobicity','Bulkiness','Flexibility'])
     ax[0,0].set_xlabel('Biophysical Property')
     ax[0,0].set_ylabel('Normalized Property Value')
-    pl.savefig(outputDir+'/AIMS_'+subset_sel+'_netAvgProp.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_'+subset_sel+'_netAvgProp.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_'+subset_sel+'_netAvgProp.pdf',format='pdf')
     pl.close()
 
     ##########################################################################
@@ -1083,7 +1144,10 @@ def run():
         ax[1,0].set_xlim([-0.5,sum(mat_size)-0.5])
 
     pl.xlabel('Sequence Position')
-    pl.savefig(outputDir+'/AIMS_posSensAvg.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_posSensAvg.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_posSensAvg.pdf',format='pdf')
     pl.close()
 
     ##########################################################################
@@ -1117,7 +1181,10 @@ def run():
         pl.xlabel('Sequence Position')
         ax[0,0].set_ylabel('Charge p-value')
         ax[1,0].set_ylabel('Hydropathy p-value')
-        pl.savefig(outputDir+'/AIMS_PosSens_pval.pdf',format='pdf')
+        if saveFmt.lower() == 'png':
+            pl.savefig(outputDir+'/AIMS_PosSens_pval.png',format='png',dpi=600)
+        else:
+            pl.savefig(outputDir+'/AIMS_PosSens_pval.pdf',format='pdf')
         pl.close()
 
 
@@ -1171,7 +1238,11 @@ def run():
     if type(mat_size) != int:
         for i in np.arange(len(mat_size)-1):
             ax2.plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100),np.linspace(0,4.2,100),'black',linewidth = 3)
-    pl.savefig(outputDir+'/AIMS_entropy.pdf',format='pdf')
+
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_entropy.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_entropy.pdf',format='pdf')
     pl.close()
 
     ############# Do stats? #############
@@ -1186,8 +1257,10 @@ def run():
 
         pl.xlabel('Sequence Position')
         pl.ylabel('p-value')
-
-        pl.savefig(outputDir+'/aims_entropy_pval.pdf',format='pdf')
+        if saveFmt.lower() == 'png':
+            pl.savefig(outputDir+'/aims_entropy_pval.png',format='png',dpi=600)
+        else:
+            pl.savefig(outputDir+'/aims_entropy_pval.pdf',format='pdf')
         pl.close()
 
 
@@ -1220,7 +1293,10 @@ def run():
                 ax[0,j].plot( (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100),np.linspace(0,poses,100),'black',linewidth = 3)
                 ax[0,j].plot( np.linspace(0,poses,100), (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100) ,'black',linewidth = 3)
 
-    pl.savefig(outputDir+'/AIMS_MI.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_MI.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_MI.pdf',format='pdf')
     pl.close()
 
 
@@ -1267,7 +1343,10 @@ def run():
     ax[0,1].set_ylabel("Sequence Position")
 
     #pl.colorbar(x)
-    pl.savefig(outputDir+'/AIMS_freq_sides.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_freq_sides.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_freq_sides.pdf',format='pdf')
     pl.close()
 
     # # Section 15: Binary Comparisons Between Datasets
@@ -1299,7 +1378,10 @@ def run():
             ax[0,0].plot( np.linspace(0,poses,100), (mat_size[i] + sum(mat_size[:i]) - 0.5) * np.ones(100) ,'black',linewidth = 3)
 
     pl.xlabel('Sequence Position'); pl.ylabel('Sequence Position')
-    pl.savefig(outputDir+'/AIMS_MIdiff.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_MIdiff.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_MIdiff.pdf',format='pdf')
     pl.close()
 
     ###############################################################
@@ -1323,8 +1405,10 @@ def run():
         x= pl.imshow(empty_mat_mi,cmap=cm.Greys)
         pl.xlabel('Sequence Position')
         pl.ylabel('Sequence Position')
-
-        pl.savefig(outputDir+'/AIMS_MIdiff_sig.pdf',format='pdf')
+        if saveFmt.lower() == 'png':
+            pl.savefig(outputDir+'/AIMS_MIdiff_sig.png',format='png',dpi=600)
+        else:
+            pl.savefig(outputDir+'/AIMS_MIdiff_sig.pdf',format='pdf')
         pl.close()
 
 
@@ -1350,7 +1434,10 @@ def run():
             place += i
             pl.plot(np.arange(21),place*np.ones(21),'black')
 
-    pl.savefig(outputDir+'/AIMS_freqDiff.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_freqDiff.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_freqDiff.pdf',format='pdf')
     pl.close()
 
     if DOstats:
@@ -1381,7 +1468,10 @@ def run():
         xax=pl.setp(ax,xticks=np.arange(20)+0.5,xticklabels=fin_key)
         pl.ylabel('Sequence Position')
         pl.xlabel('Amino Acid')
-        pl.savefig(outputDir+'/aa_diff_statSig.pdf',format='pdf')
+        if saveFmt.lower() == 'png':
+            pl.savefig(outputDir+'/aa_diff_statSig.png',format='png',dpi=600)
+        else:
+            pl.savefig(outputDir+'/aa_diff_statSig.pdf',format='pdf')
         pl.close()
 
 
@@ -1414,7 +1504,10 @@ def run():
     sns.swarmplot(x="Dataset", y="Linear Discriminant 1", data=df1, hue = 'Reactivity', palette = "Dark2")
     print("Classification Accuracy")
     print(acc_all)
-    pl.savefig(outputDir+'/AIMS_LDA.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_LDA.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_LDA.pdf',format='pdf')
     pl.close()
 
 
@@ -1435,7 +1528,10 @@ def run():
     bigass_parse_dset = pandas.concat([dset_parse,dset_ID],axis = 1)
     try:
         sns.pairplot(bigass_parse_dset,hue = 'ID')
-        pl.savefig(outputDir+'/AIMS_pairplot.pdf',format='pdf')
+        if saveFmt.lower() == 'png':
+            pl.savefig(outputDir+'/AIMS_pairplot.png',format='png',dpi=600)
+        else:
+            pl.savefig(outputDir+'/AIMS_pairplot.pdf',format='pdf')
         pl.close()
     except:
         print("Pairplot failed")
@@ -1471,7 +1567,10 @@ def run():
     ax[0,0].legend([label[0],label[1]])
     pl.ylabel('Frequency')
     pl.xlabel('Amino Acid')
-    pl.savefig(outputDir+'/AIMS_AAnetProb.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_AAnetProb.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_AAnetProb.pdf',format='pdf')
     pl.close()
 
     #########################################################
@@ -1489,7 +1588,10 @@ def run():
         pl.plot(p_df_fin.values[0],marker='o',linewidth=3,color='black')
         pl.plot(np.arange(20),np.ones(20)*0.05,linewidth=3,color='red')
         xax=pl.setp(ax,xticks=np.arange(20),xticklabels=fin_key)
-        pl.savefig(outputDir+'/AIMS_AAnetProb_pval.pdf',format='pdf')
+        if saveFmt.lower() == 'png':
+            pl.savefig(outputDir+'/AIMS_AAnetProb_pval.png',format='png',dpi=600)
+        else:
+            pl.savefig(outputDir+'/AIMS_AAnetProb_pval.pdf',format='pdf')
         pl.close()
 
 
@@ -1525,7 +1627,10 @@ def run():
 
     fig.colorbar(x1, ax=ax[0, 0], shrink=0.5)
     fig.colorbar(x2, ax=ax[0, 1], shrink=0.5)
-    pl.savefig(outputDir+'/AIMS_digram_sep.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_digram_sep.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_digram_sep.pdf',format='pdf')
     pl.close()
 
 
@@ -1553,7 +1658,10 @@ def run():
     ax[0,0].set_ylabel('First Amino Acid')
     ax[0,0].set_xlabel('Second Amino Acid')
     pl.colorbar(zzz)
-    pl.savefig(outputDir+'/AIMS_digramDiff.pdf',format='pdf')
+    if saveFmt.lower() == 'png':
+        pl.savefig(outputDir+'/AIMS_digramDiff.png',format='png',dpi=600)
+    else:
+        pl.savefig(outputDir+'/AIMS_digramDiff.pdf',format='pdf')
     pl.close()
 
     ##################################################
@@ -1586,7 +1694,10 @@ def run():
         xax=pl.setp(ax,yticks=np.arange(20),yticklabels=fin_key)
         ax[0,0].set_ylabel('First Amino Acid')
         ax[0,0].set_xlabel('Second Amino Acid')
-        pl.savefig(outputDir+'/digram_diff_sig.pdf',format='pdf')
+        if saveFmt.lower() == 'png':
+            pl.savefig(outputDir+'/digram_diff_sig.png',format='png',dpi=600)
+        else:
+            pl.savefig(outputDir+'/digram_diff_sig.pdf',format='pdf')
         pl.close()
 
 if __name__ == '__main__':
