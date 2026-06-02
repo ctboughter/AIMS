@@ -1,0 +1,7 @@
+# Include gitignore to now ignore "dev" versions of scripts on working machine
+# Note for other users, these are often just copies of the most recent versions of each *.py file
+aims_immune/aims_loader_dev.py
+aims_immune/aims_classification_dev.py
+aims_immune/aims_analysis_dev.py
+aims_immune/AIMS_notebook_dev.ipynb
+aims_immune/aims_cli_dev.py

@@ -42,35 +42,21 @@ for i in np.arange(len(AA_key)):
 AA_num_key_new=properties[1]
 AA_num_key=np.arange(20)+1
 
+# So, this script was HORRIBLY slow (nested "for" loop)
+# For no reason, actually. Was just one of the first functions written
+# Only noticed it was slow with ~500k sequences.
+# Replace with pandas.str.len.max (faster)
+# now forcing to pass a dataframe with rows=loops and cols=sequences
+# originally returned max_len, sequence_dim, and seqlens. Never used the latter two, remove for now.
 def get_sequence_dimension(re_poly):
     num_loops,num_clones=np.shape(re_poly)
     seqlenF = []
     for i in np.arange(num_loops):
-        if i == 0:
-            max_len=len(re_poly[i,0])
-        elif i <= num_loops:
-            max_len=np.vstack((max_len,len(re_poly[i,0])))
-        for j in np.arange(num_clones):
-            seqlen = len(re_poly[i,j])
-            if i == 0:
-                if seqlen > max_len:
-                    max_len = seqlen
-            else:
-                if seqlen > max_len[i]:
-                    max_len[i] = seqlen
-            if type(seqlenF) == list:
-                seqlenF = seqlen
-            else:
-                seqlenF = np.vstack((seqlenF,seqlen))
-    max_len=max_len+3 # Add 3 here so there's a more pronounced space between loops
-    ## SO NOW MAX LEN SHOULD HAVE THE MAXIMUM LENGTH OF EACH CDR LOOP ##
-    if num_loops == 1:
-        sequence_dim = max_len
-        seqlens = seqlenF.reshape(num_clones,num_loops)
-    else:
-        sequence_dim = int(sum(max_len))
-        seqlens = seqlenF.reshape(num_clones,num_loops)
-    return(max_len,sequence_dim,seqlens)
+        tempLen = np.transpose(re_poly).iloc[:,i].str.len().max()
+        #Add 3 here so there's a more pronounced space between loops
+        seqlenF = seqlenF + [tempLen+3]
+
+    return(seqlenF)
 
 # NOTE, manuscript_arrange=False MUST be selected to run MHC analysis
 # I used to re-arrange the CDR loops for a more position-accurate
@@ -89,8 +75,8 @@ alignment = 'center',bulge_pad = 8):
     if len(giveSize) == 0:
         if binary:
             # NEW ADDITION TO CLEAN THINGS UP A BIT #
-            max_len1 = get_sequence_dimension(pre_poly)[0]
-            max_len2 = get_sequence_dimension(pre_mono)[0]
+            max_len1 = get_sequence_dimension(pandas.DataFrame(pre_poly))
+            max_len2 = get_sequence_dimension(pandas.DataFrame(pre_mono))
             max_lenp=np.zeros(len(max_len1))
             for i in np.arange(len(max_len1)):
                 max_lenp[i]=int(max(max_len1[i],max_len2[i]))
@@ -99,7 +85,8 @@ alignment = 'center',bulge_pad = 8):
             else:
                 sequence_dim = int(sum(max_lenp))
         else:
-            max_lenp,sequence_dim,seqlens=get_sequence_dimension(pre_poly)
+            max_lenp=get_sequence_dimension(pandas.DataFrame(pre_poly))
+            sequence_dim = int(sum(max_lenp))
     else:
         max_lenp = giveSize
         if type(max_lenp) == int:
@@ -513,9 +500,10 @@ def prop_patterning(mono_PCA,poly_PCA,mat_size=100,props=properties[1:],ridZero=
 
 def prop_pairing(ALL_mono,ALL_poly,mat_size=100,props=properties[1:],win_size = 3):
     # Try to maximize differences across the properties by looking at patterning...
-    max_len1=get_sequence_dimension(ALL_poly)[0]
-    max_len2=get_sequence_dimension(ALL_mono)[0]
+    max_len1=get_sequence_dimension(pandas.DataFrame(ALL_poly))
+    max_len2=get_sequence_dimension(pandas.DataFrame(ALL_mono))
     max_lenp=np.zeros(6)
+    sequence_dim = int(sum(max_lenp))
     for i in np.arange(6):
         max_lenp[i]=max(max_len1[i],max_len2[i])
     max_size=int(max(max_lenp))
@@ -680,15 +668,16 @@ def gen_1Chain_matrix(pre_poly,AA_key=AA_key,key=AA_num_key_new,binary=False,pre
     if len(giveSize) == 0:
         if binary:
             # NEW ADDITION TO CLEAN THINGS UP A BIT #
-            max_len1=get_sequence_dimension(pre_poly)[0]
-            max_len2=get_sequence_dimension(pre_mono)[0]
+            max_len1=get_sequence_dimension(pandas.DataFrame(pre_poly))
+            max_len2=get_sequence_dimension(pandas.DataFrame(pre_mono))
             max_lenp=np.zeros(3)
             for i in np.arange(3):
                 max_lenp[i]=max(max_len1[i],max_len2[i])
 
             sequence_dim = int(sum(max_lenp))
         else:
-            max_lenp,sequence_dim,seqlens=get_sequence_dimension(pre_poly)
+            max_lenp=get_sequence_dimension(pandas.DataFrame(pre_poly))
+            sequence_dim = int(sum(max_lenp))
     else:
         max_lenp = giveSize
         sequence_dim = int(sum(max_lenp))
@@ -1000,8 +989,8 @@ pre_mono=[],giveSize='',return_Size=False):
     if len(giveSize) == 0:
         if binary:
             # NEW ADDITION TO CLEAN THINGS UP A BIT #
-            max_len1 = get_sequence_dimension(pre_poly)[0]
-            max_len2 = get_sequence_dimension(pre_mono)[0]
+            max_len1 = get_sequence_dimension(pandas.DataFrame(pre_poly))
+            max_len2 = get_sequence_dimension(pandas.DataFrame(pre_mono))
             max_lenp=np.zeros(len(max_len1))
             for i in np.arange(len(max_len1)):
                 max_lenp[i]=int(max(max_len1[i],max_len2[i]))
@@ -1010,7 +999,8 @@ pre_mono=[],giveSize='',return_Size=False):
             else:
                 sequence_dim = int(sum(max_lenp))
         else:
-            max_lenp,sequence_dim,seqlens=get_sequence_dimension(pre_poly)
+            max_lenp=get_sequence_dimension(pandas.DataFrame(pre_poly))
+            sequence_dim = int(sum(max_lenp))
     else:
         max_lenp = giveSize
         if type(max_lenp) == int:

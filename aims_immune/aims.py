@@ -758,7 +758,7 @@ class Analysis(Screen):
                 ID = i*ID_pre
                 if molecule == 'mhc':
                     seq_keyF = seq_key
-                mat_size = aims.get_sequence_dimension(np.array(seq))[0]
+                mat_size = aims.get_sequence_dimension(seq)
             else:
                 seq_final = pandas.concat([seq_final,seq],axis = 1)
                 seqNameF = np.vstack((seqNameF,labels[i]))
@@ -766,7 +766,7 @@ class Analysis(Screen):
                 ID = np.hstack((ID, i*ID_pre))
                 if molecule == 'mhc':
                     seq_keyF = np.hstack((seq_keyF,seq_key))
-                mat_size2 = aims.get_sequence_dimension(np.array(seq))[0]
+                mat_size2 = aims.get_sequence_dimension(seq)
                 if type(mat_size) != int:
                     max_lenp=np.zeros(len(mat_size))
                     for i in np.arange(len(mat_size)):

@@ -396,8 +396,8 @@ manuscript_arrange=False,pca_split=False,special = '',align='center',got_big = F
 def classy_apply(test_mat,y_test,train_mat,y_train, matsize = 100, OneChain = False, 
                   ridCorr = False, feat_sel = 'none', classif = 'mda'):
         
-    max_len1 = aims.get_sequence_dimension(test_mat)[0]
-    max_len2 = aims.get_sequence_dimension(train_mat)[0]
+    max_len1 = aims.get_sequence_dimension(pandas.DataFrame(test_mat))
+    max_len2 = aims.get_sequence_dimension(pandas.DataFrame(train_mat))
     max_len = np.zeros(6)
     for i in np.arange(6):
         max_len[i]=max(max_len1[i],max_len2[i])

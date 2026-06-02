@@ -288,7 +288,7 @@ def run():
         metaF = seqAll.loc[1]
 
     # In[4]:
-    mat_size = aims.get_sequence_dimension(np.array(seqF))[0]
+    mat_size = aims.get_sequence_dimension(seqF)
     # General changes that need to be done for every type of molecule
     AA_num_key = aims.get_props()[1]
     if num_loop != 1:
