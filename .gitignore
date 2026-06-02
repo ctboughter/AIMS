@@ -1,7 +1,11 @@
 # Include gitignore to now ignore "dev" versions of scripts on working machine
 # Note for other users, these are often just copies of the most recent versions of each *.py file
-aims_immune/aims_loader_dev.py
-aims_immune/aims_classification_dev.py
-aims_immune/aims_analysis_dev.py
-aims_immune/AIMS_notebook_dev.ipynb
-aims_immune/aims_cli_dev.py
+
+# ACTUALLY, DONT IGNORE ANYTHING ON THE BRANCH. YOU NEED THESE FUNCTIONS FOR IT TO RUN TEMPORARILY. 
+# Shows that I need to make these scripts less intertwined.
+
+#aims_immune/aims_loader_dev.py
+#aims_immune/aims_classification_dev.py
+#aims_immune/aims_analysis_dev.py
+#aims_immune/AIMS_notebook_dev.ipynb
+#aims_immune/aims_cli_dev.py
