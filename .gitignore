@@ -4,8 +4,12 @@
 # ACTUALLY, DONT IGNORE ANYTHING ON THE BRANCH. YOU NEED THESE FUNCTIONS FOR IT TO RUN TEMPORARILY. 
 # Shows that I need to make these scripts less intertwined.
 
-#aims_immune/aims_loader_dev.py
-#aims_immune/aims_classification_dev.py
-#aims_immune/aims_analysis_dev.py
-#aims_immune/AIMS_notebook_dev.ipynb
-#aims_immune/aims_cli_dev.py
+Z_assorted_notes.txt
+aims_immune/AIMS_timing.pdf
+aims_immune/sim_seqs.csv
+aims_immmune/__pycache__
+aims_immune/__pycache__/*
+dist
+dist/*
+aims_immune.egg-info
+aims_immune.egg-info/*  

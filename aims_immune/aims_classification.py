@@ -21,7 +21,7 @@ from sklearn.decomposition import KernelPCA
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import mutual_info_classif
 from scipy.stats import pearsonr
-
+from numba import njit, prange, set_num_threads, get_num_threads
 # Custom Script
 from aims_immune import aims_analysis as aims
 
@@ -43,15 +43,17 @@ AA_key_dash = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','
 newnew=pandas.read_csv(datPath+'app_data/new_props')
 oldold=pandas.read_csv(datPath+'app_data/old_props')
 
-properties=np.zeros((len(newnew)+len(oldold),20))
+# Had some bad coding practice in here. Was redefining "properties" as a local var
+# Rather than change that everywhere, lets explicitly refer this as properties_global.
+properties_global=np.zeros((len(newnew)+len(oldold),20))
 for i in np.arange(len(AA_key)):
-    properties[0:16,i]=oldold[AA_key[i]]
-    properties[16:,i]=newnew[AA_key[i]]
+    properties_global[0:16,i]=oldold[AA_key[i]]
+    properties_global[16:,i]=newnew[AA_key[i]]
 
-AA_num_key_new=properties[1]
+AA_num_key_new=properties_global[1]
 AA_num_key=np.arange(20)+1
 
-def apply_matrix(mono_PCA,max_diffs,mat_size=100,props=properties[1:],ridZero=False,win_size = 3):
+def apply_matrix(mono_PCA,max_diffs,mat_size=100,props=properties_global[1:],ridZero=False,win_size = 3):
     # Try to maximize differences across the properties by looking at patterning...
 
     # Re-normalize the properties for use in the matrix...
@@ -87,11 +89,67 @@ def apply_matrix(mono_PCA,max_diffs,mat_size=100,props=properties[1:],ridZero=Fa
 
     return(new_mat_mono/win_size)
 
+#### K.I.S.S. just make a new script to get the big matrix:
+@njit(parallel=True)
+def getBig(mono_PCA,properties, norm = 'msuv',num_threads=-1):
+    # Need to allow an option such that users can opt for NO parallelization.
+    # Will have parallel default now that we aren't using multiprocessing.
+    # I trust numba to handle things moreso than my scrappy code.
+    orig_threads = get_num_threads()
+    # By default, numba uses all threads, so if user does not define num threads we will do the same
+    if num_threads == -1:
+        num_threads = orig_threads
+    elif num_threads > orig_threads:
+        print("Warning: You have requested more threads than are available. Setting to max threads.")
+        num_threads = orig_threads  
+    # If user defines number threads, set em. If 
+    set_num_threads(num_threads)
+
+    # Try to maximize differences across the properties by looking at patterning...
+    # Reminder, we skip two here because the old properties have homemade
+    # amino acid keys that may not be physically meaningful.
+    props = properties[2:]
+
+    # Re-normalize the properties for use in the matrix...
+    # msuv = Mean-subtracted unit vector. Not sure why I did it this way
+    if norm=='msuv':
+        for i in np.arange(len(props)):
+            props[i] = props[i]-np.average(props[i])
+            props[i] = props[i]/np.linalg.norm(props[i])
+    elif norm=='zscore':
+        for i in np.arange(len(props)):
+            props[i] = props[i] - np.average(props[i])
+            props[i] = props[i]/np.std(props[i])
+    elif norm =='0to1':
+        for i in np.arange(len(props)):
+            props[i] = props[i] - np.min(props[i])
+            props[i] = props[i]/(np.max(props[i])-np.min(props[i]))
+
+    mono_pca_NEW = mono_PCA
+
+    mono_dim1,mono_dim2=np.shape(mono_pca_NEW)
+
+    # So this is where we should be able to do the averaging
+    # Subtle change for numba had to change list to tuple
+    mono_prop_masks=np.zeros((len(props),mono_dim1,int(mono_dim2)))
+
+    for i in prange(len(props)): # For all of our properties...
+        for j in prange(mono_dim1): # for every clone
+            for k in prange(int(mono_dim2)): # for every position
+                # Hopefully this should speed things up a *tiny* bit
+                if mono_pca_NEW[j,k]==0:
+                    continue
+                for m in AA_num_key:
+                    if mono_pca_NEW[j,k]==m:
+                        mono_prop_masks[i,j,k]=mono_prop_masks[i,j,k]+props[i,m-1]
+
+    return(mono_prop_masks)
+
 # CAN WE DO IT WITH ONE MATRIX???
 def get_bigass_matrix(ALL_mono,AA_key=AA_key,AA_key_dash=AA_key_dash, OneChain = False, giveSize=[], onlyCen = False, bulge_pad=8, prop_parse=False,
 manuscript_arrange=False,special='', alignment = 'center', norm = 'msuv'):
     
-    AA_num_key_new=properties[1]
+    AA_num_key_new=properties_global[1]
     # Alright so if we DO change our AA_key of the sequences, we also need to 
     ori_key = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V']
     if AA_key != ori_key:
@@ -135,7 +193,17 @@ manuscript_arrange=False,special='', alignment = 'center', norm = 'msuv'):
         mono_PCAF = mono_PCA
         mono_MIF = mono_MI
 
-    BIG_mono = aims.getBig(mono_MIF,AA_key=AA_key, norm = norm,prop_parse=prop_parse)
+    if prop_parse:
+        properties=np.zeros((len(oldold),20))
+        for i in np.arange(len(AA_key)):
+            properties[0:16,i]=oldold[AA_key[i]]
+    else:
+        properties=np.zeros((len(newnew)+len(oldold),20))
+        for i in np.arange(len(AA_key)):
+            properties[0:16,i]=oldold[AA_key[i]]
+            properties[16:,i]=newnew[AA_key[i]]
+            
+    BIG_mono = getBig(mono_MIF,properties=properties,norm = norm)
     amono,bmono,cmono = np.shape(BIG_mono)
 
     #SO WE CANT JUST USE NP.RESHAPE

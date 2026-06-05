@@ -10,7 +10,6 @@ authors = [
 ]
 description = "A software for the analysis of immune repertoires"
 readme = "README.md"
-requires-python = "<=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -18,7 +17,6 @@ classifiers = [
 ]
 dependencies = [
     "requests",
-    'importlib-metadata; python_version<"3.9"',
     'kivy>=2.1.0',
     'umap-learn==0.5.3',
     'biopython>=1.76',

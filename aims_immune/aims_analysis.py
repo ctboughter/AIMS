@@ -718,60 +718,6 @@ def gen_1Chain_matrix(pre_poly,AA_key=AA_key,key=AA_num_key_new,binary=False,pre
     else:
         return(poly_PCA)
 
-#### K.I.S.S. just make a new script to get the big matrix:
-def getBig(mono_PCA,AA_key=AA_key, norm = 'msuv',prop_parse=False):
-    # Try to maximize differences across the properties by looking at patterning...
-    # Redifine "properties" because I was getting some weird errors...
-        # Prop_parse removes the "hotspot" variables for better physical
-    # interpretability (a key moving forward)
-    if prop_parse:
-        properties=np.zeros((len(oldold),20))
-        for i in np.arange(len(AA_key)):
-            properties[0:16,i]=oldold[AA_key[i]]
-    else:
-        properties=np.zeros((len(newnew)+len(oldold),20))
-        for i in np.arange(len(AA_key)):
-            properties[0:16,i]=oldold[AA_key[i]]
-            properties[16:,i]=newnew[AA_key[i]]
-
-    # Reminder, we skip two here because the old properties have homemade
-    # amino acid keys that may not be physically meaningful.
-    props = properties[2:]
-
-    # Re-normalize the properties for use in the matrix...
-    # msuv = Mean-subtracted unit vector. Not sure why I did it this way
-    if norm=='msuv':
-        for i in np.arange(len(props)):
-            props[i] = props[i]-np.average(props[i])
-            props[i] = props[i]/np.linalg.norm(props[i])
-    elif norm=='zscore':
-        for i in np.arange(len(props)):
-            props[i] = props[i] - np.average(props[i])
-            props[i] = props[i]/np.std(props[i])
-    elif norm =='0to1':
-        for i in np.arange(len(props)):
-            props[i] = props[i] - np.min(props[i])
-            props[i] = props[i]/(np.max(props[i])-np.min(props[i]))
-
-    mono_pca_NEW = mono_PCA
-
-    mono_dim1,mono_dim2=np.shape(mono_pca_NEW)
-
-    # So this is where we should be able to do the averaging
-    mono_prop_masks=np.zeros([len(props),mono_dim1,int(mono_dim2)])
-
-    for i in np.arange(len(props)): # For all of our properties...
-        for j in np.arange(mono_dim1): # for every clone
-            for k in np.arange(int(mono_dim2)): # for every position
-                # Hopefully this should speed things up a *tiny* bit
-                if mono_pca_NEW[j,k]==0:
-                    continue
-                for m in AA_num_key:
-                    if mono_pca_NEW[j,k]==m:
-                        mono_prop_masks[i,j,k]=mono_prop_masks[i,j,k]+props[i,m-1]
-
-    return(mono_prop_masks)
-
 # So basically this and the above code are the "prop_patterning"
 # code broken up in two so it makes more sense in a classifier.
 def parse_props(X_train,y_train,mat_size=100):
