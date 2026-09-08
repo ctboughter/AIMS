@@ -22,6 +22,8 @@ import matplotlib.gridspec as gridspec
 from sklearn.utils import resample
 import argparse
 import distutils
+import seaborn as sns
+from aims_immune import aims_utils as utils
 
 # This bit is for that figure formatting. Change font and font size if desired
 font = {'family' : 'Arial',
@@ -150,7 +152,7 @@ def run():
     pad = args.bulgePad #6
 
     # Specifically normalization for the bphys property matrix
-    normalize = args.normProp # True
+    normalize = args.normProp # msuv
     renormalize = args.REnorm # True
     # For the clustering
     dchoice = args.clustData #'parse'
@@ -253,45 +255,21 @@ def run():
     # In[3]:
     if len(fileName) != len(datName):
         print("A mistake! You don't have the proper number of labels for your files")
-    elif molecule.lower() == 'ig':
-        for i in np.arange(len(fileName)):
-            seq_pre = aimsLoad.Ig_loader(datDir+'/'+fileName[i],label=datName[i],loops=num_loop,drop_degens = drop_duplicates)
-            if i == 0:
-                seqPRE = seq_pre
-            else:
-                seqPRE = pandas.concat([seqPRE,seq_pre],axis=1)
-        seqF = seqPRE
-    elif molecule.lower() == 'peptide':
-        for i in np.arange(len(fileName)):
-            seq_pre = aimsLoad.pep_loader(datDir+'/'+fileName[i],label=datName[i])
-            if i == 0:
-                seqPRE = seq_pre
-            else:
-                seqPRE = pandas.concat([seqPRE,seq_pre],axis=1)
-        seqF = seqPRE
-    elif molecule.lower() == 'msa':
-        for i in np.arange(len(fileName)):
-            seq_pre = aimsLoad.msa_loader(datDir+'/'+fileName[i],label=datName[i],drop_dups = drop_duplicates)
-            if i == 0:
-                seqAll = seq_pre
-            else:
-                seqAll = pandas.concat([seqAll,seq_pre],axis=1)
-        # Have to reshape our sequences
-        seqs = np.array(seqAll.loc[0].values).reshape(1,len(seqAll.loc[0].values))
-        seqPRE = pandas.DataFrame(seqs)
-        seqPRE.columns = seqAll.columns
-        if subset:
-            seqF = aims.get_msa_sub(seqPRE,subset_starts,subset_ends)
-        else:
-            seqF = seqPRE
-        # Save our FASTA headers as metadata. May be useful downstream or not
-        metaF = seqAll.loc[1]
 
-    # In[4]:
+    # This is where we actually do all the loading of the data:
+    for i in np.arange(len(fileName)):
+        seq_pre = aimsLoad.seq_loader(datDir+'/'+fileName[i],label=datName[i],drop_dups= drop_duplicates,subset=subset,subset_starts=subset_starts,subset_ends=subset_ends)
+        if i == 0:
+            seqF = seq_pre
+        else:
+            seqF = pandas.concat([seqF,seq_pre],axis=1)
+
+    # This is where we define the matrix dimensions
     mat_size = aims.get_sequence_dimension(seqF)
+
     # General changes that need to be done for every type of molecule
     AA_num_key = aims.get_props()[1]
-    if num_loop != 1:
+    if np.shape(seqF)[0] != 1:
         for i in np.arange(len(mat_size)):
             if i == 0:
                 xtick_loc = [mat_size[i]/2]
@@ -299,8 +277,7 @@ def run():
                 pre_loc = sum(mat_size[:i])
                 xtick_loc = xtick_loc + [mat_size[i]/2 + pre_loc]
         else:
-            xtick_loc = mat_size/2
-
+            xtick_loc = np.array(mat_size)/2
 
     # # Section 2: Sequence Visualization via AIMS Matrix Encoding
     # If looking at Ig molecules, you can decide if you would like to align to the center, left, or right of each sequence.
@@ -364,77 +341,14 @@ def run():
 
     #################### PARALLEL PROCESSING TO CREATE BIG MATRIX #######################
     if parallel_process:
-        import multiprocessing as mp
-        def boot_it(data):
-            bigass = classy.get_bigass_matrix(dsetF[:,data[0]:data[1]],AA_key=my_AA_key,AA_key_dash=my_AA_key_dash, giveSize = mat_size, alignment = align,special = special, norm=normalize,bulge_pad=pad)
-            return(bigass)
-        def do_boot(data):
-            with mp.Pool() as pool:
-                results = pool.map(boot_it, data)
-                return(results)
-        if __name__ == "__main__":
-            # Probably a smarter way to calculate #seqs per node, but do 100 for now
-            final = aims.gen_splits(splitMat = seq_MIf, splitSize = 100)
-            big_pre = do_boot(final)
-        total_mat = np.concatenate(big_pre, axis = 0)
+        nCores = -1
     else:
-        #################### Or, Don't Parallelize to CREATE BIG MATRIX #######################
-        bigass = classy.get_bigass_matrix(dsetF,AA_key=my_AA_key,AA_key_dash=my_AA_key_dash, giveSize = mat_size, alignment = align, norm = normalize,special=special,bulge_pad=pad )
-        total_mat = bigass
-        
-    # Generate a large list of property names and matrix positions so you can pinpoint strong
-    # contributors to discrimating features between datasets or clusters
-    prop_list_old = ['Phobic1','Charge','Phobic2','Bulk','Flex','Kid1','Kid2','Kid3','Kid4','Kid5','Kid6','Kid7','Kid8','Kid9','Kid10']
-    prop_list_new = ['Hot'+str(b+1) for b in range(46)]
-    prop_names = prop_list_old + prop_list_new
-    num_locs = int(np.shape(total_mat)[1]/61)
-    Bigass_names = []
-    for i in prop_names:
-        for j in np.arange(num_locs):
-            Bigass_names = Bigass_names + [ i + '-' + str(j) ]
+        nCores = 1
 
-    ########################################################################################
-    if renormalize:
-        entropy_pre,freq_pre,cov_pre = aims.calculate_shannon(np.transpose(seq_MIf.values))
-
-        repeat_ent = []
-        for i in np.arange(len(prop_names)):
-            repeat_ent = repeat_ent + [2**entropy_pre]
-
-        refactor = np.array(repeat_ent).reshape(61*len(entropy_pre))
-
-        pp_mat = total_mat*refactor
-    else:
-        pp_mat = total_mat
-    ##########################################################################################
-
-    # Drop Highly Correlated Vectors and Vectors where entry=0 for all entries
-    ###### Currently drop vectors with over 0.75 corr. coef. ################
-    full_big = pandas.DataFrame(pp_mat,columns = Bigass_names)
-    drop_zeros = [column for column in full_big.columns if all(full_big[column] == 0 )]
-    y = full_big.drop(full_big[drop_zeros], axis=1)
-    z_pre = np.abs(np.corrcoef(np.transpose(y)))
-    z = pandas.DataFrame(z_pre,columns=y.columns,index=y.columns)
-    # Select upper triangle of correlation matrix
-    upper = z.where(np.triu(np.ones(z.shape), k=1).astype(bool))
-    # If you did want to change that corr. coef. cutoff, do so here
-    to_drop = [column for column in upper.columns if ( any(upper[column] > 0.75) ) ]
-
-    # Your final product of a parsed matrix
-    parsed_mat = y.drop(y[to_drop], axis=1)
-
-    # This is a new, important variable to account for the cases where renormalization
-    # is used. We need non-renormed data for downstream repertoire characterization
-    NonNorm_big = pandas.DataFrame(total_mat,columns = Bigass_names)
-
-    # Let's have some default metadata we can pull from later
-    tokenized_dset = []
-    for i in np.arange(len(datName)):
-        for j in seqF.columns:
-            if str(j).find(datName[i]) != -1:
-                tokenized_dset.append(i)
-    token_df = pandas.DataFrame(tokenized_dset,columns=['ID'])
-    IDed_full_big = pandas.concat([full_big,token_df],axis=1)
+    # New from the AIMS notebook! We took a bunch of code and put it into "utils". Helps clean things up AND allow for parallelization
+    # without using the python multiprocessing suite (which was throwing off our ability to work with the newest python versions)...
+    full_big,parsed_mat,NonNorm_big,IDed_full_big,seq_bigReshape,token_df = utils.grab_big(seqF,dsetF,seq_MIf,datName,normalize,renormalize,molecule,
+             my_AA_key,my_AA_key_dash,mat_size,align,pad,nCores)
 
     # Lastly, create a good-ole traditional averaged bphys property matrix
     # i.e. each sequence gets a single value for averaged charge, averaged flexibility, etc...
@@ -803,46 +717,20 @@ def run():
                 sorted_seqs = sub_seqs_temp
             else:
                 sorted_seqs = pandas.concat([sorted_seqs,sub_seqs_temp])
-        ########################################################################################################3
-        if parallel_dist:
-            import multiprocessing as mp
-            def boot_it(data):
-                if data[0][0] == data[1][0]:
-                    dist_temp = aims.calc_AIMSdist(sorted_seqs[data[0][0]:data[0][1]])
-                else:
-                    dist_temp = aims.calc_AIMSdist(sorted_seqs[data[0][0]:data[0][1]],sorted_seqs[data[1][0]:data[1][1]])
-                return(data,dist_temp)
-            def do_boot(data):
-                with mp.Pool() as pool:
-                    results = pool.map(boot_it, data)
-                    return(results)
-            if __name__ == "__main__":
-                # Probably a smarter way to calculate #seqs per node, but do 100 for now
-                xx = aims.prep_distCalc(sorted_seqs)
-                dist_pre = do_boot(xx)
-            dist_matF = np.zeros((len(sorted_seqs),len(sorted_seqs)))
-            for i in np.arange(len(dist_pre)):
-                # Set 1 will be our x-axis of the matrix
-                # set 2 will be our y-axis of the matrix
-                set1 = dist_pre[i][0][0]
-                set2 = dist_pre[i][0][1]
-                # Set 3 is then the data that goes in that space
-                set3 = dist_pre[i][1]
-
-                # Need to fill both the matrix entry and the 
-                # transpose of that entry!!!
-                dist_matF[set1[0]:set1[1],set2[0]:set2[1]] = set3
-                dist_matF[set2[0]:set2[1],set1[0]:set1[1]] = np.transpose(set3)
-            dists = dist_matF
-        else:
-            dists = aims.calc_AIMSdist(sorted_seqs)
+        ########################################################################################################
+        # Little wonky here, but define plot_metas manually since in the notebook we use "utils" to create it...
+        # Don't need to be quite so clean with the CLI, so don't need to rely on utils
+        # Also add in "noFig" just because I'm not sure the in-function plotting will work as well in the CLI
+        plot_metas =  [clust_map,clust_leg,clust_name, meta_map,meta_leg,meta_name]
+        dists,dist_clusts = utils.run_AIMSdist(NonNorm_big,seq_MIf,
+                                     seqF,plot_metas,chosen_map,chosen_name,nThreads=nCores,noFig = True)
+        
         fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(10,8))
         x = pl.imshow(np.transpose(dists), interpolation='nearest', aspect='auto',vmin=0,vmax=11)
 
         # Optionally can get back distance clusters:
         if get_distClusts:
-            distance_clusters = aims.get_distClusts(dists,metadat,max_d=5)
-            distance_clusters.to_csv(outputDir+'/dist_clust.csv',index=False)
+            dist_clusts.to_csv(outputDir+'/dist_clust.csv',index=False)
         pl.colorbar(x)
         if saveFmt.lower() == 'png':
             pl.savefig(outputDir+'/AIMSdist.png',format='png',dpi=600)
@@ -1492,7 +1380,6 @@ def run():
     bigF,weights,acc_all,mda_all,final,top_names = classy.do_linear_split(bigass1,bigass2,got_big=True,matSize=matSize)
     ############################################################
 
-    import seaborn as sns
     fig = pl.figure(figsize = (12, 12))
     dset = ["Linear Discriminant Analysis" for x in range(seq1_len+seq2_len)]
     reacts = [label[0] for x in range(seq1_len)] + [label[1] for x in range(seq2_len)]
@@ -1513,12 +1400,10 @@ def run():
 
     # In[26]:
 
-
     # Show the top properties that differentiate the two populations
     # show_top = how many of these top values do you want to show? don't recommend more than ~5
     # solely due to how busy the figure gets
     # Again, see eLife paper for biophysical property definitions
-    import seaborn as sns
     show_top = 5
     dset_parse = final[top_names[0:show_top]]
     dset_ID_pre1 = bigF['ID']
@@ -1549,8 +1434,8 @@ def run():
     seq2 = sub_seqF.loc[ref_sub[ref_sub[len(sub_matF)-1] == 1].index]
     # Calculate both position-insensitive amino acid frequency and digram frequencies
     # Can either normalize to the # of sequences or total number of AA (num_seq or num_AA)
-    AA_freq_all1, digram_all1 = aims.full_AA_freq(seq1,norm='num_AA')
-    AA_freq_all2, digram_all2 = aims.full_AA_freq(seq2,norm='num_AA')
+    AA_freq_all1  = aims.full_AA_freq(seq1,my_AA_key)
+    AA_freq_all2  = aims.full_AA_freq(seq2,my_AA_key)
 
     freqAll1 = np.transpose(pandas.DataFrame(AA_freq_all1))
     freqAll1.columns = AA_key
@@ -1578,7 +1463,7 @@ def run():
         data1 = seqF[ref_sub[ref_sub[len(sub_matF)-1] == 0].index]
         data2 = seqF[ref_sub[ref_sub[len(sub_matF)-1] == 1].index]
 
-        p_freq = aims.do_statistics(data1,data2,num_reps=boots,test='function',test_func=aims.full_AA_freq,func_val = 0)
+        p_freq = aims.do_statistics(data1,data2,num_reps=100,test='function',test_func=aims.full_AA_freq,my_AA_key=my_AA_key)
 
         p_df = np.transpose(pandas.DataFrame(p_freq))
         p_df.columns = AA_key
@@ -1601,6 +1486,10 @@ def run():
     # Note, while the matrix could possibly appear symmetric, it need not be so. The y-axis gives the first amino acid in the digram, the x-axis gives the second. So on the x,y coordinate map, E (x-axis) and D (y-axis) gives the frequency of the digram DE.
 
     # In[28]:
+
+    # We changed this in the notebook, change it here too. Digram now has its own function
+    digram_all1 = aims.digram_AA_freq(seq1,my_AA_key)
+    digram_all2 = aims.digram_AA_freq(seq2,my_AA_key)
 
     fig, ax = pl.subplots(int(len(label)/2), 2,squeeze=False,figsize=(16,12))
     plot_max = np.max([np.max(digram_all1),np.max(digram_all2)])
@@ -1641,6 +1530,7 @@ def run():
     # more downstream analysis is needed to tease out conclusions
     fig, ax = pl.subplots(1, 1,squeeze=False,figsize=(16,8))
     pl.title('Peptide Digram Difference')
+
     min_temp = np.min(digram_all2-digram_all1)
     max_temp = np.max(digram_all2-digram_all1)
     if abs(min_temp) > abs(max_temp):
@@ -1670,7 +1560,7 @@ def run():
         data1 = seqF[ref_sub[ref_sub[len(sub_matF)-1] == 0].index]
         data2 = seqF[ref_sub[ref_sub[len(sub_matF)-1] == 1].index]
 
-        p_digram = aims.do_statistics(data1,data2,num_reps=1000,test='function',test_func=aims.full_AA_freq,func_val = 1)
+        p_digram = aims.do_statistics(data1,data2,num_reps=2,test='function',test_func=aims.digram_AA_freq,my_AA_key=my_AA_key)
 
         dim1, dim2 = np.shape(p_digram)
         alpha = 0.05

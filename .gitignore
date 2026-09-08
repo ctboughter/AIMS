@@ -4,7 +4,6 @@
 # ACTUALLY, DONT IGNORE ANYTHING ON THE BRANCH. YOU NEED THESE FUNCTIONS FOR IT TO RUN TEMPORARILY. 
 # Shows that I need to make these scripts less intertwined.
 
-Z_assorted_notes.txt
 aims_immune/AIMS_timing.pdf
 aims_immune/sim_seqs.csv
 aims_immmune/__pycache__
@@ -13,3 +12,5 @@ dist
 dist/*
 aims_immune.egg-info
 aims_immune.egg-info/*  
+devNotes
+devNotes/*

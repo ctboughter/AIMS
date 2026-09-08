@@ -717,6 +717,8 @@ class Analysis(Screen):
             else:
                 data = mat_coords[:,1:]
 
+        # Update 08/20/26 I consolidated the data loader, but frankly think I won't bother making the
+        # Backend of the GUI code any cleaner... Sorry for whoever tries to read this.
         for i in np.arange(len(paths)):
             if molecule == 'mhc':
                 #if any(data[:,i] == ['','','','','']):
@@ -725,15 +727,17 @@ class Analysis(Screen):
                 # turn data into an integer.
                 if onlyONE:
                     int_dat = [int(x) for x in data]
-                    seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i],drop_dups = exp_drop)
+                    # Change this to msa_loader, get rid of seq_key
+                    seq,seq_key = aimsLoad.seq_loader(paths[i],labels[i],subset=True,subset_starts=int_dat,drop_dups = exp_drop,return_index=True)
                 else:
                     int_dat = [int(x) for x in data[i]]
-                    seq,seq_key = aimsLoad.mhc_loader(paths[i],int_dat,labels[i],drop_dups = exp_drop)
+                    # change this to msa_loader, get rid of seq_key
+                    seq,seq_key = aimsLoad.seq_loader(paths[i],labels[i],subset=True,subset_starts=int_dat,drop_dups = exp_drop,return_index=True)
             elif molecule == 'ig':
                 # My first ever error handling! Works pretty well (for now)
                 # Probably need more "exceptions" here for formatting errors
                 try:
-                    seq = aimsLoad.Ig_loader(paths[i],labels[i],loops=LOOPnum,drop_degens=exp_drop)
+                    seq = aimsLoad.seq_loader(paths[i],labels[i],drop_dups=exp_drop)
                 except pandas.errors.ParserError:
                     # Alrighty we want a popup here on this screen
                     popup = Popup(title='ERROR (Click Anywhere to Dismiss)',
@@ -743,29 +747,37 @@ class Analysis(Screen):
                     return
             elif molecule == 'msa':
                 # ADD IN MSA LOADING
-                seq = aimsLoad.msa_loader(paths[i],label=labels[i],drop_dups = exp_drop)
+                seq = aimsLoad.seq_loader(paths[i],label=labels[i],drop_dups = exp_drop)
             elif molecule == 'pep':
                 # Add in pep loading
                 # Should probably throw in an option for a length cutoff...
                 # DONT have a cutoff for now...
-                seq = aimsLoad.pep_loader(paths[i],label=labels[i],
-                                                         drop_degens = exp_drop,len_cutoff=cutoff)
+                seq = aimsLoad.seq_loader(paths[i],label=labels[i],
+                                                         drop_dups = exp_drop)
+
+            # Need handling to fix LoopNum
+            # Hopefully this will prevent any errors downstream
+            if molecule=='ig':
+                if LOOPnum!=np.shape(seq)[0]:
+                    print('Wrong number of loops selected, reset')
+                    LOOPnum=np.shape(seq)[0]
+
             ID_pre = np.ones(np.shape(seq)[1])
             if i == 0:
                 seq_final = seq
                 seq_size = np.shape(seq)[1]
                 seqNameF = labels[i]
                 ID = i*ID_pre
-                if molecule == 'mhc':
-                    seq_keyF = seq_key
+                #if molecule == 'mhc':
+                #    seq_keyF = seq_key
                 mat_size = aims.get_sequence_dimension(seq)
             else:
                 seq_final = pandas.concat([seq_final,seq],axis = 1)
                 seqNameF = np.vstack((seqNameF,labels[i]))
                 seq_size = np.vstack((seq_size,np.shape(seq)[1]))
                 ID = np.hstack((ID, i*ID_pre))
-                if molecule == 'mhc':
-                    seq_keyF = np.hstack((seq_keyF,seq_key))
+                #if molecule == 'mhc':
+                #    seq_keyF = np.hstack((seq_keyF,seq_key))
                 mat_size2 = aims.get_sequence_dimension(seq)
                 if type(mat_size) != int:
                     max_lenp=np.zeros(len(mat_size))
@@ -861,8 +873,8 @@ class Analysis(Screen):
             fin_convert = fin_convert + [*tt]
         fff = np.array(fin_convert).reshape(len(seqT),len(tt))
         pandas.DataFrame(fff).to_csv(this_dir + '/' + dir_name + '/AIMS_encodedSeqs.csv')
-        if molecule == 'mhc':
-            np.savetxt(this_dir + '/' + dir_name + '/sequence_key.txt',seq_keyF,fmt='%s')
+        #if molecule == 'mhc':
+        #    np.savetxt(this_dir + '/' + dir_name + '/sequence_key.txt',seq_keyF,fmt='%s')
 
         self.img1.source = this_dir + '/' + dir_name + '/matrix.png'
 

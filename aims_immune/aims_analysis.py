@@ -1,14 +1,13 @@
 import numpy as np
 import pandas
 import matplotlib.pyplot as pl
-import math
 import matplotlib as mpl
 from matplotlib import cm
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import accuracy_score
 from sklearn.utils import resample
-from aims_immune import aims_loader as aimsLoad
 from aims_immune import aims_classification as classy
+from numba import njit, prange, set_num_threads, get_num_threads
 
 # More special stuff for the pip version of the script....
 import aims_immune
@@ -197,7 +196,17 @@ alignment = 'center',bulge_pad = 8):
     else:
         return(poly_PCA)
 
-def calculate_shannon(poly_PCA):
+@njit(parallel=True)
+def calculate_shannon(poly_PCA,num_threads=-1):
+    orig_threads = get_num_threads()
+    # By default, numba uses all threads, so if user does not define num threads we will do the same
+    if num_threads == -1:
+        num_threads = orig_threads
+    elif num_threads > orig_threads:
+        print("Warning: You have requested more threads than are available. Setting to max threads.")
+        num_threads = orig_threads  
+    # If user defines number threads, set em.
+    set_num_threads(num_threads)
     clones,aas = np.shape(poly_PCA)
     prob_poly_full=np.zeros((clones,aas,21))
     coverage = np.zeros(aas)
@@ -207,8 +216,8 @@ def calculate_shannon(poly_PCA):
     #Actually for the time being, there is no "22". Whenever we see '-' we wouldn't see a space
     # so we can let them be equal for now
 
-    for i in np.arange(clones):
-        for j in np.arange((aas)):
+    for i in prange(clones):
+        for j in prange((aas)):
             if poly_PCA[i,j] == 0:
                 coverage[j] += 1
             for k in AAs:
@@ -218,13 +227,14 @@ def calculate_shannon(poly_PCA):
     poly_count=np.sum(prob_poly_full,axis=0)/clones
 
     shannon_poly=np.zeros(len(poly_count))
-    for i in np.arange(len(poly_count)):
-        for j in np.arange(len(poly_count[0])):
+    for i in prange(len(poly_count)):
+        for j in prange(len(poly_count[0])):
             if poly_count[i,j]==0:
                 continue
-            shannon_poly[i]=shannon_poly[i]+(-poly_count[i,j]*math.log(poly_count[i,j],2))
+            shannon_poly[i]=shannon_poly[i]+(-poly_count[i,j]*np.log2(poly_count[i,j]))
     return(shannon_poly,poly_count,coverage/clones)
 
+@njit(parallel=True)
 def calculate_MI(poly_PCA):
     shannon_poly,poly_count,coverage=calculate_shannon(poly_PCA)
     # Need to start removing explicit "126" sized matrices
@@ -233,7 +243,7 @@ def calculate_MI(poly_PCA):
     MI_final_poly=np.zeros((aas,aas))
     poly_count_cond=np.zeros((21,aas,aas,21))
     save_count=np.zeros((21,aas))
-    for location in np.arange(aas):
+    for location in prange(aas):
         # Copy same stuff as above, but now also calculate a conditional (cond) probability
         cond_count_poly=0
         #MI_final_poly=np.zeros((20,126))
@@ -259,11 +269,11 @@ def calculate_MI(poly_PCA):
             save_count[res,location]=cond_count_poly
     
             MI_poly=np.zeros(len(poly_count_cond[res,location,:,:])) # Note, really should change this... MI poly is a misnomer here. This is one of the conditional entropy terms...
-            for i in np.arange(len(poly_count_cond[res,location,:,:])):
-                for j in np.arange(len(poly_count_cond[res,location,:,:][0])):
+            for i in prange(len(poly_count_cond[res,location,:,:])):
+                for j in prange(len(poly_count_cond[res,location,:,:][0])):
                     if poly_count_cond[res,location,:,:][i,j]==0:
                         continue
-                    MI_poly[i]=MI_poly[i]+(-poly_count_cond[res,location,:,:][i,j]*math.log(poly_count_cond[res,location,:,:][i,j],2))                
+                    MI_poly[i]=MI_poly[i]+(-poly_count_cond[res,location,:,:][i,j]*np.log2(poly_count_cond[res,location,:,:][i,j]))                
             
             condition_poly=np.zeros(len(shannon_poly))
             condition_poly[location]=shannon_poly[location]
@@ -274,7 +284,9 @@ def calculate_MI(poly_PCA):
         # I need to sum up my MI_poly (which again, is actually conditional entropy) and THEN subtract from the standard entropy...
             conditional_entropy_poly[res]=MI_poly
         # Land at Shannon Entropy - global probability of a given residue * the conditional shannon entropy
-        MI_final_poly[location]=shannon_poly-np.matmul(poly_count[location],conditional_entropy_poly)#-condition_poly
+        # numba doesn't support matmul. Try the @ here...
+        #MI_final_poly[location]=shannon_poly-np.matmul(poly_count[location],conditional_entropy_poly)
+        MI_final_poly[location]=shannon_poly-poly_count[location]@conditional_entropy_poly#-condition_poly
     return(MI_final_poly,poly_count_cond,poly_count)
 
 
@@ -1263,44 +1275,46 @@ def convert_3Let(inp):
             sin_final = np.hstack((sin_final,hold))
     return(sin_final)
 
-def full_AA_freq(seq,norm='num_AA'):
-    AA_freq_all = np.zeros((20))
-    digram_all = np.zeros((20,20))
-    AAs = 0; num_seq = 0
-    datlen,looplen = np.shape(seq.values)
-    for i in np.arange(datlen):
-        for j in np.arange(looplen):
-            if len(seq.values[i][j]) == 1:
-                temp_seq = seq.values[i][j][0]
-            else:
-                temp_seq = seq.values[i][j]
-            num_seq = num_seq + 1
-            AAs = AAs + len(temp_seq)
-            for loc in np.arange(len(temp_seq)):
-                res1 = temp_seq[loc]
-                if loc + 1 < len(temp_seq):
-                    res2 = temp_seq[loc+1]
-                else:
-                    res2 = -1
-                matched = False
-                for mat_loc1 in np.arange(len(AA_key)):
-                    if AA_key[mat_loc1] == res1:
-                        AA_freq_all[mat_loc1] = AA_freq_all[mat_loc1] + 1
-                        matched = True
-                        if res2 != -1:
-                            for mat_loc2 in np.arange(len(AA_key)):
-                                if AA_key[mat_loc2] == res2:
-                                    digram_all[mat_loc1,mat_loc2] = digram_all[mat_loc1,mat_loc2] + 1
-                                    break
-                    if matched:
-                        break
+#@njit(parallel=True)
+def full_AA_freq(seq,my_AA_key,norm='num_AA'):
+    num_seq = 0; totAA1 = 0; AA_counts1=0
+    # All of the "seq" instances here were ".values"
+    for col in seq.columns:
+        a = 0; AA_counts1_temp = np.zeros(20)
+        for x in my_AA_key:
+            AA_counts1_temp[a] += seq[col].str.count(x).sum()
+            a+=1
+        totAA1+=sum(seq[col].str.len())
+        AA_counts1 += AA_counts1_temp
+        num_seq+=1
+
     if norm == 'num_AA':
-        AA_freq_all = AA_freq_all/AAs
-        digram_all = digram_all/AAs
+        AA_freq_all = AA_counts1/totAA1
     elif norm == 'num_seq':
-        AA_freq_all = AA_freq_all/num_seq
-        digram_all = digram_all/num_seq
-    return(AA_freq_all,digram_all)
+        AA_freq_all = AA_counts1/num_seq
+    return(AA_freq_all)
+
+def digram_AA_freq(seq,my_AA_key,norm='num_AA'):
+    AA_counts1 = np.zeros((20,20)); num_seq=0; totAA1=0
+    for col in seq.columns:
+        AA_counts1_temp = np.zeros((20,20))
+        a=0
+        for x in my_AA_key:
+            b=0
+            for y in my_AA_key:
+                AA_counts1_temp[a,b] += seq[col].str.count(x+y).sum()
+                b+=1
+            a+=1
+        # Need to remove 1 for each sequence since we aren't counting _A or A_ as hits
+        totAA1+=sum(seq[col].str.len())-len(seq)
+        AA_counts1 += AA_counts1_temp
+        num_seq+=1
+
+    if norm =='num_AA':
+        AA_digram = AA_counts1/totAA1
+    elif norm=='num_seq':
+        AA_digram = AA_counts1/num_seq
+    return(AA_digram)
 
 #### Begin Changes Made Explicitly for MHC Germline Analysis Manuscript##############
 ####################################################################################
@@ -1684,27 +1698,6 @@ def decode_mat(matF,num_key_AA,key_AA):
     final = ''.join(hold_str)
     return(final)
 
-# This script is necessary to pull out the CDR 1 and 2 loop from gene names
-def pull_cdr_1_2(gene_list,chain='trav',organism='Human'):
-    org = organism.lower()
-    trv = chain.lower()
-    fin_trv, trv_name_pre = aimsLoad.Ig_loader(datPath+'app_data/germline_data/'+trv+'_'+org+'_cdrs.csv','tcr',loops=3,return_index = True)    
-    fin_trv.columns = trv_name_pre
-    
-    fin_cdrs = []
-    for i in gene_list.values:
-        # Should probably include some sort of failsafe in case 
-        try:
-            cdrs = [fin_trv[i].values]
-        except:
-            # So in dealing with MiSeq data, these may be pseudogenes frequently.
-            #print("Gene " +i+" not found")
-            cdrs = [['','','']]
-        
-        fin_cdrs = fin_cdrs + cdrs
-    
-    return(pandas.DataFrame(fin_cdrs))
-
 # Turn a single column dataframe of metadata into a numeric dataframe
 # Currently only for tags/integers, but will be edited in the future for numeric float data
 def encode_meta(metadat):
@@ -1907,7 +1900,7 @@ def calc_AIMSdist(seqSet1, seqSet2='',matrix='',align='center',normalize='msuv',
 # Finally, a way to calculate statistics for the AIMS analysis
 # Also note, I was able to very nicely test that the p-value converges as num_rep->inf
 # Typically pretty fast. I think it's supposed to converge as num_rep -> N
-def do_statistics(data1,data2,num_reps = 1000,test='median',multi_test='none',alpha=0.05,test_func = [],func_val=0):
+def do_statistics(data1,data2,num_reps = 1000,test='median',multi_test='none',alpha=0.05,test_func = [],func_val=0,my_AA_key=[]):
     # Should probably have a failsafe to make sure that we're looking across the proper axes
     # prop_axis should include the number of samples. We assume it should be axis 0
     # Ideally, we wont have many situations where the number of samples is exactly equal...
@@ -1935,8 +1928,17 @@ def do_statistics(data1,data2,num_reps = 1000,test='median',multi_test='none',al
     elif test.lower()=='function':
         # Allow for custom functions (or MI/Shannon entropy) to calc sigFigs
         if test_func == full_AA_freq:
-            temp1 = test_func(data1)[func_val]
-            temp2 = test_func(data2)[func_val]
+            if len(my_AA_key)==0:
+                print('Error: Need to define my_AA_key!')
+                return()
+            temp1 = test_func(data1,my_AA_key)
+            temp2 = test_func(data2,my_AA_key)
+        elif test_func == digram_AA_freq:
+            if len(my_AA_key)==0:
+                print('Error: Need to define my_AA_key!')
+                return()
+            temp1 = test_func(data1,my_AA_key)
+            temp2 = test_func(data2,my_AA_key)
         else:
             temp1 = test_func(np.transpose(np.array(data1)))[func_val]
             temp2 = test_func(np.transpose(np.array(data2)))[func_val]
@@ -1966,8 +1968,11 @@ def do_statistics(data1,data2,num_reps = 1000,test='median',multi_test='none',al
             z = re_dat1 - re_dat2
         elif test.lower() == 'function':
             if test_func == full_AA_freq:
-                temp1 = test_func(pandas.DataFrame(re_dat1))[func_val]
-                temp2 = test_func(pandas.DataFrame(re_dat2))[func_val]
+                temp1 = test_func(pandas.DataFrame(re_dat1),my_AA_key)
+                temp2 = test_func(pandas.DataFrame(re_dat2),my_AA_key)
+            elif test_func == digram_AA_freq:
+                temp1 = test_func(pandas.DataFrame(re_dat1),my_AA_key)
+                temp2 = test_func(pandas.DataFrame(re_dat2),my_AA_key)
             else:
                 temp1 = test_func(np.transpose(np.array(re_dat1)))[func_val]
                 temp2 = test_func(np.transpose(np.array(re_dat2)))[func_val]
@@ -2010,8 +2015,8 @@ def do_statistics(data1,data2,num_reps = 1000,test='median',multi_test='none',al
             # first, sort the p-values in ascending order:
             # Need to be a little bit smarter since we're ordering the p-values
             # Make sure we relate back to the actual order of the data...
-            pre_sort = pandas.DataFrame(p).sort_values(0)
-            p_ordered = pre_sort.sort_valeus(0)
+            pre_sort = pandas.DataFrame(p)
+            p_ordered = pre_sort.sort_values(0)
             p_loc = np.array(pre_sort.sort_values(0).index)
 
             stat_sig = ['']*len(p_ordered)

@@ -102,7 +102,7 @@ def getBig(mono_PCA,properties, norm = 'msuv',num_threads=-1):
     elif num_threads > orig_threads:
         print("Warning: You have requested more threads than are available. Setting to max threads.")
         num_threads = orig_threads  
-    # If user defines number threads, set em. If 
+    # If user defines number threads, set em.
     set_num_threads(num_threads)
 
     # Try to maximize differences across the properties by looking at patterning...
@@ -147,7 +147,7 @@ def getBig(mono_PCA,properties, norm = 'msuv',num_threads=-1):
 
 # CAN WE DO IT WITH ONE MATRIX???
 def get_bigass_matrix(ALL_mono,AA_key=AA_key,AA_key_dash=AA_key_dash, OneChain = False, giveSize=[], onlyCen = False, bulge_pad=8, prop_parse=False,
-manuscript_arrange=False,special='', alignment = 'center', norm = 'msuv'):
+manuscript_arrange=False,special='', alignment = 'center', norm = 'msuv',nCores=-1):
     
     AA_num_key_new=properties_global[1]
     # Alright so if we DO change our AA_key of the sequences, we also need to 
@@ -203,7 +203,7 @@ manuscript_arrange=False,special='', alignment = 'center', norm = 'msuv'):
             properties[0:16,i]=oldold[AA_key[i]]
             properties[16:,i]=newnew[AA_key[i]]
             
-    BIG_mono = getBig(mono_MIF,properties=properties,norm = norm)
+    BIG_mono = getBig(mono_MIF,properties=properties,norm = norm,num_threads=nCores)
     amono,bmono,cmono = np.shape(BIG_mono)
 
     #SO WE CANT JUST USE NP.RESHAPE
