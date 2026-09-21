@@ -1,11 +1,3 @@
-# Include gitignore to now ignore "dev" versions of scripts on working machine
-# Note for other users, these are often just copies of the most recent versions of each *.py file
-
-# ACTUALLY, DONT IGNORE ANYTHING ON THE BRANCH. YOU NEED THESE FUNCTIONS FOR IT TO RUN TEMPORARILY. 
-# Shows that I need to make these scripts less intertwined.
-
-aims_immune/AIMS_timing.pdf
-aims_immune/sim_seqs.csv
 aims_immmune/__pycache__
 aims_immune/__pycache__/*
 dist
